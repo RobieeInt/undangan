@@ -332,6 +332,168 @@ Alpine.data('autoSave', (delay = 2000) => ({
     }
 }));
 
+// ── Image Compression: Canvas → WebP ─────────────────────────────────
+window.compressToWebP = function(file, options = {}) {
+    const { maxWidth = 1920, maxHeight = 1920, quality = 0.85, maxSizeMB = 2 } = options;
+    return new Promise((resolve) => {
+        const img = new Image();
+        const url = URL.createObjectURL(file);
+        img.onload = () => {
+            URL.revokeObjectURL(url);
+            let { width, height } = img;
+            if (width > maxWidth || height > maxHeight) {
+                const ratio = Math.min(maxWidth / width, maxHeight / height);
+                width  = Math.round(width  * ratio);
+                height = Math.round(height * ratio);
+            }
+            const canvas = document.createElement('canvas');
+            canvas.width = width; canvas.height = height;
+            canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+            const compress = (q) => {
+                canvas.toBlob((blob) => {
+                    if (!blob) { resolve(file); return; }
+                    if (blob.size > maxSizeMB * 1024 * 1024 && q > 0.3) {
+                        compress(+(q - 0.1).toFixed(1));
+                    } else {
+                        resolve(new File(
+                            [blob],
+                            file.name.replace(/\.[^.]+$/, '') + '.webp',
+                            { type: 'image/webp' }
+                        ));
+                    }
+                }, 'image/webp', q);
+            };
+            compress(quality);
+        };
+        img.onerror = () => resolve(file);
+        img.src = url;
+    });
+};
+
+// ── Single photo upload: compress → WebP → Livewire → auto-save ──────
+Alpine.data('photoUpload', (propName, saveFn) => ({
+    loading:   false,
+    progress:  0,
+    statusMsg: '',
+    previewUrl: null,
+
+    async pick(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        event.target.value = '';
+        this.loading = true; this.progress = 0; this.statusMsg = 'Mengompresi...';
+        try {
+            const compressed   = await window.compressToWebP(file);
+            this.previewUrl    = URL.createObjectURL(compressed);
+            this.progress      = 5;
+            this.statusMsg     = 'Mengupload...';
+
+            this.$wire.upload(
+                propName,
+                compressed,
+                () => {
+                    this.statusMsg = 'Menyimpan...';
+                    this.$wire[saveFn]().then(() => {
+                        this.progress = 100;
+                        this.statusMsg = '✓ Tersimpan';
+                        setTimeout(() => {
+                            this.loading = false;
+                            this.statusMsg = '';
+                            this.progress = 0;
+                        }, 1000);
+                    });
+                },
+                () => {
+                    this.loading = false;
+                    this.statusMsg = '❌ Gagal, coba lagi';
+                },
+                (e) => {
+                    this.progress = 5 + Math.round(e.detail.progress * 0.9);
+                }
+            );
+        } catch (err) {
+            this.loading = false;
+            this.statusMsg = '❌ Error';
+        }
+    },
+}));
+
+// ── Photo upload tanpa auto-save (untuk QRIS — save saat klik Tambah) ─
+Alpine.data('photoUploadOnly', (propName) => ({
+    loading:    false,
+    progress:   0,
+    statusMsg:  '',
+    previewUrl: null,
+
+    async pick(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        event.target.value = '';
+        this.loading = true; this.progress = 0; this.statusMsg = 'Mengompresi...';
+        try {
+            const compressed = await window.compressToWebP(file);
+            this.previewUrl  = URL.createObjectURL(compressed);
+            this.progress    = 5;
+            this.statusMsg   = 'Mengupload...';
+
+            this.$wire.upload(
+                propName,
+                compressed,
+                () => {
+                    this.progress  = 100;
+                    this.statusMsg = '✓ Siap';
+                    this.loading   = false;
+                },
+                () => { this.loading = false; this.statusMsg = '❌ Gagal'; },
+                (e) => { this.progress = 5 + Math.round(e.detail.progress * 0.9); }
+            );
+        } catch {
+            this.loading = false; this.statusMsg = '❌ Error';
+        }
+    },
+}));
+
+// ── Bulk gallery upload ───────────────────────────────────────────────
+Alpine.data('galleryBulkUpload', () => ({
+    loading:  false,
+    current:  0,
+    total:    0,
+    progress: 0,
+    statusMsg: '',
+
+    async pick(event) {
+        const files = Array.from(event.target.files);
+        if (!files.length) return;
+        event.target.value = '';
+
+        this.total = files.length; this.current = 0;
+        this.loading = true; this.progress = 0;
+        this.statusMsg = '0/' + files.length + ' foto';
+
+        for (let i = 0; i < files.length; i++) {
+            const compressed = await window.compressToWebP(files[i]);
+            await new Promise((res) => {
+                this.$wire.upload(
+                    'galleryUpload',
+                    compressed,
+                    async () => {
+                        await this.$wire.addGallery();
+                        this.current  = i + 1;
+                        this.progress = Math.round(((i + 1) / files.length) * 100);
+                        this.statusMsg = (i + 1) + '/' + files.length + ' foto';
+                        res();
+                    },
+                    () => res(),   // skip error, lanjut file berikutnya
+                    () => {}
+                );
+            });
+        }
+        this.loading = false;
+        this.statusMsg = '✓ ' + this.current + ' foto berhasil';
+        setTimeout(() => { this.statusMsg = ''; }, 2000);
+    },
+}));
+
 window.Alpine = Alpine;
 
 // @livewireScriptConfig in <head> sets window.livewireScriptConfig before

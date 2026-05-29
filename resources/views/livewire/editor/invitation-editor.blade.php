@@ -89,49 +89,83 @@
             {{-- Cover Photo --}}
             <div>
                 <label class="label-luxury">Foto Cover</label>
-                <div class="border-2 border-dashed border-cream-dark/60 rounded-xl p-4 text-center bg-cream/30 hover:border-forest/40 transition-colors">
-                    @if($invitation->cover_photo)
-                    <img src="{{ $invitation->cover_photo_url }}" class="w-full h-28 object-cover rounded-lg mb-2" alt="Cover">
-                    @endif
-                    <input type="file" wire:model="cover_photo" accept="image/jpg,image/jpeg,image/png,image/webp" id="cover-upload" class="hidden">
-                    <label for="cover-upload" class="cursor-pointer text-xs text-forest hover:text-emerald font-medium">
-                        {{ $invitation->cover_photo ? 'Ganti foto' : 'Upload foto cover' }}
-                    </label>
-                    @if($cover_photo)
-                    <div class="mt-2">
-                        <button wire:click="uploadCoverPhoto" class="text-xs bg-forest text-white rounded-lg px-3 py-1.5">Simpan</button>
+                <div x-data="photoUpload('cover_photo', 'uploadCoverPhoto')"
+                     class="border-2 border-dashed border-cream-dark/60 rounded-xl p-4 text-center bg-cream/30 hover:border-forest/40 transition-colors">
+                    {{-- Preview: gambar baru atau existing --}}
+                    <template x-if="previewUrl">
+                        <img :src="previewUrl" class="w-full h-28 object-cover rounded-lg mb-2" :class="{'opacity-50':loading}">
+                    </template>
+                    <template x-if="!previewUrl">
+                        @if($invitation->cover_photo)
+                        <img src="{{ $invitation->cover_photo_url }}" class="w-full h-28 object-cover rounded-lg mb-2" alt="Cover">
+                        @endif
+                    </template>
+
+                    <input type="file" accept="image/*" x-ref="inp" @change="pick($event)" class="hidden">
+
+                    <button type="button" @click="$refs.inp.click()" :disabled="loading"
+                            class="text-xs text-forest hover:text-emerald font-medium cursor-pointer disabled:opacity-40">
+                        <span x-show="!loading">{{ $invitation->cover_photo ? 'Ganti foto' : 'Upload foto cover' }}</span>
+                        <span x-show="loading" x-text="statusMsg" class="text-amber-600 font-semibold"></span>
+                    </button>
+
+                    {{-- Progress bar --}}
+                    <div x-show="loading" class="mt-2 w-full bg-gray-100 rounded-full h-1.5 overflow-hidden">
+                        <div class="bg-forest h-1.5 rounded-full transition-all duration-300" :style="'width:'+progress+'%'"></div>
                     </div>
-                    @endif
                 </div>
                 @error('cover_photo') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
             </div>
 
             {{-- Groom & Bride Photos --}}
             <div class="grid grid-cols-2 gap-3">
+                {{-- Groom --}}
                 <div>
                     <label class="label-luxury">Foto Pengantin Pria</label>
-                    <div class="border-2 border-dashed border-cream-dark/60 rounded-xl p-3 text-center bg-cream/30">
-                        @if($invitation->groom_photo)
-                        <img src="{{ $invitation->groom_photo_url }}" class="w-16 h-16 object-cover rounded-full mx-auto mb-2" alt="Groom">
-                        @endif
-                        <input type="file" wire:model="groom_photo" accept="image/*" id="groom-upload" class="hidden">
-                        <label for="groom-upload" class="cursor-pointer text-xs text-forest">Upload</label>
-                        @if($groom_photo)
-                        <button wire:click="uploadGroomPhoto" class="block mt-1 text-xs text-white bg-forest rounded px-2 py-1 mx-auto">Simpan</button>
-                        @endif
+                    <div x-data="photoUpload('groom_photo', 'uploadGroomPhoto')"
+                         class="border-2 border-dashed border-cream-dark/60 rounded-xl p-3 text-center bg-cream/30">
+                        <template x-if="previewUrl">
+                            <img :src="previewUrl" class="w-16 h-16 object-cover rounded-full mx-auto mb-2" :class="{'opacity-40':loading}">
+                        </template>
+                        <template x-if="!previewUrl">
+                            @if($invitation->groom_photo)
+                            <img src="{{ $invitation->groom_photo_url }}" class="w-16 h-16 object-cover rounded-full mx-auto mb-2">
+                            @endif
+                        </template>
+                        <input type="file" accept="image/*" x-ref="inp" @change="pick($event)" class="hidden">
+                        <button type="button" @click="$refs.inp.click()" :disabled="loading"
+                                class="text-xs text-forest cursor-pointer disabled:opacity-40">
+                            <span x-show="!loading">Upload</span>
+                            <span x-show="loading" x-text="statusMsg" class="text-amber-600 text-[10px]"></span>
+                        </button>
+                        <div x-show="loading" class="mt-1.5 w-full bg-gray-100 rounded-full h-1 overflow-hidden">
+                            <div class="bg-forest h-1 rounded-full transition-all" :style="'width:'+progress+'%'"></div>
+                        </div>
                     </div>
                 </div>
+
+                {{-- Bride --}}
                 <div>
                     <label class="label-luxury">Foto Pengantin Wanita</label>
-                    <div class="border-2 border-dashed border-cream-dark/60 rounded-xl p-3 text-center bg-cream/30">
-                        @if($invitation->bride_photo)
-                        <img src="{{ $invitation->bride_photo_url }}" class="w-16 h-16 object-cover rounded-full mx-auto mb-2" alt="Bride">
-                        @endif
-                        <input type="file" wire:model="bride_photo" accept="image/*" id="bride-upload" class="hidden">
-                        <label for="bride-upload" class="cursor-pointer text-xs text-forest">Upload</label>
-                        @if($bride_photo)
-                        <button wire:click="uploadBridePhoto" class="block mt-1 text-xs text-white bg-forest rounded px-2 py-1 mx-auto">Simpan</button>
-                        @endif
+                    <div x-data="photoUpload('bride_photo', 'uploadBridePhoto')"
+                         class="border-2 border-dashed border-cream-dark/60 rounded-xl p-3 text-center bg-cream/30">
+                        <template x-if="previewUrl">
+                            <img :src="previewUrl" class="w-16 h-16 object-cover rounded-full mx-auto mb-2" :class="{'opacity-40':loading}">
+                        </template>
+                        <template x-if="!previewUrl">
+                            @if($invitation->bride_photo)
+                            <img src="{{ $invitation->bride_photo_url }}" class="w-16 h-16 object-cover rounded-full mx-auto mb-2">
+                            @endif
+                        </template>
+                        <input type="file" accept="image/*" x-ref="inp" @change="pick($event)" class="hidden">
+                        <button type="button" @click="$refs.inp.click()" :disabled="loading"
+                                class="text-xs text-forest cursor-pointer disabled:opacity-40">
+                            <span x-show="!loading">Upload</span>
+                            <span x-show="loading" x-text="statusMsg" class="text-amber-600 text-[10px]"></span>
+                        </button>
+                        <div x-show="loading" class="mt-1.5 w-full bg-gray-100 rounded-full h-1 overflow-hidden">
+                            <div class="bg-forest h-1 rounded-full transition-all" :style="'width:'+progress+'%'"></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -411,23 +445,37 @@
                 @endforeach
             </div>
 
-            {{-- Upload --}}
+            {{-- Upload Gallery (Bulk) --}}
             @if(count($galleries) < $this->packageLimits['max_gallery'])
-            <div class="border-2 border-dashed border-cream-dark/60 rounded-xl p-4 bg-cream/30">
-                <input type="file" wire:model="galleryUpload" accept="image/*" id="gallery-upload" class="hidden">
-                @if($galleryUpload)
-                <div class="text-center space-y-2">
-                    <img src="{{ $galleryUpload->temporaryUrl() }}" class="h-32 object-cover rounded-lg mx-auto">
-                    <input type="text" wire:model="galleryCaption" class="input-luxury text-xs" placeholder="Keterangan foto (opsional)">
-                    <button wire:click="addGallery" class="btn-luxury text-xs w-full py-2.5">Simpan Foto</button>
+            <div x-data="galleryBulkUpload()"
+                 class="border-2 border-dashed border-cream-dark/60 rounded-xl p-4 bg-cream/30">
+
+                <input type="file" accept="image/*" multiple x-ref="inp" @change="pick($event)" class="hidden">
+
+                {{-- Idle state --}}
+                <div x-show="!loading" @click="$refs.inp.click()"
+                     class="flex flex-col items-center gap-2 cursor-pointer text-center">
+                    <svg class="w-8 h-8 text-forest/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4v16m8-8H4"/>
+                    </svg>
+                    <span class="text-xs font-medium text-forest/70">Pilih Foto (bisa banyak sekaligus)</span>
+                    <span class="text-[10px] text-gray-400">JPG, PNG, WEBP — dikompres otomatis ke WebP</span>
+                    <span x-show="statusMsg" x-text="statusMsg" class="text-xs text-emerald-600 font-semibold mt-1"></span>
                 </div>
-                @else
-                <label for="gallery-upload" class="flex flex-col items-center gap-2 cursor-pointer text-center">
-                    <svg class="w-8 h-8 text-forest/40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4v16m8-8H4"/></svg>
-                    <span class="text-xs text-gray-500">Upload foto (JPG, PNG, WEBP — max 2MB)</span>
-                </label>
-                @endif
-                @error('galleryUpload') <p class="text-xs text-red-500 mt-1 text-center">{{ $message }}</p> @enderror
+
+                {{-- Uploading state --}}
+                <div x-show="loading" class="text-center py-1">
+                    <p class="text-sm font-semibold text-forest mb-2">
+                        Mengupload <span x-text="statusMsg" class="text-amber-600"></span>
+                    </p>
+                    <div class="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
+                        <div class="bg-forest h-2 rounded-full transition-all duration-500"
+                             :style="'width:'+progress+'%'"></div>
+                    </div>
+                    <p class="text-[10px] text-gray-400 mt-1.5">Jangan tutup halaman ini...</p>
+                </div>
+
+                @error('galleryUpload') <p class="text-xs text-red-500 mt-2 text-center">{{ $message }}</p> @enderror
             </div>
             @else
             <p class="text-xs text-center text-gray-400 p-4 bg-gray-50 rounded-xl">Batas maksimal foto tercapai ({{ $this->packageLimits['max_gallery'] }}). Upgrade paket untuk lebih banyak foto.</p>
@@ -564,12 +612,25 @@
                 <input type="text" wire:model="newGift.account_number" class="input-luxury" placeholder="Nomor Rekening">
                 <input type="text" wire:model="newGift.account_name" class="input-luxury" placeholder="Nama Pemilik Rekening">
                 @else
-                <div class="border-2 border-dashed border-cream-dark/60 rounded-xl p-4 text-center">
-                    <input type="file" wire:model="qrisImage" accept="image/*" id="qris-upload" class="hidden">
-                    @if($qrisImage)
-                    <img src="{{ $qrisImage->temporaryUrl() }}" class="h-32 mx-auto mb-2 rounded-lg">
-                    @endif
-                    <label for="qris-upload" class="text-xs text-forest cursor-pointer">Upload foto QRIS</label>
+                <div x-data="photoUploadOnly('qrisImage')"
+                     class="border-2 border-dashed border-cream-dark/60 rounded-xl p-4 text-center">
+                    <template x-if="previewUrl">
+                        <img :src="previewUrl" class="h-32 mx-auto mb-2 rounded-lg" :class="{'opacity-50':loading}">
+                    </template>
+                    <template x-if="!previewUrl">
+                        @if($qrisImage)
+                        <img src="{{ $qrisImage->temporaryUrl() }}" class="h-32 mx-auto mb-2 rounded-lg">
+                        @endif
+                    </template>
+                    <input type="file" accept="image/*" x-ref="inp" @change="pick($event)" class="hidden">
+                    <button type="button" @click="$refs.inp.click()" :disabled="loading"
+                            class="text-xs text-forest cursor-pointer disabled:opacity-40">
+                        <span x-show="!loading">Upload foto QRIS</span>
+                        <span x-show="loading" x-text="statusMsg" class="text-amber-600"></span>
+                    </button>
+                    <div x-show="loading" class="mt-2 w-full bg-gray-100 rounded-full h-1 overflow-hidden">
+                        <div class="bg-forest h-1 rounded-full transition-all" :style="'width:'+progress+'%'"></div>
+                    </div>
                 </div>
                 @endif
                 <button wire:click="addGift" class="btn-luxury w-full text-xs py-2.5">+ Tambah</button>

@@ -1,6 +1,6 @@
 {
   "node_modules/jsqr/dist/jsQR.js": {
-    "file": "assets/jsQR-fuyS5ubW.js",
+    "file": "assets/jsQR-CE_h3DEz.js",
     "name": "jsQR",
     "src": "node_modules/jsqr/dist/jsQR.js",
     "isDynamicEntry": true,
@@ -9,7 +9,7 @@
     ]
   },
   "resources/css/app.css": {
-    "file": "assets/app-r_CSHGmr.css",
+    "file": "assets/app-CM0Pk3pg.css",
     "name": "app",
     "names": [
       "app.css"
@@ -18,7 +18,7 @@
     "isEntry": true
   },
   "resources/js/app.js": {
-    "file": "assets/app-DQPbpWLk.js",
+    "file": "assets/app-8r3mkACE.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
