@@ -105,7 +105,7 @@ class PaymentController extends Controller
         if (!$transaction->invitation_id) return;
 
         $package   = $transaction->package;
-        $expiresAt = now()->addDays($package->duration_days);
+        $expiresAt = now()->addDays((int) $package->duration_days);
 
         DB::table('invitations')
             ->where('id', $transaction->invitation_id)

@@ -16,6 +16,12 @@ class Package extends Model
     protected function casts(): array
     {
         return [
+            'price'              => 'integer',
+            'duration_days'      => 'integer',
+            'max_guests'         => 'integer',
+            'max_gallery'        => 'integer',
+            'max_music'          => 'integer',
+            'sort_order'         => 'integer',
             'has_watermark'      => 'boolean',
             'has_analytics'      => 'boolean',
             'has_rsvp_export'    => 'boolean',
