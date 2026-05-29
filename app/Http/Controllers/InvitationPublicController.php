@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\InvitationGallery;
+use App\Models\InvitationGift;
 use App\Services\InvitationResolverService;
 use Illuminate\Http\Request;
 
@@ -32,8 +33,7 @@ class InvitationPublicController extends Controller
             ->orderBy('sort_order')
             ->get();
 
-        $gifts = \Illuminate\Support\Facades\DB::table('invitation_gifts')
-            ->where('invitation_id', $invitation->id)
+        $gifts = InvitationGift::where('invitation_id', $invitation->id)
             ->orderBy('sort_order')
             ->get();
 
