@@ -158,6 +158,9 @@ class RsvpForm extends Component
             ->sum('guest_count');
 
         $this->submitted = true;
+
+        // Trigger GuestWishes component to refresh
+        $this->dispatch('rsvp-submitted');
     }
 
     /* ── Internal ── */

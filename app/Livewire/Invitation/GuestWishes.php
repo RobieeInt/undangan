@@ -4,6 +4,7 @@ namespace App\Livewire\Invitation;
 
 use App\Models\Invitation;
 use Illuminate\Support\Facades\DB;
+use Livewire\Attributes\On;
 use Livewire\Component;
 
 class GuestWishes extends Component
@@ -45,6 +46,7 @@ class GuestWishes extends Component
     }
 
     // Listen for new RSVP submission
+    #[On('rsvp-submitted')]
     public function refreshWishes(): void
     {
         $this->page = 1;
