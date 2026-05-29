@@ -75,8 +75,7 @@ class InvitationPublicController extends Controller
         $galleries = InvitationGallery::where('invitation_id', $invitation->id)
             ->orderBy('sort_order')->get();
 
-        $gifts = \Illuminate\Support\Facades\DB::table('invitation_gifts')
-            ->where('invitation_id', $invitation->id)
+        $gifts = InvitationGift::where('invitation_id', $invitation->id)
             ->orderBy('sort_order')->get();
 
         $recentWishes = \Illuminate\Support\Facades\DB::table('invitation_rsvps')
