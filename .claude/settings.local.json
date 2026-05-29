@@ -120,7 +120,10 @@
       "Bash(php -l /Users/bella/yujang/project/undangan/app/Models/InvitationGift.php)",
       "Bash(grep -n '$photo\\\\b' /Users/bella/yujang/project/undangan/resources/views/templates/andalusia-exclusive/index.blade.php)",
       "Bash(php -r \"echo 'PHP OK';\")",
-      "Bash(zip -r public_build.zip public/build/)"
+      "Bash(zip -r public_build.zip public/build/)",
+      "Bash(php -l /Users/bella/yujang/project/undangan/app/Http/Controllers/Admin/PackageController.php)",
+      "Bash(php -l /Users/bella/yujang/project/undangan/app/Http/Controllers/Admin/TransactionController.php)",
+      "Bash(kill 24113)"
     ]
   }
 }

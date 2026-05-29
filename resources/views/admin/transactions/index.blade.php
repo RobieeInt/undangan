@@ -1,6 +1,13 @@
 @extends('layouts.admin')
 @section('page-title', 'Manajemen Transaksi')
 @section('content')
+
+@if(session('success'))
+<div class="mb-4 px-4 py-3 bg-green-50 border border-green-200 text-green-700 rounded-xl text-sm">
+    {{ session('success') }}
+</div>
+@endif
+
 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
     <div class="p-6 border-b border-gray-100 flex items-center gap-3">
         <form method="GET" class="flex items-center gap-3 flex-1">
@@ -24,6 +31,7 @@
                     <th class="text-left px-6 py-3 text-gray-500 font-medium">Jumlah</th>
                     <th class="text-left px-6 py-3 text-gray-500 font-medium">Status</th>
                     <th class="text-left px-6 py-3 text-gray-500 font-medium">Tanggal</th>
+                    <th class="text-left px-6 py-3 text-gray-500 font-medium">Aksi</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-50">
@@ -42,6 +50,21 @@
                         </span>
                     </td>
                     <td class="px-6 py-4 text-gray-400 text-xs">{{ \Carbon\Carbon::parse($trx->created_at)->format('d M Y H:i') }}</td>
+                    <td class="px-6 py-4">
+                        <form method="POST" action="{{ route('admin.transactions.update-status', $trx->id) }}"
+                              class="flex items-center gap-2"
+                              onsubmit="return confirm('Ubah status transaksi ini?')">
+                            @csrf
+                            <select name="status" class="text-xs border border-gray-200 rounded-lg px-2 py-1.5 bg-white text-gray-700 focus:outline-none focus:ring-1 focus:ring-forest/30">
+                                @foreach(['pending','paid','failed','expired'] as $s)
+                                <option value="{{ $s }}" {{ $trx->status === $s ? 'selected' : '' }}>{{ ucfirst($s) }}</option>
+                                @endforeach
+                            </select>
+                            <button type="submit" class="text-xs bg-forest text-white px-3 py-1.5 rounded-lg hover:bg-forest/80 transition-colors">
+                                Simpan
+                            </button>
+                        </form>
+                    </td>
                 </tr>
                 @endforeach
             </tbody>

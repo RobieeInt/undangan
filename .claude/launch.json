@@ -4,7 +4,7 @@
     {
       "name": "undangan",
       "runtimeExecutable": "php",
-      "runtimeArgs": ["artisan", "serve", "--port=8000"],
+      "runtimeArgs": ["artisan", "serve", "--host=localhost"],
       "port": 8000
     }
   ]

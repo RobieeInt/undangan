@@ -65,6 +65,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::resource('users', Admin\UserController::class)->only(['index']);
     Route::post('users/{user}/toggle-status', [Admin\UserController::class, 'toggleStatus'])->name('users.toggle-status');
     Route::resource('transactions', Admin\TransactionController::class)->only(['index']);
+    Route::post('transactions/{transaction}/update-status', [Admin\TransactionController::class, 'updateStatus'])->name('transactions.update-status');
+    Route::resource('packages', Admin\PackageController::class)->only(['index', 'create', 'store', 'edit', 'update', 'destroy']);
+    Route::post('packages/{package}/toggle-active', [Admin\PackageController::class, 'toggleActive'])->name('packages.toggle-active');
 });
 
 // ─── Midtrans Webhook (no CSRF) ───────────────────────────────────────────────
