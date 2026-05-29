@@ -126,7 +126,7 @@ class PaymentController extends Controller
     public function checkStatus(Request $request, Transaction $transaction)
     {
         // Only owner can check
-        if ($transaction->user_id !== auth()->id()) {
+        if ((int) $transaction->user_id !== (int) auth()->id()) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
