@@ -9,7 +9,11 @@ use App\Http\Controllers\Admin;
 use Illuminate\Support\Facades\Route;
 
 // ─── Public Homepage ─────────────────────────────────────────────────────────
-Route::get('/', fn() => view('welcome'))->name('home');
+Route::get('/', function () {
+    $templates = App\Models\Template::where('is_active', true)->orderBy('sort_order')->get();
+    $packages  = App\Models\Package::where('is_active', true)->orderBy('sort_order')->get();
+    return view('welcome', compact('templates', 'packages'));
+})->name('home');
 
 // ─── Auth Routes ─────────────────────────────────────────────────────────────
 Route::middleware('guest')->group(function () {

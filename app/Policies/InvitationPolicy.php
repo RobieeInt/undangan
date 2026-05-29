@@ -14,7 +14,7 @@ class InvitationPolicy
 
     public function update(User $user, Invitation $invitation): bool
     {
-        return $user->id === $invitation->user_id;
+        return $user->id === $invitation->user_id || $user->isAdmin();
     }
 
     public function delete(User $user, Invitation $invitation): bool
@@ -24,6 +24,6 @@ class InvitationPolicy
 
     public function publish(User $user, Invitation $invitation): bool
     {
-        return $user->id === $invitation->user_id && $invitation->is_active;
+        return ($user->id === $invitation->user_id || $user->isAdmin()) && $invitation->is_active;
     }
 }

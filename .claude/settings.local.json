@@ -118,7 +118,8 @@
       "Bash(php -l /Users/bella/yujang/project/undangan/app/Models/Invitation.php)",
       "Bash(php -l /Users/bella/yujang/project/undangan/app/Models/InvitationGallery.php)",
       "Bash(php -l /Users/bella/yujang/project/undangan/app/Models/InvitationGift.php)",
-      "Bash(grep -n '$photo\\\\b' /Users/bella/yujang/project/undangan/resources/views/templates/andalusia-exclusive/index.blade.php)"
+      "Bash(grep -n '$photo\\\\b' /Users/bella/yujang/project/undangan/resources/views/templates/andalusia-exclusive/index.blade.php)",
+      "Bash(php -r \"echo 'PHP OK';\")"
     ]
   }
 }
