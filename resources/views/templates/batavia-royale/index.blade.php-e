@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{{ $invitation->getCoupleName() }} - Batavia Royale</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Cormorant+Garamond:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<style>[x-cloak]{display:none!important}</style>
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+<style>
+:root{
+--gold:#D4AF37;--dark:#0f172a;--dark2:#1e293b;--cream:#f8f4e3;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--dark);color:var(--cream);font-family:system-ui;overflow-x:hidden}
+.hero{min-height:100vh;display:flex;align-items:center;justify-content:center;position:relative}
+.hero img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;animation:kenburns 20s infinite alternate}
+.overlay{position:absolute;inset:0;background:linear-gradient(rgba(15,23,42,.6),rgba(15,23,42,.9))}
+.content{position:relative;text-align:center;padding:20px}
+.name{font-family:Cinzel;font-size:clamp(2rem,8vw,4rem);color:var(--gold);animation:glow 4s infinite}
+.btn{background:var(--gold);color:#111;padding:14px 28px;border-radius:12px;text-decoration:none;display:inline-block;margin-top:20px}
+.section{padding:90px 20px;max-width:1000px;margin:auto}
+.card{background:rgba(255,255,255,.05);border:1px solid rgba(212,175,55,.2);padding:24px;border-radius:20px}
+.particle{position:fixed;width:6px;height:6px;background:var(--gold);border-radius:50%;opacity:.4;animation:float 18s linear infinite}
+@keyframes kenburns{from{transform:scale(1)}to{transform:scale(1.15)}}
+@keyframes glow{50%{text-shadow:0 0 30px rgba(212,175,55,.8)}}
+@keyframes float{from{transform:translateY(110vh)}to{transform:translateY(-20vh)}}
+</style>
+</head>
+<style>
+#br-cover-screen {
+    position: fixed; inset: 0; z-index: 100;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    background: linear-gradient(160deg, #0f172a 0%, #1e293b 100%);
+    overflow: hidden;
+}
+#br-cover-screen .br-cover-content { position: relative; z-index: 10; text-align: center; padding: 2rem; }
+</style>
+<body x-data="{ opened: false }">
+
+{{-- Cinematic cover screen --}}
+<div id="br-cover-screen" data-coi-cover>
+    @if($invitation->cover_photo)
+    <img src="{{ Storage::url($invitation->cover_photo) }}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.35">
+    @endif
+    <div style="position:absolute;inset:0;background:linear-gradient(rgba(15,23,42,.5),rgba(15,23,42,.85))"></div>
+    <div class="br-cover-content">
+        <p style="font-family:Cinzel;font-size:.75rem;letter-spacing:.4em;color:var(--gold);margin-bottom:1.5rem">THE WEDDING OF</p>
+        <h1 class="name">{{ $invitation->groom_name }}</h1>
+        <h2 style="font-family:Cormorant Garamond;font-size:3rem;color:var(--gold)">&</h2>
+        <h1 class="name">{{ $invitation->bride_name }}</h1>
+        @if($guest ?? null)
+        <p style="font-size:.75rem;color:rgba(212,175,55,.7);margin:.75rem 0 .25rem;letter-spacing:.15em">KEPADA YTH.</p>
+        <p style="font-family:Cormorant Garamond;font-size:1.4rem;color:var(--gold)">{{ $guest->name }}</p>
+        @endif
+        <button data-coi-btn class="btn" style="margin-top:1.5rem">Buka Undangan</button>
+    </div>
+</div>
+
+<div id="br-main-content" data-coi-main x-show="opened" x-cloak style="display:none">
+
+<section id="nav-top" class="hero">
+@if($invitation->cover_photo)
+<img src="{{ Storage::url($invitation->cover_photo) }}">
+@endif
+<div class="overlay"></div>
+<div class="content">
+<p>THE WEDDING OF</p>
+<h1 class="name">{{ $invitation->groom_name }}</h1>
+<h2 style="font-family:Cormorant Garamond;font-size:3rem">&</h2>
+<h1 class="name">{{ $invitation->bride_name }}</h1>
+</div>
+</section>
+
+<div id="main" style="padding-bottom:72px">
+<section id="nav-couple" class="section">
+<div class="card">
+<h2 style="font-family:Cinzel;color:var(--gold);margin-bottom:.75rem">Pasangan Mempelai</h2>
+<p style="font-size:1.1rem;opacity:.85">{{ $invitation->groom_name }} & {{ $invitation->bride_name }}</p>
+</div>
+</section>
+
+@if($events->isNotEmpty())
+<section id="nav-events" class="section">
+<div class="card">
+<h2 style="font-family:Cinzel;color:var(--gold);margin-bottom:.75rem">Detail Acara</h2>
+@foreach($events as $event)
+<p style="margin-bottom:.5rem;opacity:.85">{{ $event->name }} — {{ $event->venue }}</p>
+@endforeach
+</div>
+</section>
+@endif
+
+</div>
+
+@include('partials.invitation-navbar', ['navStyle' => 'dark'])
+
+</div>{{-- end br-main-content --}}
+
+@include('partials.cinematic-opening')
+
+<script>
+for(let i=0;i<30;i++){
+ let d=document.createElement('div');
+ d.className='particle';
+ d.style.left=Math.random()*100+'%';
+ d.style.animationDelay=Math.random()*18+'s';
+ document.body.appendChild(d);
+}
+</script>
+</body>
+</html>

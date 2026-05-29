@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>{{ $invitation->getCoupleName() }} — Undangan Pernikahan</title>
+    <meta property="og:title" content="Undangan: {{ $invitation->getCoupleName() }}">
+    <meta property="og:image" content="{{ $invitation->cover_photo_url ?? asset('img/og-default.jpg') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Montserrat:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/aos@2.3.1/dist/aos.css">
+    {{-- swiper removed, replaced by collage --}}
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @livewireStyles
+    @livewireScriptConfig
+    <style>
+        body { background:#fff; font-family:'Montserrat',sans-serif; }
+        .fp { font-family:'Playfair Display',serif; }
+        /* extra padding bawah buat navbar */
+        .has-navbar { padding-bottom: 72px; }
+
+        /* ── Global dot canvas ── */
+        #mm-global-dots { position:fixed;inset:0;pointer-events:none;z-index:92;overflow:hidden; }
+        /* ── Cover + global minimalist dot animation ── */
+        .mm-dot { position: absolute; pointer-events: none; border-radius: 50%; background: #d1d5db; }
+        @keyframes mmFloat {
+            0%   { transform: translateY(0) translateX(0); opacity: 0; }
+            10%  { opacity: 1; }
+            90%  { opacity: 0.5; }
+            100% { transform: translateY(var(--rise,-120px)) translateX(var(--sway,0px)); opacity: 0; }
+        }
+        /* Thin vertical line grow animation */
+        .mm-vline {
+            width: 1px;
+            background: #e5e7eb;
+            transform-origin: top center;
+            animation: mmLineGrow 1.1s ease-out both;
+        }
+        @keyframes mmLineGrow {
+            from { transform: scaleY(0); opacity: 0; }
+            to   { transform: scaleY(1); opacity: 1; }
+        }
+        /* Cover text stagger */
+        @keyframes mmFadeUp {
+            from { opacity: 0; transform: translateY(16px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .mm-in   { animation: mmFadeUp 0.8s ease-out both; }
+        .mm-d1   { animation-delay: 0.2s; }
+        .mm-d2   { animation-delay: 0.45s; }
+        .mm-d3   { animation-delay: 0.7s; }
+        .mm-d4   { animation-delay: 0.95s; }
+        .mm-d5   { animation-delay: 1.2s; }
+        .mm-d6   { animation-delay: 1.45s; }
+    </style>
+</head>
+<body x-data="{ opened: false }"
+      x-init="$store.invitation.initMusic('{{ $invitation->music_url }}', {{ $invitation->music_autoplay ? 'true' : 'false' }})">
+
+{{-- ── OPENING ──────────────────────────────────── --}}
+<div data-coi-cover
+     x-show="!opened" x-transition:leave="transition ease-in duration-400" x-transition:leave-end="opacity-0 -translate-y-4"
+     class="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-white overflow-hidden">
+
+    {{-- Floating dot particles --}}
+    <div class="absolute inset-0 pointer-events-none" id="mm-cover-dots"></div>
+
+    {{-- Thin horizontal accent lines --}}
+    <div class="absolute inset-0 pointer-events-none overflow-hidden">
+        <div class="absolute left-0 right-0" style="top:15%;height:1px;background:linear-gradient(to right,transparent,#e5e7eb 30%,#e5e7eb 70%,transparent);animation:mmFadeUp 1.5s ease-out 0.5s both"></div>
+        <div class="absolute left-0 right-0" style="top:85%;height:1px;background:linear-gradient(to right,transparent,#e5e7eb 30%,#e5e7eb 70%,transparent);animation:mmFadeUp 1.5s ease-out 0.7s both"></div>
+        {{-- Tiny cross marks at corners --}}
+        <svg class="absolute top-8 left-8 w-6 h-6 text-gray-200" viewBox="0 0 20 20" fill="none" style="animation:mmFadeUp 1s ease-out 1s both">
+            <line x1="10" y1="0" x2="10" y2="20" stroke="currentColor" stroke-width="0.8"/>
+            <line x1="0" y1="10" x2="20" y2="10" stroke="currentColor" stroke-width="0.8"/>
+        </svg>
+        <svg class="absolute top-8 right-8 w-6 h-6 text-gray-200" viewBox="0 0 20 20" fill="none" style="animation:mmFadeUp 1s ease-out 1.1s both">
+            <line x1="10" y1="0" x2="10" y2="20" stroke="currentColor" stroke-width="0.8"/>
+            <line x1="0" y1="10" x2="20" y2="10" stroke="currentColor" stroke-width="0.8"/>
+        </svg>
+        <svg class="absolute bottom-8 left-8 w-6 h-6 text-gray-200" viewBox="0 0 20 20" fill="none" style="animation:mmFadeUp 1s ease-out 1.2s both">
+            <line x1="10" y1="0" x2="10" y2="20" stroke="currentColor" stroke-width="0.8"/>
+            <line x1="0" y1="10" x2="20" y2="10" stroke="currentColor" stroke-width="0.8"/>
+        </svg>
+        <svg class="absolute bottom-8 right-8 w-6 h-6 text-gray-200" viewBox="0 0 20 20" fill="none" style="animation:mmFadeUp 1s ease-out 1.3s both">
+            <line x1="10" y1="0" x2="10" y2="20" stroke="currentColor" stroke-width="0.8"/>
+            <line x1="0" y1="10" x2="20" y2="10" stroke="currentColor" stroke-width="0.8"/>
+        </svg>
+    </div>
+
+    <div class="text-center px-8 max-w-sm relative z-10" id="nav-top">
+        <div class="mm-vline mm-d1 mb-8 mx-auto" style="height:64px;animation-duration:1s"></div>
+        <p class="mm-in mm-d2 text-xs tracking-[0.4em] uppercase text-gray-400 mb-4">Wedding Invitation</p>
+        <h1 class="mm-in mm-d3 fp text-5xl text-gray-900 mb-1">{{ $invitation->groom_name }}</h1>
+        <p class="mm-in mm-d3 fp text-2xl text-gray-300 italic my-2">&</p>
+        <h1 class="mm-in mm-d4 fp text-5xl text-gray-900 mb-8">{{ $invitation->bride_name }}</h1>
+        @if($guest)
+        <p class="mm-in mm-d4 text-xs text-gray-400 mb-1">Kepada Yth.</p>
+        <p class="mm-in mm-d4 fp text-lg text-gray-700 mb-6">{{ $guest->name }}</p>
+        @endif
+        <button data-coi-btn @click="opened = true; $store.invitation.openEnvelope()"
+                class="mm-in mm-d5 px-8 py-3 bg-gray-900 text-white text-xs tracking-[0.2em] uppercase hover:bg-gray-700 transition-all rounded-none">
+            Buka Undangan
+        </button>
+        <div class="mm-vline mm-d6 mt-8 mx-auto" style="height:64px;animation-duration:1s"></div>
+    </div>
+</div>
+
+{{-- Global dot canvas — always on, z-92, visible after cover (z-100) closes --}}
+<div id="mm-global-dots"></div>
+
+<div data-coi-main
+     x-show="opened" x-transition:enter="transition duration-700" x-transition:enter-start="opacity-0"
+     class="has-navbar">
+
+    {{-- ── HERO ─────────────────────────────────── --}}
+    <section id="nav-top" class="min-h-screen relative flex flex-col items-center justify-center overflow-hidden bg-gray-50">
+        @if($invitation->cover_photo)
+        <div class="absolute inset-0 overflow-hidden">
+            <img src="{{ $invitation->cover_photo_url }}"
+                 class="w-full object-cover grayscale-[20%]"
+                 style="height:130%;top:-15%;position:absolute;left:0;right:0"
+                 alt="Cover" data-parallax-hero>
+            <div class="absolute inset-0 bg-white/40"></div>
+        </div>
+        @endif
+        <div class="relative z-10 text-center px-6">
+            @if($invitation->opening_quote)
+            <p class="text-xs text-gray-400 italic mb-6 max-w-xs mx-auto" data-aos="fade-down">"{{ $invitation->opening_quote }}"</p>
+            @endif
+            <p class="text-xs tracking-[0.5em] text-gray-500 uppercase mb-6" data-aos="fade-up">The Wedding of</p>
+            <h1 class="fp text-7xl text-gray-900 leading-none mb-2" data-aos="fade-up" data-aos-delay="100">{{ $invitation->groom_name }}</h1>
+            <p class="fp text-3xl text-gray-300 italic my-2" data-aos="fade-up" data-aos-delay="150">&amp;</p>
+            <h1 class="fp text-7xl text-gray-900 leading-none" data-aos="fade-up" data-aos-delay="200">{{ $invitation->bride_name }}</h1>
+            @if($events->isNotEmpty())
+            <div class="mt-12 text-sm text-gray-600" data-aos="fade-up" data-aos-delay="300">
+                {{ \Carbon\Carbon::parse($events->first()->date)->translatedFormat('d F Y') }}
+            </div>
+            @endif
+        </div>
+    </section>
+
+    {{-- ── COUPLE ───────────────────────────────── --}}
+    <section id="nav-couple" class="py-20 px-6 bg-white">
+        <div class="max-w-sm mx-auto">
+            <div class="h-px bg-gray-100 mb-12"></div>
+            <p class="text-xs tracking-[0.4em] uppercase text-gray-400 text-center mb-10" data-aos="fade-up">Mempelai</p>
+            <div class="grid grid-cols-2 gap-8 text-center">
+                <div data-aos="fade-right">
+                    @if($invitation->groom_photo)
+                    <img src="{{ $invitation->groom_photo_url }}" class="w-24 h-24 rounded-full object-cover mx-auto mb-3 grayscale-[20%]" alt="">
+                    @endif
+                    <p class="fp text-lg text-gray-900">{{ $invitation->groom_name }}</p>
+                    @if($invitation->groom_full_name)<p class="text-xs text-gray-400 mt-1">{{ $invitation->groom_full_name }}</p>@endif
+                    @if($invitation->groom_father || $invitation->groom_mother)
+                    <p class="text-xs text-gray-400 mt-2">Putra: {{ $invitation->groom_father }}{{ $invitation->groom_father && $invitation->groom_mother ? ' & ' : '' }}{{ $invitation->groom_mother }}</p>
+                    @endif
+                </div>
+                <div data-aos="fade-left">
+                    @if($invitation->bride_photo)
+                    <img src="{{ $invitation->bride_photo_url }}" class="w-24 h-24 rounded-full object-cover mx-auto mb-3 grayscale-[20%]" alt="">
+                    @endif
+                    <p class="fp text-lg text-gray-900">{{ $invitation->bride_name }}</p>
+                    @if($invitation->bride_full_name)<p class="text-xs text-gray-400 mt-1">{{ $invitation->bride_full_name }}</p>@endif
+                    @if($invitation->bride_father || $invitation->bride_mother)
+                    <p class="text-xs text-gray-400 mt-2">Putri: {{ $invitation->bride_father }}{{ $invitation->bride_father && $invitation->bride_mother ? ' & ' : '' }}{{ $invitation->bride_mother }}</p>
+                    @endif
+                </div>
+            </div>
+            <div class="h-px bg-gray-100 mt-12"></div>
+        </div>
+    </section>
+
+    {{-- ── LOVE STORY ───────────────────────────── --}}
+    @if($invitation->story)
+    <section class="py-16 px-6 bg-gray-50">
+        <div class="max-w-sm mx-auto text-center">
+            <p class="text-xs tracking-[0.4em] uppercase text-gray-400 mb-6" data-aos="fade-up">Cerita Kami</p>
+            <p class="fp text-gray-600 text-base italic leading-relaxed" data-aos="fade-up">{{ $invitation->story }}</p>
+        </div>
+    </section>
+    @endif
+
+    {{-- ── EVENTS ───────────────────────────────── --}}
+    @if($events->isNotEmpty())
+    <section id="nav-events" class="py-20 px-6 bg-gray-900">
+        <div class="max-w-sm mx-auto">
+            <p class="text-xs tracking-[0.4em] uppercase text-gray-500 text-center mb-10" data-aos="fade-up">Jadwal</p>
+            @foreach($events as $event)
+            <div class="mb-8 text-center" data-aos="fade-up">
+                <p class="fp text-2xl text-white mb-1">{{ $event->name }}</p>
+                <p class="text-sm text-gray-400">{{ \Carbon\Carbon::parse($event->date)->translatedFormat('l, d F Y') }}</p>
+                <p class="text-sm text-gray-400">{{ $event->time_start }}{{ $event->time_end ? ' — '.$event->time_end : '' }}</p>
+                <p class="text-sm text-gray-400 mt-1">{{ $event->venue }}</p>
+                @if($event->venue_address)
+                <p class="text-xs text-gray-600 mt-0.5">{{ $event->venue_address }}</p>
+                @endif
+
+                {{-- Countdown --}}
+                @php $tDate = \Carbon\Carbon::parse($event->date)->toIso8601String(); @endphp
+                <div x-data="countdown('{{ $tDate }}')" class="flex justify-center gap-4 mt-6">
+                    @foreach(['days'=>'H','hours'=>'J','minutes'=>'M','seconds'=>'D'] as $u => $l)
+                    <div class="text-center">
+                        <div class="fp text-3xl text-white" x-text="{{ $u }}"></div>
+                        <div class="text-xs text-gray-600">{{ $l }}</div>
+                    </div>
+                    @endforeach
+                </div>
+
+                <div class="flex items-center justify-center gap-4 mt-4">
+                    @if($event->venue_maps_url)
+                    <a href="{{ $event->venue_maps_url }}" target="_blank"
+                       class="inline-block text-xs text-gray-500 hover:text-white border border-gray-600 px-4 py-1.5 transition-colors">
+                        📍 Lokasi
+                    </a>
+                    @endif
+                    <div x-data="saveToCalendar({
+                        title: '{{ addslashes($event->name . ' - ' . $invitation->getCoupleName()) }}',
+                        date: '{{ $event->date }}', time: '{{ $event->time_start }}',
+                        description: '{{ addslashes('Pernikahan ' . $invitation->getCoupleName()) }}',
+                        location: '{{ addslashes($event->venue . ' ' . $event->venue_address) }}'
+                    })">
+                        <button @click="addToCalendar()" class="text-xs text-gray-500 hover:text-white border border-gray-600 px-4 py-1.5 transition-colors">
+                            📅 Kalender
+                        </button>
+                    </div>
+                </div>
+            </div>
+            @endforeach
+        </div>
+    </section>
+    @endif
+
+    {{-- ── GALLERY ──────────────────────────────── --}}
+    @if($galleries->isNotEmpty())
+    <section id="nav-gallery" class="py-20 px-6 bg-white">
+        <div class="max-w-sm mx-auto">
+            <p class="text-xs tracking-[0.4em] uppercase text-gray-400 text-center mb-8" data-aos="fade-up">Galeri</p>
+            @include('partials.gallery-collage', [
+                'galleries'   => $galleries,
+                'gcCellClass' => '',
+                'gcGap'       => 4,
+            ])
+        </div>
+    </section>
+    @endif
+
+    {{-- ── GIFT ─────────────────────────────────── --}}
+    @if($gifts->isNotEmpty())
+    <section class="py-16 px-6 bg-gray-50">
+        <div class="max-w-sm mx-auto">
+            <p class="text-xs tracking-[0.4em] uppercase text-gray-400 text-center mb-6" data-aos="fade-up">Hadiah</p>
+            <div class="space-y-4">
+                @foreach($gifts as $gift)
+                <div class="bg-white border border-gray-100 rounded-xl p-4 shadow-sm" data-aos="fade-up">
+                    <div class="flex items-start gap-3">
+                        <div class="flex-1">
+                            <p class="font-medium text-gray-800 text-sm">{{ $gift->label ?: ($gift->bank_name ?: 'QRIS') }}</p>
+                            @if($gift->account_number)
+                            <p class="font-mono text-gray-900 text-base font-semibold mt-1">{{ $gift->account_number }}</p>
+                            <p class="text-xs text-gray-500">{{ $gift->account_name }}</p>
+                            <button onclick="navigator.clipboard.writeText('{{ $gift->account_number }}')"
+                                    class="mt-2 text-xs text-gray-500 hover:text-gray-900 flex items-center gap-1 transition-colors">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                                Salin
+                            </button>
+                            @endif
+                            @if($gift->qris_image)
+                            <img src="{{ $gift->qris_image_url }}" alt="QRIS" class="mt-3 max-w-[180px] rounded-xl shadow-sm">
+                            @endif
+                        </div>
+                    </div>
+                </div>
+                @endforeach
+            </div>
+        </div>
+    </section>
+    @endif
+
+    {{-- ── RSVP ─────────────────────────────────── --}}
+    @if($invitation->is_open)
+    <section id="nav-rsvp" class="py-20 px-6 bg-gray-50" style="--rsvp-accent:#111827;--rsvp-accent-bg:rgba(17,24,39,0.08);--rsvp-gradient:linear-gradient(135deg,#1f2937,#374151);--rsvp-label:rgba(17,24,39,0.65);--rsvp-border:rgba(0,0,0,0.12);--rsvp-input-bg:rgba(249,250,251,0.8);--rsvp-locked-bg:rgba(17,24,39,0.04)">
+        <div class="max-w-sm mx-auto">
+            <p class="text-xs tracking-[0.4em] uppercase text-gray-400 text-center mb-8" data-aos="fade-up">RSVP</p>
+            <livewire:invitation.rsvp-form :invitation="$invitation" :guest="$guest" />
+        </div>
+    </section>
+    @endif
+
+    {{-- ── WISHES ───────────────────────────────── --}}
+    <section class="py-20 px-6 bg-white">
+        <div class="max-w-sm mx-auto">
+            <p class="text-xs tracking-[0.4em] uppercase text-gray-400 text-center mb-8">Ucapan</p>
+            <livewire:invitation.guest-wishes :invitation="$invitation" />
+        </div>
+    </section>
+
+    {{-- ── FOOTER ───────────────────────────────── --}}
+    <footer class="py-12 text-center bg-gray-900">
+        <p class="fp text-2xl text-white">{{ $invitation->getCoupleName() }}</p>
+        @if($show_watermark)
+        <a href="{{ config('app.url') }}" class="block mt-4 text-xs text-gray-600 hover:text-gray-400">Made with Invora.id</a>
+        @endif
+    </footer>
+
+    {{-- ── BOTTOM NAVBAR ────────────────────────── --}}
+    @include('partials.invitation-navbar', ['navStyle' => 'light'])
+
+</div>
+
+{{-- Music control --}}
+@if($invitation->music_url)
+<div x-show="opened" class="fixed bottom-20 right-4 z-[80]">
+    <button @click="$store.invitation.toggleMusic()"
+            class="w-11 h-11 rounded-full bg-gray-900 flex items-center justify-center shadow-xl">
+        <svg x-show="!$store.invitation.musicPlaying" class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217z" clip-rule="evenodd"/></svg>
+        <svg x-show="$store.invitation.musicPlaying" class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+    </button>
+</div>
+@endif
+
+@if($show_watermark)
+<div x-show="opened" class="watermark pointer-events-auto" style="bottom:80px">
+    <a href="{{ config('app.url') }}" target="_blank" class="hover:text-forest transition-colors">❤ Invora.id</a>
+</div>
+@endif
+
+@include('partials.cinematic-opening')
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<script>
+    AOS.init({ duration: 800, once: true, offset: 50 });
+
+    // ── Floating Dots (cover + global canvas) ────────────────────
+    (function () {
+        var grays = ['#d1d5db','#e5e7eb','#9ca3af','#f3f4f6','#d1d5db'];
+
+        function spawnDots(canvasId, N, isFixed) {
+            var c = document.getElementById(canvasId);
+            if (!c) return;
+            for (var i = 0; i < N; i++) {
+                var size  = 2 + Math.random() * 5;
+                var dur   = 7 + Math.random() * 10;
+                var del   = -(Math.random() * dur);
+                var left  = 5 + Math.random() * 90;
+                var top   = 10 + Math.random() * 80;
+                var rise  = -(30 + Math.random() * 100);
+                var sway  = (Math.random() - 0.5) * 60;
+                var col   = grays[i % grays.length];
+                var el    = document.createElement('div');
+                el.className = 'mm-dot';
+                el.style.cssText =
+                    'width:'  + size + 'px;'
+                  + 'height:' + size + 'px;'
+                  + 'left:'   + left + '%;'
+                  + 'top:'    + top  + '%;'
+                  + 'background:' + col + ';'
+                  + 'opacity:0.7;'
+                  + '--rise:' + rise + 'px;'
+                  + '--sway:' + sway + 'px;'
+                  + 'animation:mmFloat ' + dur + 's ease-in-out ' + del + 's infinite;';
+                c.appendChild(el);
+            }
+        }
+
+        spawnDots('mm-cover-dots',  22); // cover screen
+        spawnDots('mm-global-dots', 18); // main content overlay
+    })();
+</script>
+</body>
+</html>

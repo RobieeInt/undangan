@@ -1,0 +1,1937 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>{{ $invitation->getCoupleName() }} — Undangan Pernikahan</title>
+    <meta name="description" content="Undangan Pernikahan {{ $invitation->getCoupleName() }}">
+    <meta property="og:title" content="{{ $invitation->getCoupleName() }} — Undangan Pernikahan">
+    <meta property="og:image" content="{{ $invitation->cover_photo_url ?? asset'img/og-default.jpg' }}">
+    <meta name="theme-color" content="#0A1F0B">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500;1,600&family=Cinzel:wght@400;500;600;700&family=Amiri:ital,wght@0,400;0,700;1,400&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/aos@2.3.1/dist/aos.css">
+
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @livewireStyles
+    @livewireScriptConfig
+
+    <style>
+    /* ═══════════════════════════════════════════════════════════
+       ANDALUSIA EXCLUSIVE — Design Tokens
+    ═══════════════════════════════════════════════════════════ */
+    :root {
+        --al-night:      #080F08;   /* deepest dark, gate bg */
+        --al-dark:       #0A1F0B;   /* dark emerald */
+        --al-emerald:    #0D530E;   /* primary */
+        --al-emerald2:   #306D29;   /* secondary */
+        --al-ivory:      #FBF5DD;   /* main background */
+        --al-soft:       #E7E1B1;   /* soft accent surface */
+        --al-cream:      #F5EDCB;   /* card bg */
+        --al-gold:       #D4AF37;   /* primary accent */
+        --al-gold2:      #C9A227;   /* secondary gold */
+        --al-gold-pale:  #EDD88A;   /* light gold */
+        --al-gold-dim:   rgba(212,175,55,0.15);
+        --al-text:       #1A2B1A;   /* dark text */
+        --al-text-mid:   #3A5430;
+        --al-muted:      #6B8A55;
+        --al-muted2:     #9AB07A;
+    }
+
+    /* ─── Reset ─────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { width: 100%; overflow-x: hidden; }
+    html { scroll-behavior: smooth; }
+    body {
+        background: var(--al-ivory);
+        font-family: 'Poppins', sans-serif;
+        color: var(--al-text);
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+    [x-cloak] { display: none !important; }
+
+    /* ─── Font helpers ───────────────────────────────────────── */
+    .ff-garamond { font-family: 'Cormorant Garamond', Georgia, serif; }
+    .ff-cinzel   { font-family: 'Cinzel', serif; }
+    .ff-amiri    { font-family: 'Amiri', serif; }
+    .ff-poppins  { font-family: 'Poppins', sans-serif; }
+
+    /* ─── Inline SVG background patterns ─────────────────────── */
+    /* Islamic 8-pointed star geometric tile */
+    .pat-islamic-dark {
+        background-color: var(--al-dark);
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Cg fill='none' stroke='%23D4AF37' stroke-width='0.55' opacity='0.13'%3E%3Cpolygon points='40,6 47,27 68,27 52,40 58,62 40,49 22,62 28,40 12,27 33,27'/%3E%3Ccircle cx='40' cy='40' r='36'/%3E%3Ccircle cx='40' cy='40' r='18'/%3E%3Cline x1='40' y1='4' x2='40' y2='76'/%3E%3Cline x1='4' y1='40' x2='76' y2='40'/%3E%3Cline x1='14.7' y1='14.7' x2='65.3' y2='65.3'/%3E%3Cline x1='65.3' y1='14.7' x2='14.7' y2='65.3'/%3E%3C/g%3E%3C/svg%3E");
+    }
+    .pat-islamic-ivory {
+        background-color: var(--al-ivory);
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Cg fill='none' stroke='%23D4AF37' stroke-width='0.55' opacity='0.09'%3E%3Cpolygon points='40,6 47,27 68,27 52,40 58,62 40,49 22,62 28,40 12,27 33,27'/%3E%3Ccircle cx='40' cy='40' r='36'/%3E%3Ccircle cx='40' cy='40' r='18'/%3E%3Cline x1='40' y1='4' x2='40' y2='76'/%3E%3Cline x1='4' y1='40' x2='76' y2='40'/%3E%3Cline x1='14.7' y1='14.7' x2='65.3' y2='65.3'/%3E%3Cline x1='65.3' y1='14.7' x2='14.7' y2='65.3'/%3E%3C/g%3E%3C/svg%3E");
+    }
+    /* Andalusia tile (smaller, denser) */
+    .pat-tile-dark {
+        background-color: var(--al-night);
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='56'%3E%3Cg fill='none' stroke='%23D4AF37' stroke-width='0.4' opacity='0.18'%3E%3Crect x='8' y='8' width='40' height='40' transform='rotate(45 28 28)'/%3E%3Crect x='14' y='14' width='28' height='28'/%3E%3Ccircle cx='28' cy='28' r='12'/%3E%3Ccircle cx='28' cy='28' r='5'/%3E%3Cline x1='0' y1='28' x2='56' y2='28'/%3E%3Cline x1='28' y1='0' x2='28' y2='56'/%3E%3C/g%3E%3C/svg%3E");
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       COVER — Fullscreen Moorish Gate
+    ═══════════════════════════════════════════════════════════ */
+    #al-cover {
+        position: fixed;
+        inset: 0;
+        z-index: 200;
+        overflow: hidden;
+    }
+
+    /* Gate panels */
+    .al-door {
+        position: absolute;
+        top: 0; bottom: 0;
+        width: 50%;
+        will-change: transform;
+        overflow: hidden;
+        transform-origin: top center;
+    }
+    .al-door-l { left: 0; transform-origin: left center; }
+    .al-door-r { right: 0; transform-origin: right center; }
+
+    /* Panel inner bg */
+    .al-door-inner {
+        position: absolute;
+        inset: 0;
+    }
+
+    /* Cover center content */
+    #al-cover-content {
+        position: absolute;
+        inset: 0;
+        z-index: 20;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 2rem;
+        pointer-events: none;
+    }
+    #al-cover-content > * { pointer-events: auto; }
+
+    /* Cover particles canvas */
+    #al-particles {
+        position: absolute;
+        inset: 0;
+        z-index: 5;
+        pointer-events: none;
+    }
+
+    /* ── Opening button ─────────────────────────────────────── */
+    .al-open-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.6rem;
+        padding: 0.875rem 2.5rem;
+        background: transparent;
+        border: 1.5px solid var(--al-gold);
+        color: var(--al-gold);
+        font-family: 'Cinzel', serif;
+        font-size: 0.75rem;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+        transition: color 0.3s;
+        margin-top: 2rem;
+    }
+    .al-open-btn::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: var(--al-gold);
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform 0.4s cubic-bezier(0.76,0,0.24,1);
+        z-index: -1;
+    }
+    .al-open-btn:hover::before { transform: scaleX(1); }
+    .al-open-btn:hover { color: var(--al-night); }
+
+    /* ── Cover ornament circle ──────────────────────────────── */
+    .al-cover-ring {
+        width: min(260px, 72vw);
+        height: min(260px, 72vw);
+        border-radius: 50%;
+        border: 1px solid rgba(212,175,55,0.25);
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        animation: alRingPulse 4s ease-in-out infinite;
+        pointer-events: none;
+    }
+    .al-cover-ring-2 {
+        width: min(320px, 88vw);
+        height: min(320px, 88vw);
+        animation-delay: 1.5s;
+    }
+    @keyframes alRingPulse {
+        0%, 100% { opacity: 0.12; transform: translate(-50%,-50%) scale(1); }
+        50%       { opacity: 0.28; transform: translate(-50%,-50%) scale(1.04); }
+    }
+
+    /* ── Cover ambient glow ─────────────────────────────────── */
+    .al-cover-glow {
+        position: absolute;
+        top: 50%; left: 50%;
+        transform: translate(-50%, -50%);
+        width: min(460px, 120vw);
+        height: min(460px, 120vw);
+        border-radius: 50%;
+        background: radial-gradient(circle,
+            rgba(212,175,55,0.18) 0%,
+            rgba(13,83,14,0.14)   30%,
+            transparent           70%);
+        pointer-events: none;
+        z-index: 1;
+        animation: alGlowPulse 6s ease-in-out infinite;
+    }
+    @keyframes alGlowPulse {
+        0%, 100% { opacity: 0.6; }
+        50%       { opacity: 1.0; }
+    }
+
+    /* ── Cover light sweep ──────────────────────────────────── */
+    .al-cover-sweep {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(112deg,
+            transparent 0%,
+            rgba(212,175,55,0.04) 35%,
+            rgba(212,175,55,0.12) 50%,
+            rgba(212,175,55,0.04) 65%,
+            transparent 100%);
+        transform: translateX(-140%);
+        pointer-events: none;
+        z-index: 6;
+        animation: alSweep 12s ease-in-out 2s infinite;
+    }
+    @keyframes alSweep {
+        0%   { transform: translateX(-140%); opacity: 0; }
+        5%   { opacity: 1; }
+        48%  { opacity: 1; }
+        55%  { transform: translateX(140%); opacity: 0; }
+        100% { transform: translateX(-140%); opacity: 0; }
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       AMBIENT GOLD PARTICLES (after opening)
+    ═══════════════════════════════════════════════════════════ */
+    #al-ambient-canvas {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 90;
+        display: none;
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       MAIN CONTENT — starts hidden behind cover overlay.
+       Opacity is set to 1 via JS (revealMain) after gate opens.
+       CSS transition makes the fade-in smooth.
+    ═══════════════════════════════════════════════════════════ */
+    #al-main {
+        opacity: 0;
+        min-height: 100vh;
+    }
+    /* Safety: if cover is somehow gone (e.g. direct URL), show content */
+    #al-cover[style*="display: none"] ~ #al-main,
+    #al-cover[style*="display:none"]  ~ #al-main {
+        opacity: 1 !important;
+    }
+
+    /* ─── Shared section utilities ───────────────────────────── */
+    .al-section { padding: 5rem 1.5rem; }
+    .al-section-sm { padding: 3.5rem 1.5rem; }
+    .al-container { max-width: 720px; margin: 0 auto; }
+    .al-container-wide { max-width: 960px; margin: 0 auto; }
+
+    /* Gold ornamental divider */
+    .al-divider {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin: 1.5rem 0;
+    }
+    .al-divider::before, .al-divider::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: linear-gradient(to right, transparent, rgba(212,175,55,0.5), transparent);
+    }
+    .al-divider-icon {
+        width: 20px; height: 20px;
+        color: var(--al-gold);
+        flex-shrink: 0;
+    }
+
+    /* Section label */
+    .al-label {
+        font-family: 'Cinzel', serif;
+        font-size: 0.6rem;
+        letter-spacing: 0.35em;
+        text-transform: uppercase;
+        color: var(--al-gold2);
+        display: block;
+        margin-bottom: 0.75rem;
+    }
+    .al-label-light { color: rgba(212,175,55,0.7); }
+
+    /* ─── Hero ───────────────────────────────────────────────── */
+    #nav-top {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+        padding: 4rem 2rem;
+    }
+    #nav-top .al-hero-bg {
+        position: absolute;
+        inset: 0;
+        z-index: 0;
+    }
+
+    /* The large arabesque frame around names */
+    .al-arch-frame {
+        position: relative;
+        display: inline-block;
+        text-align: center;
+        padding: 3rem 2.5rem 2.5rem;
+        z-index: 1;
+    }
+    .al-arch-frame::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border: 1px solid rgba(212,175,55,0.22);
+        clip-path: polygon(50% 0%, 100% 8%, 100% 100%, 0% 100%, 0% 8%);
+    }
+
+    /* Hero name glow */
+    .al-name-shimmer {
+        animation: alNameShimmer 7s ease-in-out infinite;
+    }
+    @keyframes alNameShimmer {
+        0%, 100% { text-shadow: 0 0 0 transparent; }
+        50%       { text-shadow: 0 2px 40px rgba(212,175,55,0.18), 0 0 80px rgba(13,83,14,0.08); }
+    }
+
+    /* ─── Bismillah / Quote ──────────────────────────────────── */
+    #nav-quote {
+        background: var(--al-dark);
+        position: relative;
+        overflow: hidden;
+    }
+    #nav-quote::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='56'%3E%3Cg fill='none' stroke='%23D4AF37' stroke-width='0.4' opacity='0.10'%3E%3Crect x='8' y='8' width='40' height='40' transform='rotate(45 28 28)'/%3E%3Crect x='14' y='14' width='28' height='28'/%3E%3Ccircle cx='28' cy='28' r='10'/%3E%3C/g%3E%3C/svg%3E");
+        pointer-events: none;
+    }
+
+    /* ─── Couple ─────────────────────────────────────────────── */
+    #nav-couple {
+        background: var(--al-ivory);
+        position: relative;
+        overflow: hidden;
+    }
+
+    /* Moorish arch photo frame */
+    .al-photo-wrap {
+        position: relative;
+        display: inline-block;
+        width: 220px;
+        margin: 0 auto;
+    }
+    .al-photo-arch {
+        width: 100%;
+        height: 280px;
+        position: relative;
+        overflow: hidden;
+        /* Moorish horseshoe arch via clip-path */
+        clip-path: path('M0 280 L0 80 Q0 0 110 0 Q220 0 220 80 L220 280 Z');
+        border: 2px solid rgba(212,175,55,0.35);
+    }
+    .al-photo-arch img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: top center;
+    }
+    /* Gold arch border overlay */
+    .al-photo-wrap::after {
+        content: '';
+        position: absolute;
+        inset: -2px;
+        clip-path: path('M-2 282 L-2 80 Q-2 -2 110 -2 Q222 -2 222 80 L222 282 Z');
+        background: transparent;
+        border: 2px solid var(--al-gold);
+        opacity: 0.5;
+        pointer-events: none;
+        z-index: 2;
+    }
+    /* Photo placeholder */
+    .al-photo-placeholder {
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(160deg, var(--al-dark) 0%, var(--al-emerald) 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        gap: 0.5rem;
+        color: rgba(212,175,55,0.5);
+    }
+
+    /* ─── Events ─────────────────────────────────────────────── */
+    #nav-events {
+        background: var(--al-dark);
+        position: relative;
+        overflow: hidden;
+    }
+    #nav-events::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Cg fill='none' stroke='%23D4AF37' stroke-width='0.55' opacity='0.07'%3E%3Cpolygon points='40,6 47,27 68,27 52,40 58,62 40,49 22,62 28,40 12,27 33,27'/%3E%3Ccircle cx='40' cy='40' r='36'/%3E%3C/g%3E%3C/svg%3E");
+        pointer-events: none;
+    }
+
+    .al-event-card {
+        border: 1px solid rgba(212,175,55,0.22);
+        background: rgba(255,255,255,0.03);
+        backdrop-filter: blur(4px);
+        padding: 2.5rem 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+    .al-event-card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 2px;
+        background: linear-gradient(to right, transparent, var(--al-gold), transparent);
+    }
+    .al-event-card::after {
+        content: '';
+        position: absolute;
+        bottom: 0; left: 0; right: 0;
+        height: 1px;
+        background: linear-gradient(to right, transparent, rgba(212,175,55,0.4), transparent);
+    }
+
+    /* ─── Gallery ────────────────────────────────────────────── */
+    #nav-gallery {
+        background: var(--al-ivory);
+        position: relative;
+    }
+    .al-gallery-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+    }
+    .al-gallery-grid a {
+        display: block;
+        overflow: hidden;
+        position: relative;
+        aspect-ratio: 3/4;
+        background: var(--al-soft);
+    }
+    .al-gallery-grid a:first-child {
+        grid-column: span 2;
+        aspect-ratio: 16/9;
+    }
+    .al-gallery-grid img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.6s cubic-bezier(0.22,1,0.36,1);
+    }
+    .al-gallery-grid a:hover img { transform: scale(1.06); }
+    /* Arch overlay on gallery items */
+    .al-gallery-grid a::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg, transparent 60%, rgba(10,31,11,0.5) 100%);
+        pointer-events: none;
+    }
+
+    /* ─── RSVP ───────────────────────────────────────────────── */
+    #nav-rsvp {
+        background: linear-gradient(160deg, var(--al-dark) 0%, #0A2A0B 100%);
+        position: relative;
+        overflow: hidden;
+    }
+
+    /* ─── Gift / Transfer ────────────────────────────────────── */
+    #nav-gift {
+        background: var(--al-ivory);
+        position: relative;
+    }
+    .al-gift-card {
+        background: var(--al-cream);
+        border: 1px solid rgba(212,175,55,0.25);
+        padding: 2rem 1.5rem;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+    .al-gift-card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 2px;
+        background: linear-gradient(to right, transparent, var(--al-gold), transparent);
+    }
+
+    /* ─── Wishes ─────────────────────────────────────────────── */
+    #nav-wishes {
+        background: var(--al-soft);
+        position: relative;
+    }
+    .al-wish-card {
+        background: white;
+        border-left: 3px solid var(--al-gold);
+        padding: 1.25rem 1.5rem;
+        border-radius: 0 4px 4px 0;
+    }
+
+    /* ─── Footer ─────────────────────────────────────────────── */
+    #nav-footer {
+        background: var(--al-night);
+        position: relative;
+        overflow: hidden;
+        padding: 5rem 1.5rem 3rem;
+        text-align: center;
+    }
+    #nav-footer::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='56'%3E%3Cg fill='none' stroke='%23D4AF37' stroke-width='0.4' opacity='0.09'%3E%3Crect x='8' y='8' width='40' height='40' transform='rotate(45 28 28)'/%3E%3Crect x='14' y='14' width='28' height='28'/%3E%3Ccircle cx='28' cy='28' r='10'/%3E%3C/g%3E%3C/svg%3E");
+        pointer-events: none;
+    }
+
+    /* ─── RSVP theming vars (for shared component) ───────────── */
+    #nav-rsvp {
+        --rsvp-accent:       #306D29;
+        --rsvp-accent-bg:    rgba(48,109,41,0.12);
+        --rsvp-accent-rgb:   48 109 41;
+        --rsvp-gradient:     linear-gradient(135deg, #0D530E, #1A3A1B);
+        --rsvp-label:        rgba(251,245,221,0.75);
+        --rsvp-border:       rgba(212,175,55,0.35);
+        --rsvp-input-bg:     rgba(251,245,221,0.07);
+        --rsvp-text:         #FBF5DD;
+        --rsvp-placeholder:  rgba(251,245,221,0.38);
+        --rsvp-locked-bg:    rgba(48,109,41,0.06);
+        --rsvp-section-bg:   #0A1F0B;   /* matches section bg for ticket notch circles */
+    }
+
+    /* ─── Misc animations ────────────────────────────────────── */
+    @keyframes alFadeUp {
+        from { opacity: 0; transform: translateY(24px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+    .al-fade-up { animation: alFadeUp 0.9s ease-out both; }
+    .al-delay-1 { animation-delay: 0.15s; }
+    .al-delay-2 { animation-delay: 0.30s; }
+    .al-delay-3 { animation-delay: 0.48s; }
+    .al-delay-4 { animation-delay: 0.65s; }
+    .al-delay-5 { animation-delay: 0.85s; }
+
+    /* Horizontal gold line draw-in */
+    .al-line-h {
+        height: 1px;
+        background: linear-gradient(to right, transparent, var(--al-gold), transparent);
+        width: 0;
+        animation: alLineGrow 1.2s ease-out 0.4s forwards;
+    }
+    @keyframes alLineGrow { to { width: 100%; } }
+
+    /* Countdown number blocks */
+    .al-countdown-block {
+        text-align: center;
+        min-width: 70px;
+    }
+    .al-countdown-num {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: clamp(2.5rem, 8vw, 4rem);
+        font-weight: 300;
+        line-height: 1;
+        color: var(--al-gold);
+        display: block;
+    }
+    .al-countdown-label {
+        font-family: 'Cinzel', serif;
+        font-size: 0.5rem;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: rgba(212,175,55,0.6);
+        margin-top: 0.25rem;
+    }
+
+    /* Responsive grid */
+    @media (min-width: 640px) {
+        .al-couple-grid { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 2rem; }
+        .al-gallery-grid { grid-template-columns: repeat(3, 1fr); }
+        .al-gallery-grid a:first-child { grid-column: span 2; }
+        .al-photo-wrap { width: 260px; }
+        .al-photo-arch { height: 340px; }
+    }
+    @media (min-width: 1024px) {
+        .al-section { padding: 7rem 2rem; }
+    }
+
+    /* Bottom nav spacing — ensures content not hidden behind the pill navbar */
+    #al-main { padding-bottom: 110px; }
+
+    /* ── Andalusia navbar overrides ─────────────────────────── */
+    /* Push above watermark bar (~26px) + fix z-index */
+    #al-bottom-nav nav {
+        z-index: 151 !important;     /* above watermark z-149 */
+        padding-bottom: 34px !important;   /* clears the watermark bar */
+    }
+    /* Force pill to always be centered on any screen width */
+    #al-bottom-nav nav > div {
+        max-width: 420px !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+    }
+    /* Gold-tinted glow shadow for visibility on dark bg */
+    #al-bottom-nav .rounded-2xl {
+        box-shadow:
+            0 -4px 24px rgba(0,0,0,0.7),
+            0 0 0 1px rgba(212,175,55,0.28),
+            inset 0 1px 0 rgba(212,175,55,0.12) !important;
+    }
+    </style>
+</head>
+
+{{-- ═══════════════════════════════════════════════════════════
+     BODY
+═══════════════════════════════════════════════════════════ --}}
+<body x-init="$store.invitation.initMusic('{{ $invitation->music_url }}', {{ $invitation->music_autoplay ? 'true' : 'false' }})">
+
+{{-- ████████████████████████████████████████████████████████████
+     COVER — ANDALUSIAN MOORISH GATE
+████████████████████████████████████████████████████████████ --}}
+<div id="al-cover">
+
+    {{-- ── Cover photo (fills screen behind panels) ───────── --}}
+    @if($invitation->cover_photo)
+    <div style="position:absolute;inset:0;z-index:0;overflow:hidden">
+        <img src="{{ Storage::url($invitation->cover_photo) }}"
+             alt=""
+             style="width:100%;height:100%;object-fit:cover;object-position:center top;filter:brightness(0.55) saturate(0.85)">
+        <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(8,15,8,0.2) 0%,rgba(8,15,8,0.5) 100%)"></div>
+    </div>
+    @else
+    <div style="position:absolute;inset:0;z-index:0;background:var(--al-night)"></div>
+    @endif
+
+    {{-- ── Left Gate Panel ─────────────────────────────── --}}
+    <div id="al-door-l" class="al-door al-door-l">
+        <div class="al-door-inner pat-tile-dark" @if($invitation->cover_photo) style="opacity:0.70" @endif></div>
+
+        {{-- Arabesque inner-edge ornament (SVG — right side of left panel) --}}
+        <svg id="al-orn-l" viewBox="0 0 180 900"
+             xmlns="http://www.w3.org/2000/svg"
+             style="position:absolute;right:0;top:0;height:100%;width:auto;pointer-events:none">
+            <defs>
+                <linearGradient id="goldGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%"   stop-color="#D4AF37" stop-opacity="0"/>
+                    <stop offset="10%"  stop-color="#D4AF37" stop-opacity="0.85"/>
+                    <stop offset="50%"  stop-color="#EDD88A" stop-opacity="1"/>
+                    <stop offset="90%"  stop-color="#D4AF37" stop-opacity="0.85"/>
+                    <stop offset="100%" stop-color="#D4AF37" stop-opacity="0"/>
+                </linearGradient>
+            </defs>
+
+            {{-- Moorish horseshoe arch outline at top --}}
+            <path d="M180,220 L180,80 Q180,0 100,0 Q20,0 0,80 L0,220"
+                  fill="none" stroke="#D4AF37" stroke-width="1.5" opacity="0.9"/>
+            {{-- Inner arch --}}
+            <path d="M160,218 L160,88 Q160,22 100,22 Q40,22 20,88 L20,218"
+                  fill="none" stroke="#D4AF37" stroke-width="0.7" opacity="0.5"/>
+
+            {{-- Arabesque medallion center at arch --}}
+            <g transform="translate(100,120)" opacity="0.85">
+                {{-- 8-point star --}}
+                <polygon points="0,-22 5,-5 22,0 5,5 0,22 -5,5 -22,0 -5,-5"
+                         fill="none" stroke="#D4AF37" stroke-width="1.2"/>
+                <polygon points="0,-22 5,-5 22,0 5,5 0,22 -5,5 -22,0 -5,-5"
+                         fill="none" stroke="#D4AF37" stroke-width="0.5" transform="rotate(22.5)"/>
+                <circle r="8" fill="none" stroke="#D4AF37" stroke-width="0.8"/>
+                <circle r="3" fill="#D4AF37" opacity="0.7"/>
+            </g>
+
+            {{-- Arabesque scrollwork — column of motifs --}}
+            {{-- Motif 1 ~ 300px: miniature Moorish horseshoe arch (Alhambra iwan) --}}
+            <g transform="translate(100,300)" opacity="0.7">
+                <path d="M-18,22 L-18,-6 Q-18,-34 0,-34 Q18,-34 18,-6 L18,22"
+                      fill="none" stroke="#D4AF37" stroke-width="0.9"/>
+                <path d="M-11,22 L-11,-3 Q-11,-23 0,-23 Q11,-23 11,-3 L11,22"
+                      fill="none" stroke="#D4AF37" stroke-width="0.5" opacity="0.5"/>
+                <circle r="4" fill="#D4AF37" opacity="0.5"/>
+            </g>
+            {{-- Motif 2 --}}
+            <g transform="translate(100,450)" opacity="0.65">
+                <path d="M-25,-25 L0,-42 L25,-25 L42,0 L25,25 L0,42 L-25,25 L-42,0 Z"
+                      fill="none" stroke="#D4AF37" stroke-width="0.9"/>
+                <path d="M-18,-18 L0,-30 L18,-18 L30,0 L18,18 L0,30 L-18,18 L-30,0 Z"
+                      fill="none" stroke="#D4AF37" stroke-width="0.5" opacity="0.5"/>
+                <circle r="4" fill="#D4AF37" opacity="0.4"/>
+            </g>
+            {{-- Motif 3: khatam — interlocking squares (Islamic star grid) --}}
+            <g transform="translate(100,600)" opacity="0.6">
+                <rect x="-22" y="-22" width="44" height="44" fill="none" stroke="#D4AF37" stroke-width="0.9"/>
+                <rect x="-22" y="-22" width="44" height="44" fill="none" stroke="#D4AF37" stroke-width="0.6" opacity="0.5" transform="rotate(45)"/>
+                <circle r="5" fill="none" stroke="#D4AF37" stroke-width="0.5" opacity="0.4"/>
+                <circle r="2.5" fill="#D4AF37" opacity="0.4"/>
+            </g>
+            {{-- Motif 4 --}}
+            <g transform="translate(100,750)" opacity="0.55">
+                <polygon points="0,-20 5,-5 20,0 5,5 0,20 -5,5 -20,0 -5,-5"
+                         fill="none" stroke="#D4AF37" stroke-width="0.9"/>
+                <circle r="4" fill="#D4AF37" opacity="0.35"/>
+            </g>
+
+            {{-- Connecting vine lines --}}
+            <path d="M100,142 C80,180 120,220 100,280 C80,340 120,370 100,420 C80,470 120,510 100,570 C80,630 120,660 100,720 C80,770 120,810 100,860"
+                  fill="none" stroke="#D4AF37" stroke-width="0.6" opacity="0.35" stroke-dasharray="4,8"/>
+
+            {{-- Bottom cap ornament --}}
+            <g transform="translate(100,870)" opacity="0.5">
+                <path d="M-30,0 Q0,-18 30,0 Q0,18 -30,0 Z" fill="#D4AF37" opacity="0.2"/>
+                <path d="M-20,0 Q0,-12 20,0 Q0,12 -20,0 Z" fill="none" stroke="#D4AF37" stroke-width="0.7"/>
+            </g>
+        </svg>
+
+        {{-- Corner ornament top-right --}}
+        <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"
+             style="position:absolute;top:0;right:0;width:80px;height:80px;pointer-events:none;opacity:0.45">
+            <path d="M80,0 L80,50 Q80,80 50,80 L0,80" fill="none" stroke="#D4AF37" stroke-width="1"/>
+            <path d="M80,0 L80,35 Q80,60 55,60 L0,60" fill="none" stroke="#D4AF37" stroke-width="0.5" opacity="0.5"/>
+            <circle cx="60" cy="20" r="4" fill="none" stroke="#D4AF37" stroke-width="0.8"/>
+            <circle cx="60" cy="20" r="1.5" fill="#D4AF37" opacity="0.6"/>
+        </svg>
+
+        {{-- Emerald + gold inner glow on the seam side --}}
+        <div style="position:absolute;right:0;top:0;bottom:0;width:60px;
+                    background:linear-gradient(to left,rgba(212,175,55,0.08),transparent);
+                    pointer-events:none"></div>
+    </div>
+
+    {{-- ── Right Gate Panel (mirror) ───────────────────── --}}
+    <div id="al-door-r" class="al-door al-door-r">
+        <div class="al-door-inner pat-tile-dark" @if($invitation->cover_photo) style="opacity:0.70" @endif></div>
+
+        <svg id="al-orn-r" viewBox="0 0 180 900"
+             xmlns="http://www.w3.org/2000/svg"
+             style="position:absolute;left:0;top:0;height:100%;width:auto;pointer-events:none;transform:scaleX(-1)">
+            <defs>
+                <linearGradient id="goldGrad2" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%"   stop-color="#D4AF37" stop-opacity="0"/>
+                    <stop offset="10%"  stop-color="#D4AF37" stop-opacity="0.85"/>
+                    <stop offset="50%"  stop-color="#EDD88A" stop-opacity="1"/>
+                    <stop offset="90%"  stop-color="#D4AF37" stop-opacity="0.85"/>
+                    <stop offset="100%" stop-color="#D4AF37" stop-opacity="0"/>
+                </linearGradient>
+            </defs>
+            <path d="M180,220 L180,80 Q180,0 100,0 Q20,0 0,80 L0,220"
+                  fill="none" stroke="#D4AF37" stroke-width="1.5" opacity="0.9"/>
+            <path d="M160,218 L160,88 Q160,22 100,22 Q40,22 20,88 L20,218"
+                  fill="none" stroke="#D4AF37" stroke-width="0.7" opacity="0.5"/>
+            <g transform="translate(100,120)" opacity="0.85">
+                <polygon points="0,-22 5,-5 22,0 5,5 0,22 -5,5 -22,0 -5,-5"
+                         fill="none" stroke="#D4AF37" stroke-width="1.2"/>
+                <polygon points="0,-22 5,-5 22,0 5,5 0,22 -5,5 -22,0 -5,-5"
+                         fill="none" stroke="#D4AF37" stroke-width="0.5" transform="rotate(22.5)"/>
+                <circle r="8" fill="none" stroke="#D4AF37" stroke-width="0.8"/>
+                <circle r="3" fill="#D4AF37" opacity="0.7"/>
+            </g>
+            <g transform="translate(100,300)" opacity="0.7">
+                <path d="M-18,22 L-18,-6 Q-18,-34 0,-34 Q18,-34 18,-6 L18,22"
+                      fill="none" stroke="#D4AF37" stroke-width="0.9"/>
+                <path d="M-11,22 L-11,-3 Q-11,-23 0,-23 Q11,-23 11,-3 L11,22"
+                      fill="none" stroke="#D4AF37" stroke-width="0.5" opacity="0.5"/>
+                <circle r="4" fill="#D4AF37" opacity="0.5"/>
+            </g>
+            <g transform="translate(100,450)" opacity="0.65">
+                <path d="M-25,-25 L0,-42 L25,-25 L42,0 L25,25 L0,42 L-25,25 L-42,0 Z"
+                      fill="none" stroke="#D4AF37" stroke-width="0.9"/>
+                <path d="M-18,-18 L0,-30 L18,-18 L30,0 L18,18 L0,30 L-18,18 L-30,0 Z"
+                      fill="none" stroke="#D4AF37" stroke-width="0.5" opacity="0.5"/>
+                <circle r="4" fill="#D4AF37" opacity="0.4"/>
+            </g>
+            <g transform="translate(100,600)" opacity="0.6">
+                <rect x="-22" y="-22" width="44" height="44" fill="none" stroke="#D4AF37" stroke-width="0.9"/>
+                <rect x="-22" y="-22" width="44" height="44" fill="none" stroke="#D4AF37" stroke-width="0.6" opacity="0.5" transform="rotate(45)"/>
+                <circle r="5" fill="none" stroke="#D4AF37" stroke-width="0.5" opacity="0.4"/>
+                <circle r="2.5" fill="#D4AF37" opacity="0.4"/>
+            </g>
+            <g transform="translate(100,750)" opacity="0.55">
+                <polygon points="0,-20 5,-5 20,0 5,5 0,20 -5,5 -20,0 -5,-5"
+                         fill="none" stroke="#D4AF37" stroke-width="0.9"/>
+                <circle r="4" fill="#D4AF37" opacity="0.35"/>
+            </g>
+            <path d="M100,142 C80,180 120,220 100,280 C80,340 120,370 100,420 C80,470 120,510 100,570 C80,630 120,660 100,720 C80,770 120,810 100,860"
+                  fill="none" stroke="#D4AF37" stroke-width="0.6" opacity="0.35" stroke-dasharray="4,8"/>
+            <g transform="translate(100,870)" opacity="0.5">
+                <path d="M-30,0 Q0,-18 30,0 Q0,18 -30,0 Z" fill="#D4AF37" opacity="0.2"/>
+                <path d="M-20,0 Q0,-12 20,0 Q0,12 -20,0 Z" fill="none" stroke="#D4AF37" stroke-width="0.7"/>
+            </g>
+        </svg>
+
+        <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"
+             style="position:absolute;top:0;left:0;width:80px;height:80px;pointer-events:none;opacity:0.45;transform:scaleX(-1)">
+            <path d="M80,0 L80,50 Q80,80 50,80 L0,80" fill="none" stroke="#D4AF37" stroke-width="1"/>
+            <path d="M80,0 L80,35 Q80,60 55,60 L0,60" fill="none" stroke="#D4AF37" stroke-width="0.5" opacity="0.5"/>
+            <circle cx="60" cy="20" r="4" fill="none" stroke="#D4AF37" stroke-width="0.8"/>
+            <circle cx="60" cy="20" r="1.5" fill="#D4AF37" opacity="0.6"/>
+        </svg>
+
+        <div style="position:absolute;left:0;top:0;bottom:0;width:60px;
+                    background:linear-gradient(to right,rgba(212,175,55,0.08),transparent);
+                    pointer-events:none"></div>
+    </div>
+
+    {{-- ── Ambient glow + sweep ─────────────────────────── --}}
+    <div class="al-cover-glow"></div>
+    <div class="al-cover-sweep"></div>
+    <div class="al-cover-ring"></div>
+    <div class="al-cover-ring al-cover-ring-2"></div>
+
+    {{-- ── Gold particle canvas ─────────────────────────── --}}
+    <canvas id="al-particles"></canvas>
+
+    {{-- ── Cover Center Content ────────────────────────── --}}
+    <div id="al-cover-content">
+        {{-- Bismillah --}}
+        <p class="ff-amiri al-fade-up al-delay-1"
+           style="font-size:clamp(1.1rem,5vw,1.6rem);color:rgba(212,175,55,0.9);letter-spacing:0.04em;line-height:1.4;margin-bottom:1.5rem">
+            بِسْمِ اللهِ الرَّحْمٰنِ الرَّحِيْمِ
+        </p>
+
+        {{-- Top ornamental line --}}
+        <div class="al-fade-up al-delay-1" style="display:flex;align-items:center;gap:1rem;margin-bottom:1.2rem;width:min(300px,80vw)">
+            <div style="flex:1;height:1px;background:linear-gradient(to right,transparent,rgba(212,175,55,0.6))"></div>
+            <svg width="16" height="16" viewBox="0 0 20 20" fill="none" style="color:#D4AF37">
+                <polygon points="10,0 12,8 20,10 12,12 10,20 8,12 0,10 8,8" fill="currentColor" opacity="0.8"/>
+            </svg>
+            <div style="flex:1;height:1px;background:linear-gradient(to left,transparent,rgba(212,175,55,0.6))"></div>
+        </div>
+
+        {{-- "Undangan Pernikahan" label --}}
+        <span class="ff-cinzel al-fade-up al-delay-1"
+              style="font-size:0.55rem;letter-spacing:0.4em;text-transform:uppercase;color:rgba(212,175,55,0.7);display:block;margin-bottom:1.2rem">
+            Undangan Pernikahan
+        </span>
+
+        {{-- Couple names --}}
+        <h1 class="ff-garamond al-fade-up al-delay-2"
+            style="font-size:clamp(2.2rem,10vw,3.8rem);font-weight:300;line-height:1.1;color:#FBF5DD;margin-bottom:0.4rem;letter-spacing:0.01em">
+            {{ $invitation->groom_name }}
+        </h1>
+        <div class="al-fade-up al-delay-2" style="display:flex;align-items:center;gap:1rem;margin-bottom:0.4rem;justify-content:center">
+            <div style="flex:1;max-width:80px;height:1px;background:linear-gradient(to right,transparent,rgba(212,175,55,0.5))"></div>
+            <span class="ff-amiri" style="font-size:1.4rem;color:rgba(212,175,55,0.75)">&amp;</span>
+            <div style="flex:1;max-width:80px;height:1px;background:linear-gradient(to left,transparent,rgba(212,175,55,0.5))"></div>
+        </div>
+        <h1 class="ff-garamond al-fade-up al-delay-3"
+            style="font-size:clamp(2.2rem,10vw,3.8rem);font-weight:300;line-height:1.1;color:#FBF5DD;letter-spacing:0.01em;margin-bottom:1.8rem">
+            {{ $invitation->bride_name }}
+        </h1>
+
+        {{-- Bottom ornamental line --}}
+        <div class="al-fade-up al-delay-3" style="display:flex;align-items:center;gap:1rem;margin-bottom:2rem;width:min(300px,80vw)">
+            <div style="flex:1;height:1px;background:linear-gradient(to right,transparent,rgba(212,175,55,0.6))"></div>
+            <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+                <polygon points="10,0 12,8 20,10 12,12 10,20 8,12 0,10 8,8" fill="#D4AF37" opacity="0.8"/>
+            </svg>
+            <div style="flex:1;height:1px;background:linear-gradient(to left,transparent,rgba(212,175,55,0.6))"></div>
+        </div>
+
+        {{-- Open button --}}
+        <button id="al-open-btn" class="al-open-btn al-fade-up al-delay-4">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+            <span>Buka Undangan</span>
+        </button>
+
+        {{-- Invora.id watermark --}}
+        @if($show_watermark ?? true)
+        <p class="ff-cinzel al-fade-up al-delay-5"
+           style="font-size:0.45rem;letter-spacing:0.3em;text-transform:uppercase;color:rgba(212,175,55,0.3);margin-top:2.5rem">
+            Invora.id
+        </p>
+        @endif
+    </div>
+</div>
+{{-- /COVER --}}
+
+
+{{-- ████████████████████████████████████████████████████████████
+     AMBIENT PARTICLE CANVAS (shown after opening)
+████████████████████████████████████████████████████████████ --}}
+<canvas id="al-ambient-canvas"></canvas>
+
+
+{{-- ████████████████████████████████████████████████████████████
+     MAIN CONTENT
+████████████████████████████████████████████████████████████ --}}
+<div id="al-main">
+
+    {{-- ── §1 HERO ─────────────────────────────────────────── --}}
+    <section id="nav-top" class="pat-islamic-ivory">
+        {{-- Parallax layer 1: cover photo (if set) + ivory pattern overlay --}}
+        <div class="al-hero-bg" id="al-hero-layer1" aria-hidden="true">
+            @if($invitation->cover_photo)
+            <img src="{{ Storage::url($invitation->cover_photo) }}"
+                 alt=""
+                 style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center top;filter:brightness(0.18) saturate(0.6)">
+            @endif
+        </div>
+
+        {{-- Parallax layer 2 — large arabesque medallion --}}
+        <div id="al-hero-layer2" style="position:absolute;inset:0;z-index:1;display:flex;align-items:center;justify-content:center;pointer-events:none" aria-hidden="true">
+            <svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg"
+                 style="width:min(500px,110vw);height:min(500px,110vw);opacity:0.06">
+                {{-- Large arabesque medallion --}}
+                <g fill="none" stroke="#D4AF37" stroke-width="1.2">
+                    <circle cx="200" cy="200" r="190"/>
+                    <circle cx="200" cy="200" r="160"/>
+                    <circle cx="200" cy="200" r="120"/>
+                    <circle cx="200" cy="200" r="80"/>
+                    <polygon points="200,10 220,140 340,120 260,200 340,280 220,260 200,390 180,260 60,280 140,200 60,120 180,140"/>
+                    <polygon points="200,10 220,140 340,120 260,200 340,280 220,260 200,390 180,260 60,280 140,200 60,120 180,140"
+                             transform="rotate(22.5 200 200)"/>
+                    {{-- inner star --}}
+                    <polygon points="200,100 213,174 287,174 230,220 252,290 200,248 148,290 170,220 113,174 187,174"
+                             transform="rotate(15 200 200)"/>
+                    {{-- center --}}
+                    <circle cx="200" cy="200" r="30"/>
+                    <polygon points="200,175 207,194 226,194 212,206 217,225 200,213 183,225 188,206 174,194 193,194"/>
+                </g>
+            </svg>
+        </div>
+
+        {{-- Content layer 3 --}}
+        <div id="al-hero-layer3" class="al-container" style="position:relative;z-index:2;text-align:center">
+
+            {{-- Top small ornament --}}
+            <div data-aos="fade-down" data-aos-duration="800" style="margin-bottom:2rem">
+                <svg viewBox="0 0 120 32" fill="none" class="mx-auto" style="width:120px">
+                    <line x1="0" y1="16" x2="48" y2="16" stroke="#D4AF37" stroke-width="0.7" opacity="0.4"/>
+                    <polygon points="60,4 64,14 74,16 64,18 60,28 56,18 46,16 56,14" fill="#D4AF37" opacity="0.55"/>
+                    <line x1="72" y1="16" x2="120" y2="16" stroke="#D4AF37" stroke-width="0.7" opacity="0.4"/>
+                </svg>
+            </div>
+
+            <span class="al-label" data-aos="fade-up" data-aos-duration="700">
+                The Wedding of
+            </span>
+
+            {{-- Groom name --}}
+            <h2 class="ff-garamond al-name-shimmer"
+                style="font-size:clamp(3rem,12vw,5.5rem);font-weight:300;line-height:1;color:var(--al-emerald);letter-spacing:0.01em"
+                data-aos="fade-up" data-aos-delay="80">
+                {{ $invitation->groom_full_name ?: $invitation->groom_name }}
+            </h2>
+
+            {{-- Gold ampersand divider --}}
+            <div data-aos="zoom-in" data-aos-delay="180" style="margin:1.2rem 0;display:flex;align-items:center;gap:1.2rem;justify-content:center">
+                <svg viewBox="0 0 200 12" fill="none" style="flex:1;max-width:160px">
+                    <line x1="0" y1="6" x2="200" y2="6" stroke="#D4AF37" stroke-width="0.7" opacity="0.35"/>
+                    <circle cx="100" cy="6" r="3" fill="none" stroke="#D4AF37" stroke-width="0.8" opacity="0.5"/>
+                </svg>
+                <span class="ff-garamond" style="font-size:3rem;color:var(--al-gold);font-weight:300;line-height:1;opacity:0.8">&amp;</span>
+                <svg viewBox="0 0 200 12" fill="none" style="flex:1;max-width:160px">
+                    <line x1="0" y1="6" x2="200" y2="6" stroke="#D4AF37" stroke-width="0.7" opacity="0.35"/>
+                    <circle cx="100" cy="6" r="3" fill="none" stroke="#D4AF37" stroke-width="0.8" opacity="0.5"/>
+                </svg>
+            </div>
+
+            {{-- Bride name --}}
+            <h2 class="ff-garamond al-name-shimmer"
+                style="font-size:clamp(3rem,12vw,5.5rem);font-weight:300;line-height:1;color:var(--al-emerald);letter-spacing:0.01em;animation-delay:3.5s"
+                data-aos="fade-up" data-aos-delay="160">
+                {{ $invitation->bride_full_name ?: $invitation->bride_name }}
+            </h2>
+
+            {{-- Bottom ornamental line --}}
+            <div data-aos="fade-up" data-aos-delay="260" style="margin-top:2rem">
+                <svg viewBox="0 0 200 28" fill="none" class="mx-auto" style="width:200px">
+                    <line x1="0" y1="14" x2="76" y2="14" stroke="#D4AF37" stroke-width="0.6" opacity="0.35"/>
+                    <path d="M80,14 Q90,5 100,14 Q110,5 120,14" fill="none" stroke="#D4AF37" stroke-width="0.8" opacity="0.55"/>
+                    <line x1="124" y1="14" x2="200" y2="14" stroke="#D4AF37" stroke-width="0.6" opacity="0.35"/>
+                </svg>
+            </div>
+
+            {{-- Event summary (date teaser) --}}
+            @if($events->isNotEmpty())
+            @php $ev1 = $events->first(); @endphp
+            <div data-aos="fade-up" data-aos-delay="340" style="margin-top:2.5rem">
+                <p class="ff-cinzel" style="font-size:0.65rem;letter-spacing:0.3em;text-transform:uppercase;color:var(--al-muted);margin-bottom:0.5rem">
+                    {{ \Carbon\Carbon::parse($ev1->date)->translatedFormat('d F Y') }}
+                </p>
+                <p class="ff-poppins" style="font-size:0.75rem;color:var(--al-muted2)">
+                    {{ $ev1->venue ?? 'Venue akan diumumkan' }}
+                </p>
+            </div>
+            @endif
+
+            {{-- Scroll cue --}}
+            <div data-aos="fade-up" data-aos-delay="500" style="margin-top:3.5rem;display:flex;flex-direction:column;align-items:center;gap:0.5rem">
+                <svg viewBox="0 0 24 40" fill="none" style="width:18px;opacity:0.35">
+                    <rect x="1" y="1" width="22" height="38" rx="11" stroke="#D4AF37" stroke-width="1"/>
+                    <circle cx="12" cy="12" r="3" fill="#D4AF37" opacity="0.7">
+                        <animate attributeName="cy" from="12" to="26" dur="2s" repeatCount="indefinite"/>
+                        <animate attributeName="opacity" from="0.7" to="0" dur="2s" repeatCount="indefinite"/>
+                    </circle>
+                </svg>
+                <span style="font-size:0.5rem;letter-spacing:0.25em;color:var(--al-muted2);text-transform:uppercase">Scroll</span>
+            </div>
+        </div>
+    </section>
+
+    {{-- ── §2 BISMILLAH / QS QUOTE ─────────────────────────── --}}
+    <section id="nav-quote" class="al-section">
+        <div class="al-container" style="text-align:center;position:relative;z-index:1">
+
+            {{-- Islamic star ornament --}}
+            <div data-aos="zoom-in" data-aos-duration="800" style="margin-bottom:2rem">
+                <svg viewBox="0 0 60 60" fill="none" class="mx-auto" style="width:48px">
+                    <polygon points="30,3 34,23 54,30 34,37 30,57 26,37 6,30 26,23" fill="none" stroke="#D4AF37" stroke-width="1.2" opacity="0.8"/>
+                    <polygon points="30,3 34,23 54,30 34,37 30,57 26,37 6,30 26,23"
+                             fill="none" stroke="#D4AF37" stroke-width="0.5" transform="rotate(22.5 30 30)" opacity="0.5"/>
+                    <circle cx="30" cy="30" r="6" fill="none" stroke="#D4AF37" stroke-width="0.8" opacity="0.6"/>
+                    <circle cx="30" cy="30" r="2.5" fill="#D4AF37" opacity="0.7"/>
+                </svg>
+            </div>
+
+            {{-- Bismillah --}}
+            <p class="ff-amiri" data-aos="fade-up"
+               style="font-size:clamp(1.4rem,6vw,2.2rem);color:rgba(212,175,55,0.95);letter-spacing:0.04em;line-height:1.5;margin-bottom:2rem;direction:rtl">
+                بِسْمِ اللهِ الرَّحْمٰنِ الرَّحِيْمِ
+            </p>
+
+            <div data-aos="fade-up" data-aos-delay="100" style="max-width:480px;margin:0 auto">
+                <p class="ff-amiri" style="font-size:1.1rem;color:rgba(251,245,221,0.85);line-height:1.9;font-style:italic;margin-bottom:1rem">
+                    "{{ $invitation->opening_quote ?: 'Dan di antara tanda-tanda kebesaran-Nya ialah Dia menciptakan pasangan-pasangan untukmu dari jenismu sendiri, agar kamu cenderung dan merasa tenteram kepadanya.' }}"
+                </p>
+                <p class="ff-cinzel" style="font-size:0.6rem;letter-spacing:0.2em;color:rgba(212,175,55,0.6);text-transform:uppercase">
+                    {{ $invitation->opening_quote_source ?: 'QS. Ar-Rum: 21' }}
+                </p>
+            </div>
+
+            {{-- Gold diamond divider --}}
+            <div data-aos="fade-up" data-aos-delay="200" style="margin-top:2.5rem;display:flex;align-items:center;gap:1rem;justify-content:center">
+                <div style="flex:1;max-width:120px;height:1px;background:linear-gradient(to right,transparent,rgba(212,175,55,0.4))"></div>
+                <svg width="10" height="10" viewBox="0 0 10 10"><polygon points="5,0 10,5 5,10 0,5" fill="#D4AF37" opacity="0.7"/></svg>
+                <svg width="6"  height="6"  viewBox="0 0 10 10"><polygon points="5,0 10,5 5,10 0,5" fill="#D4AF37" opacity="0.4"/></svg>
+                <svg width="10" height="10" viewBox="0 0 10 10"><polygon points="5,0 10,5 5,10 0,5" fill="#D4AF37" opacity="0.7"/></svg>
+                <div style="flex:1;max-width:120px;height:1px;background:linear-gradient(to left,transparent,rgba(212,175,55,0.4))"></div>
+            </div>
+        </div>
+    </section>
+
+    {{-- ── §3 COUPLE PROFILE ────────────────────────────────── --}}
+    <section id="nav-couple" class="al-section">
+        <div class="al-container" style="position:relative;z-index:1">
+
+            <div style="text-align:center;margin-bottom:3rem" data-aos="fade-up">
+                <span class="al-label">Mempelai</span>
+                <h3 class="ff-garamond" style="font-size:clamp(1.8rem,6vw,2.8rem);font-weight:300;color:var(--al-emerald)">
+                    Kedua Mempelai
+                </h3>
+                <div style="margin-top:1rem;display:flex;align-items:center;gap:1rem;justify-content:center">
+                    <div style="flex:1;max-width:100px;height:1px;background:linear-gradient(to right,transparent,rgba(212,175,55,0.4))"></div>
+                    <svg width="8" height="8" viewBox="0 0 10 10"><polygon points="5,0 10,5 5,10 0,5" fill="#D4AF37" opacity="0.6"/></svg>
+                    <div style="flex:1;max-width:100px;height:1px;background:linear-gradient(to left,transparent,rgba(212,175,55,0.4))"></div>
+                </div>
+            </div>
+
+            {{-- Couple grid --}}
+            <div class="al-couple-grid" style="text-align:center;gap:2rem">
+                {{-- Groom --}}
+                <div data-aos="fade-right">
+                    <div class="al-photo-wrap" style="margin:0 auto 1.5rem">
+                        <div class="al-photo-arch">
+                            @if($invitation->groom_photo)
+                                <img src="{{ Storage::url($invitation->groom_photo) }}" alt="{{ $invitation->groom_name }}">
+                            @else
+                                <div class="al-photo-placeholder">
+                                    <svg width="40" height="40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                                    </svg>
+                                    <span style="font-size:0.6rem;letter-spacing:0.15em;opacity:0.5">PENGANTIN PRIA</span>
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+
+                    <h4 class="ff-garamond" style="font-size:clamp(1.6rem,5vw,2.2rem);font-weight:400;color:var(--al-emerald);line-height:1.2;margin-bottom:0.3rem">
+                        {{ $invitation->groom_full_name ?: $invitation->groom_name }}
+                    </h4>
+                    <p class="ff-cinzel" style="font-size:0.55rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--al-gold2);margin-bottom:0.5rem">
+                        Putra
+                    </p>
+                    @if($invitation->groom_father)
+                    <p class="ff-poppins" style="font-size:0.8rem;color:var(--al-text-mid);line-height:1.6">
+                        Bapak &amp; Ibu<br>
+                        <strong style="font-weight:500">{{ $invitation->groom_father }}</strong>
+                    </p>
+                    @endif
+                </div>
+
+                {{-- Center connector --}}
+                <div data-aos="zoom-in" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.75rem;padding:1.5rem 0">
+                    <div style="width:1px;height:40px;background:linear-gradient(to bottom,transparent,rgba(212,175,55,0.5))"></div>
+                    <svg viewBox="0 0 50 50" fill="none" style="width:42px">
+                        <polygon points="25,2 28,19 45,25 28,31 25,48 22,31 5,25 22,19" fill="none" stroke="#D4AF37" stroke-width="1" opacity="0.7"/>
+                        <polygon points="25,2 28,19 45,25 28,31 25,48 22,31 5,25 22,19"
+                                 fill="none" stroke="#D4AF37" stroke-width="0.5" opacity="0.35" transform="rotate(22.5 25 25)"/>
+                        <circle cx="25" cy="25" r="5" fill="#D4AF37" opacity="0.2"/>
+                        <circle cx="25" cy="25" r="2" fill="#D4AF37" opacity="0.6"/>
+                    </svg>
+                    <div style="width:1px;height:40px;background:linear-gradient(to top,transparent,rgba(212,175,55,0.5))"></div>
+                </div>
+
+                {{-- Bride --}}
+                <div data-aos="fade-left">
+                    <div class="al-photo-wrap" style="margin:0 auto 1.5rem">
+                        <div class="al-photo-arch">
+                            @if($invitation->bride_photo)
+                                <img src="{{ Storage::url($invitation->bride_photo) }}" alt="{{ $invitation->bride_name }}">
+                            @else
+                                <div class="al-photo-placeholder">
+                                    <svg width="40" height="40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                                    </svg>
+                                    <span style="font-size:0.6rem;letter-spacing:0.15em;opacity:0.5">PENGANTIN WANITA</span>
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+
+                    <h4 class="ff-garamond" style="font-size:clamp(1.6rem,5vw,2.2rem);font-weight:400;color:var(--al-emerald);line-height:1.2;margin-bottom:0.3rem">
+                        {{ $invitation->bride_full_name ?: $invitation->bride_name }}
+                    </h4>
+                    <p class="ff-cinzel" style="font-size:0.55rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--al-gold2);margin-bottom:0.5rem">
+                        Putri
+                    </p>
+                    @if($invitation->bride_father)
+                    <p class="ff-poppins" style="font-size:0.8rem;color:var(--al-text-mid);line-height:1.6">
+                        Bapak &amp; Ibu<br>
+                        <strong style="font-weight:500">{{ $invitation->bride_father }}</strong>
+                    </p>
+                    @endif
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {{-- ── §4 WEDDING EVENTS ────────────────────────────────── --}}
+    <section id="nav-events" class="al-section">
+        <div class="al-container" style="position:relative;z-index:1">
+
+            <div style="text-align:center;margin-bottom:3rem" data-aos="fade-up">
+                <span class="al-label al-label-light">Acara Pernikahan</span>
+                <h3 class="ff-garamond" style="font-size:clamp(1.8rem,6vw,2.8rem);font-weight:300;color:#FBF5DD">
+                    Waktu &amp; Tempat
+                </h3>
+                <div style="margin-top:1rem;display:flex;align-items:center;gap:1rem;justify-content:center">
+                    <div style="flex:1;max-width:100px;height:1px;background:linear-gradient(to right,transparent,rgba(212,175,55,0.4))"></div>
+                    <svg width="8" height="8" viewBox="0 0 10 10"><polygon points="5,0 10,5 5,10 0,5" fill="#D4AF37" opacity="0.6"/></svg>
+                    <div style="flex:1;max-width:100px;height:1px;background:linear-gradient(to left,transparent,rgba(212,175,55,0.4))"></div>
+                </div>
+            </div>
+
+            @forelse($events as $event)
+            <div class="al-event-card" data-aos="fade-up" data-aos-delay="{{ $loop->index * 120 }}"
+                 style="margin-bottom:{{ $loop->last ? '0' : '2.5rem' }}">
+
+                {{-- Event name --}}
+                <div style="text-align:center;margin-bottom:1.5rem">
+                    <span class="ff-cinzel" style="font-size:0.6rem;letter-spacing:0.3em;text-transform:uppercase;color:rgba(212,175,55,0.65)">
+                        {{ $loop->iteration == 1 ? 'I' : 'II' }}
+                    </span>
+                    <h4 class="ff-garamond" style="font-size:clamp(1.5rem,5vw,2rem);font-weight:400;color:#FBF5DD;margin-top:0.25rem">
+                        {{ $event->name }}
+                    </h4>
+                    {{-- Gold line --}}
+                    <div style="width:60px;height:1px;background:linear-gradient(to right,transparent,#D4AF37,transparent);margin:0.75rem auto 0"></div>
+                </div>
+
+                {{-- Date & Time --}}
+                @if($event->date)
+                <div style="text-align:center;margin-bottom:1.5rem">
+                    <p class="ff-garamond" style="font-size:1.5rem;font-weight:300;color:var(--al-gold-pale);line-height:1.2">
+                        {{ \Carbon\Carbon::parse($event->date)->translatedFormat('l') }}
+                    </p>
+                    <p class="ff-cinzel" style="font-size:0.9rem;color:#FBF5DD;letter-spacing:0.05em">
+                        {{ \Carbon\Carbon::parse($event->date)->translatedFormat('d F Y') }}
+                    </p>
+                    @if($event->time_start)
+                    <p class="ff-poppins" style="font-size:0.8rem;color:rgba(251,245,221,0.55);margin-top:0.25rem">
+                        {{ substr($event->time_start, 0, 5) }}{{ $event->time_end ? ' — '.substr($event->time_end, 0, 5) : '' }} WIB
+                    </p>
+                    @endif
+                </div>
+                @endif
+
+                {{-- Venue --}}
+                @if($event->venue)
+                <div style="text-align:center;margin-bottom:1.5rem;padding:1rem;border-top:1px solid rgba(212,175,55,0.12)">
+                    <p class="ff-garamond" style="font-size:1.1rem;color:#FBF5DD;margin-bottom:0.25rem">{{ $event->venue }}</p>
+                    @if($event->venue_address)
+                    <p class="ff-poppins" style="font-size:0.75rem;color:rgba(251,245,221,0.5);line-height:1.6">{{ $event->venue_address }}</p>
+                    @endif
+                </div>
+                @endif
+
+                {{-- Map link --}}
+                @if($event->venue_maps_url)
+                <div style="text-align:center;margin-bottom:1.5rem">
+                    <a href="{{ $event->venue_maps_url }}" target="_blank" rel="noopener"
+                       style="display:inline-flex;align-items:center;gap:0.4rem;font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--al-gold);text-decoration:none;border-bottom:1px solid rgba(212,175,55,0.35);padding-bottom:2px">
+                        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        </svg>
+                        Lihat Lokasi
+                    </a>
+                </div>
+                @endif
+
+                {{-- Countdown --}}
+                @if($event->date)
+                <div x-data="countdown('{{ \Carbon\Carbon::parse($event->date)->setTimeFromTimeString($event->time_start ?? '00:00:00')->toIso8601String() }}')"
+                     style="display:flex;justify-content:center;gap:1.5rem;margin-top:1.5rem;padding-top:1.5rem;border-top:1px solid rgba(212,175,55,0.12)">
+                    @foreach(['days' => 'Hari', 'hours' => 'Jam', 'minutes' => 'Menit', 'seconds' => 'Detik'] as $key => $lbl)
+                    <div class="al-countdown-block">
+                        <span class="al-countdown-num" x-text="{{ $key }}">0</span>
+                        <span class="al-countdown-label">{{ $lbl }}</span>
+                    </div>
+                    @endforeach
+                </div>
+                @endif
+            </div>
+            @empty
+            <p style="text-align:center;color:rgba(251,245,221,0.4);font-size:0.875rem">
+                Detail acara akan segera diumumkan.
+            </p>
+            @endforelse
+
+            {{-- Save to calendar --}}
+            @if($events->isNotEmpty())
+            @php $mainEv = $events->first(); @endphp
+            <div style="text-align:center;margin-top:2.5rem" data-aos="fade-up">
+                <button x-data
+                        @click="saveToCalendar({
+                            title: '{{ addslashes('Pernikahan '.$invitation->getCoupleName()) }}',
+                            start: '{{ \Carbon\Carbon::parse($mainEv->date)->setTimeFromTimeString($mainEv->time_start ?? '00:00:00')->format('Ymd\THis') }}',
+                            end:   '{{ \Carbon\Carbon::parse($mainEv->date)->setTimeFromTimeString($mainEv->time_end ?? '02:00:00')->format('Ymd\THis') }}',
+                            location: '{{ addslashes(($mainEv->venue ?? '').' '.($mainEv->venue_address ?? '')) }}',
+                            description: '{{ addslashes('Undangan pernikahan '.$invitation->getCoupleName()) }}'
+                        })"
+                        style="display:inline-flex;align-items:center;gap:0.5rem;font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.22em;text-transform:uppercase;color:var(--al-gold);background:transparent;border:1px solid rgba(212,175,55,0.35);padding:0.75rem 2rem;cursor:pointer;transition:all 0.3s"
+                        onmouseover="this.style.background='rgba(212,175,55,0.1)'"
+                        onmouseout="this.style.background='transparent'">
+                    <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                        <rect x="3" y="4" width="18" height="18" rx="2" stroke-width="1.5"/>
+                        <path d="M16 2v4M8 2v4M3 10h18" stroke-width="1.5"/>
+                    </svg>
+                    Simpan ke Kalender
+                </button>
+            </div>
+            @endif
+        </div>
+    </section>
+
+    {{-- ── §5 GALLERY ───────────────────────────────────────── --}}
+    @if($galleries->isNotEmpty())
+    <section id="nav-gallery" class="al-section pat-islamic-ivory">
+        <div class="al-container-wide">
+
+            <div style="text-align:center;margin-bottom:2.5rem" data-aos="fade-up">
+                <span class="al-label">Galeri</span>
+                <h3 class="ff-garamond" style="font-size:clamp(1.8rem,6vw,2.8rem);font-weight:300;color:var(--al-emerald)">
+                    Momen Bersama
+                </h3>
+                <div style="margin-top:1rem;display:flex;align-items:center;gap:1rem;justify-content:center">
+                    <div style="flex:1;max-width:100px;height:1px;background:linear-gradient(to right,transparent,rgba(212,175,55,0.4))"></div>
+                    <svg width="8" height="8" viewBox="0 0 10 10"><polygon points="5,0 10,5 5,10 0,5" fill="#D4AF37" opacity="0.6"/></svg>
+                    <div style="flex:1;max-width:100px;height:1px;background:linear-gradient(to left,transparent,rgba(212,175,55,0.4))"></div>
+                </div>
+            </div>
+
+            <div class="al-gallery-grid" data-aos="fade-up" data-aos-delay="100">
+                @foreach($galleries->take(7) as $photo)
+                <a href="{{ Storage::url($photo->image) }}" target="_blank">
+                    <img src="{{ Storage::url($photo->image) }}"
+                         alt="{{ $photo->caption ?? 'Galeri' }}"
+                         loading="lazy">
+                </a>
+                @endforeach
+            </div>
+        </div>
+    </section>
+    @endif
+
+    {{-- ── §6 RSVP ───────────────────────────────────────────── --}}
+    <section id="nav-rsvp" class="al-section">
+        <div class="al-container" style="position:relative;z-index:1">
+
+            <div style="text-align:center;margin-bottom:2.5rem" data-aos="fade-up">
+                <span class="al-label al-label-light">Konfirmasi Kehadiran</span>
+                <h3 class="ff-garamond" style="font-size:clamp(1.8rem,6vw,2.8rem);font-weight:300;color:#FBF5DD">
+                    RSVP
+                </h3>
+                <div style="margin-top:1rem;display:flex;align-items:center;gap:1rem;justify-content:center">
+                    <div style="flex:1;max-width:100px;height:1px;background:linear-gradient(to right,transparent,rgba(212,175,55,0.3))"></div>
+                    <svg width="8" height="8" viewBox="0 0 10 10"><polygon points="5,0 10,5 5,10 0,5" fill="#D4AF37" opacity="0.5"/></svg>
+                    <div style="flex:1;max-width:100px;height:1px;background:linear-gradient(to left,transparent,rgba(212,175,55,0.3))"></div>
+                </div>
+                @if($invitation->rsvp_deadline)
+                <p style="font-size:0.75rem;color:rgba(251,245,221,0.5);margin-top:0.75rem;font-family:'Poppins',sans-serif">
+                    Mohon konfirmasi sebelum {{ \Carbon\Carbon::parse($invitation->rsvp_deadline)->translatedFormat('d F Y') }}
+                </p>
+                @endif
+            </div>
+
+            <livewire:invitation.rsvp-form :invitation="$invitation" :guest="$guest" />
+        </div>
+    </section>
+
+    {{-- ── §7 DIGITAL GIFT ─────────────────────────────────── --}}
+    @if($gifts->isNotEmpty())
+    <section id="nav-gift" class="al-section">
+        <div class="al-container">
+
+            <div style="text-align:center;margin-bottom:2.5rem" data-aos="fade-up">
+                <span class="al-label">Hadiah</span>
+                <h3 class="ff-garamond" style="font-size:clamp(1.8rem,6vw,2.8rem);font-weight:300;color:var(--al-emerald)">
+                    Amplop Digital
+                </h3>
+                <div style="margin-top:1rem;display:flex;align-items:center;gap:1rem;justify-content:center">
+                    <div style="flex:1;max-width:100px;height:1px;background:linear-gradient(to right,transparent,rgba(212,175,55,0.4))"></div>
+                    <svg width="8" height="8" viewBox="0 0 10 10"><polygon points="5,0 10,5 5,10 0,5" fill="#D4AF37" opacity="0.6"/></svg>
+                    <div style="flex:1;max-width:100px;height:1px;background:linear-gradient(to left,transparent,rgba(212,175,55,0.4))"></div>
+                </div>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:1rem">
+                @foreach($gifts as $gift)
+                <div class="al-gift-card" data-aos="fade-up" data-aos-delay="{{ $loop->index * 100 }}">
+                    @if(($gift->type ?? 'bank') === 'qris' && $gift->qris_image)
+                        {{-- ── QRIS Payment ─────────────────────────────── --}}
+                        <p class="ff-cinzel" style="font-size:0.55rem;letter-spacing:0.3em;text-transform:uppercase;color:var(--al-gold2);margin-bottom:0.75rem">
+                            QRIS
+                        </p>
+                        @if($gift->account_name)
+                        <p class="ff-garamond" style="font-size:1.15rem;color:var(--al-emerald);margin-bottom:0.75rem">
+                            {{ $gift->account_name }}
+                        </p>
+                        @endif
+                        <div style="margin:0 auto;max-width:200px">
+                            <img src="{{ Storage::url($gift->qris_image) }}"
+                                 alt="QR Code QRIS"
+                                 style="width:100%;display:block;border:1px solid rgba(212,175,55,0.2);border-radius:2px">
+                        </div>
+                        <p class="ff-poppins" style="font-size:0.7rem;color:var(--al-muted);margin-top:0.6rem;letter-spacing:0.05em">
+                            Scan QR untuk transfer
+                        </p>
+                    @else
+                        {{-- ── Bank Transfer ────────────────────────────── --}}
+                        <p class="ff-cinzel" style="font-size:0.55rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--al-gold2);margin-bottom:0.5rem">
+                            {{ $gift->bank_name ?? 'Transfer' }}
+                        </p>
+                        <p class="ff-garamond" style="font-size:1.3rem;color:var(--al-emerald);margin-bottom:0.2rem">
+                            {{ $gift->account_name }}
+                        </p>
+                        <div x-data style="display:flex;align-items:center;justify-content:center;gap:0.75rem;margin-top:0.5rem">
+                            <code style="font-family:'Poppins',sans-serif;font-size:1rem;letter-spacing:0.1em;color:var(--al-text);font-weight:500">
+                                {{ $gift->account_number }}
+                            </code>
+                            <button @click="navigator.clipboard.writeText('{{ $gift->account_number }}').then(() => { $el.textContent = '✓'; setTimeout(() => $el.textContent = 'Salin', 2000) })"
+                                    style="font-family:'Cinzel',serif;font-size:0.55rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--al-gold2);background:transparent;border:1px solid rgba(212,175,55,0.35);padding:0.3rem 0.75rem;cursor:pointer">
+                                Salin
+                            </button>
+                        </div>
+                    @endif
+                </div>
+                @endforeach
+            </div>
+        </div>
+    </section>
+    @endif
+
+    {{-- ── §8 WISHES ────────────────────────────────────────── --}}
+    <section id="nav-wishes" class="al-section">
+        <div class="al-container">
+
+            <div style="text-align:center;margin-bottom:2.5rem" data-aos="fade-up">
+                <span class="al-label">Ucapan &amp; Doa</span>
+                <h3 class="ff-garamond" style="font-size:clamp(1.8rem,6vw,2.8rem);font-weight:300;color:var(--al-emerald)">
+                    Pesan Untuk Kami
+                </h3>
+                <div style="margin-top:1rem;display:flex;align-items:center;gap:1rem;justify-content:center">
+                    <div style="flex:1;max-width:100px;height:1px;background:linear-gradient(to right,transparent,rgba(212,175,55,0.4))"></div>
+                    <svg width="8" height="8" viewBox="0 0 10 10"><polygon points="5,0 10,5 5,10 0,5" fill="#D4AF37" opacity="0.6"/></svg>
+                    <div style="flex:1;max-width:100px;height:1px;background:linear-gradient(to left,transparent,rgba(212,175,55,0.4))"></div>
+                </div>
+            </div>
+
+            <livewire:invitation.guest-wishes :invitation="$invitation" />
+        </div>
+    </section>
+
+    {{-- ── §9 FOOTER ────────────────────────────────────────── --}}
+    <section id="nav-footer">
+        <div style="position:relative;z-index:1;text-align:center">
+
+            {{-- Medallion ornament --}}
+            <div data-aos="zoom-in" style="margin-bottom:2rem">
+                <svg viewBox="0 0 100 100" fill="none" class="mx-auto" style="width:72px">
+                    <circle cx="50" cy="50" r="46" stroke="#D4AF37" stroke-width="0.8" opacity="0.4"/>
+                    <circle cx="50" cy="50" r="36" stroke="#D4AF37" stroke-width="0.5" opacity="0.3"/>
+                    <polygon points="50,8 54,36 82,36 60,54 68,82 50,64 32,82 40,54 18,36 46,36"
+                             fill="none" stroke="#D4AF37" stroke-width="0.8" opacity="0.6"/>
+                    <circle cx="50" cy="50" r="8" fill="none" stroke="#D4AF37" stroke-width="0.7" opacity="0.5"/>
+                    <circle cx="50" cy="50" r="3" fill="#D4AF37" opacity="0.5"/>
+                </svg>
+            </div>
+
+            <p class="ff-amiri" data-aos="fade-up"
+               style="font-size:1.4rem;color:rgba(212,175,55,0.8);letter-spacing:0.04em;margin-bottom:1.5rem">
+                وَمِنْ آيَاتِهِ أَنْ خَلَقَ لَكُم
+            </p>
+
+            <h2 class="ff-garamond" data-aos="fade-up" data-aos-delay="100"
+                style="font-size:clamp(2rem,8vw,3.5rem);font-weight:300;color:#FBF5DD;line-height:1.1;margin-bottom:1rem">
+                {{ $invitation->groom_name }} &amp; {{ $invitation->bride_name }}
+            </h2>
+
+            <p class="ff-poppins" data-aos="fade-up" data-aos-delay="200"
+               style="font-size:0.8rem;color:rgba(251,245,221,0.4);margin-bottom:2.5rem;line-height:1.8">
+                Kami mengundang Bapak/Ibu/Saudara/i<br>untuk hadir dan memberikan doa restu.
+            </p>
+
+            {{-- Gold divider --}}
+            <div data-aos="fade-up" data-aos-delay="300"
+                 style="width:80px;height:1px;background:linear-gradient(to right,transparent,var(--al-gold),transparent);margin:0 auto 2rem"></div>
+
+            @if($show_watermark ?? true)
+            <p class="ff-cinzel" style="font-size:0.5rem;letter-spacing:0.35em;text-transform:uppercase;color:rgba(212,175,55,0.2)">
+                Made with ❤ by Invora.id
+            </p>
+            @endif
+        </div>
+    </section>
+
+</div>
+{{-- /MAIN --}}
+
+
+{{-- ████████████████████████████████████████████████████████████
+     FLOATING BOTTOM NAVBAR — Andalusia style, hidden until gate opens
+████████████████████████████████████████████████████████████ --}}
+<div id="al-bottom-nav" style="opacity:0;pointer-events:none;transition:opacity 0.5s ease">
+    @include('partials.invitation-navbar', ['navStyle' => 'andalusia'])
+</div>
+
+
+{{-- ████████████████████████████████████████████████████████████
+     MUSIC PLAYER (floating, bottom-right)
+████████████████████████████████████████████████████████████ --}}
+@if($invitation->music_url)
+<div x-data style="position:fixed;bottom:110px;right:1.25rem;z-index:152">
+    <button @click="$store.invitation.toggleMusic()"
+            style="width:44px;height:44px;border-radius:50%;background:rgba(10,31,11,0.9);border:1px solid rgba(212,175,55,0.4);color:#D4AF37;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 20px rgba(0,0,0,0.4)">
+        <svg x-show="!$store.invitation.musicPlaying" width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M8 5v14l11-7z"/>
+        </svg>
+        <svg x-show="$store.invitation.musicPlaying" width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+        </svg>
+    </button>
+</div>
+@endif
+
+
+{{-- ████████████████████████████████████████████████████████████
+     WATERMARK
+████████████████████████████████████████████████████████████ --}}
+@if($show_watermark ?? true)
+<div style="position:fixed;bottom:0;left:0;right:0;z-index:149;text-align:center;padding:0.3rem;background:rgba(10,31,11,0.7);backdrop-filter:blur(4px)">
+    <a href="https://invora.id" target="_blank"
+       style="font-family:'Cinzel',serif;font-size:0.5rem;letter-spacing:0.3em;text-transform:uppercase;color:rgba(212,175,55,0.5);text-decoration:none">
+        Undangan Digital by Invora.id
+    </a>
+</div>
+@endif
+
+
+{{-- ████████████████████████████████████████████████████████████
+     JAVASCRIPT
+████████████████████████████████████████████████████████████ --}}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+
+<script>
+(function () {
+    'use strict';
+
+    /* ══════════════════════════════════════════════════════════
+       COVER PARTICLE SYSTEM — Gold dust floating up
+    ══════════════════════════════════════════════════════════ */
+    var coverCanvas = document.getElementById('al-particles');
+    var ctx = coverCanvas ? coverCanvas.getContext('2d') : null;
+    var W, H, particles = [];
+
+    function resizeCoverCanvas() {
+        if (!coverCanvas) return;
+        W = coverCanvas.width  = window.innerWidth;
+        H = coverCanvas.height = window.innerHeight;
+    }
+
+    function GoldParticle(init) {
+        this.reset = function(fresh) {
+            this.x    = Math.random() * W;
+            this.y    = fresh ? H + Math.random() * 40 : Math.random() * H;
+            this.r    = 0.5 + Math.random() * 1.8;
+            this.vy   = -(0.25 + Math.random() * 0.6);
+            this.vx   = (Math.random() - 0.5) * 0.25;
+            this.a    = 0;
+            this.aMax = 0.5 + Math.random() * 0.4;
+            this.life = 0;
+            this.lifeMax = 180 + Math.random() * 200;
+            /* slight sparkle */
+            this.twinkle = Math.random() > 0.5;
+            this.tSpeed  = 0.03 + Math.random() * 0.05;
+            this.tPhase  = Math.random() * Math.PI * 2;
+        };
+        this.reset(init);
+    }
+
+    function initCoverParticles() {
+        if (!ctx) return;
+        resizeCoverCanvas();
+        particles = [];
+        for (var i = 0; i < 60; i++) { particles.push(new GoldParticle(false)); }
+        window.addEventListener('resize', resizeCoverCanvas, { passive: true });
+        animCoverParticles();
+    }
+
+    function animCoverParticles() {
+        if (!ctx) return;
+        ctx.clearRect(0, 0, W, H);
+        var now = Date.now() * 0.001;
+        for (var i = 0; i < particles.length; i++) {
+            var p = particles[i];
+            p.life++;
+            if (p.life > p.lifeMax) { p.reset(true); continue; }
+
+            p.x += p.vx;
+            p.y += p.vy;
+            /* fade in/out */
+            if (p.life < 30)       p.a = Math.min(p.aMax, p.a + p.aMax / 30);
+            else if (p.life > p.lifeMax - 30) p.a = Math.max(0, p.a - p.aMax / 30);
+
+            var alpha = p.a;
+            if (p.twinkle) alpha *= 0.6 + 0.4 * Math.sin(now * p.tSpeed * 60 + p.tPhase);
+
+            /* gold gradient dot */
+            var grd = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r * 2);
+            grd.addColorStop(0,   'rgba(237,216,138,' + alpha + ')');
+            grd.addColorStop(0.5, 'rgba(212,175,55,' + alpha * 0.7 + ')');
+            grd.addColorStop(1,   'rgba(212,175,55,0)');
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.r * 2, 0, Math.PI * 2);
+            ctx.fillStyle = grd;
+            ctx.fill();
+        }
+        requestAnimationFrame(animCoverParticles);
+    }
+
+    initCoverParticles();
+
+    /* ══════════════════════════════════════════════════════════
+       AMBIENT PARTICLE SYSTEM — Shown after opening
+    ══════════════════════════════════════════════════════════ */
+    var ambCanvas = document.getElementById('al-ambient-canvas');
+    var ambCtx = ambCanvas ? ambCanvas.getContext('2d') : null;
+    var AW, AH, ambParticles = [], ambRunning = false;
+
+    function resizeAmbCanvas() {
+        if (!ambCanvas) return;
+        AW = ambCanvas.width  = window.innerWidth;
+        AH = ambCanvas.height = window.innerHeight;
+    }
+
+    function AmbParticle() {
+        this.reset = function(fresh) {
+            this.x    = Math.random() * AW;
+            this.y    = fresh ? AH + Math.random() * 30 : Math.random() * AH;
+            this.r    = 0.4 + Math.random() * 1.4;
+            this.vy   = -(0.15 + Math.random() * 0.35);
+            this.vx   = (Math.random() - 0.5) * 0.18;
+            this.a    = 0;
+            this.aMax = 0.3 + Math.random() * 0.25;
+            this.life = 0;
+            this.lifeMax = 220 + Math.random() * 240;
+        };
+        this.reset(false);
+    }
+
+    function startAmbientParticles() {
+        if (ambRunning || !ambCtx) return;
+        ambRunning = true;
+        if (ambCanvas) ambCanvas.style.display = 'block';
+        resizeAmbCanvas();
+        ambParticles = [];
+        for (var i = 0; i < 35; i++) { ambParticles.push(new AmbParticle()); }
+        window.addEventListener('resize', resizeAmbCanvas, { passive: true });
+        loopAmb();
+    }
+
+    function loopAmb() {
+        if (!ambCtx) return;
+        ambCtx.clearRect(0, 0, AW, AH);
+        for (var i = 0; i < ambParticles.length; i++) {
+            var p = ambParticles[i];
+            p.life++;
+            if (p.life > p.lifeMax) { p.reset(true); continue; }
+            p.x += p.vx; p.y += p.vy;
+            if (p.life < 40)       p.a = Math.min(p.aMax, p.a + p.aMax / 40);
+            else if (p.life > p.lifeMax - 40) p.a = Math.max(0, p.a - p.aMax / 40);
+            var grd = ambCtx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r * 2.5);
+            grd.addColorStop(0,   'rgba(237,216,138,' + p.a + ')');
+            grd.addColorStop(0.6, 'rgba(212,175,55,' + p.a * 0.5 + ')');
+            grd.addColorStop(1,   'rgba(212,175,55,0)');
+            ambCtx.beginPath();
+            ambCtx.arc(p.x, p.y, p.r * 2.5, 0, Math.PI * 2);
+            ambCtx.fillStyle = grd;
+            ambCtx.fill();
+        }
+        requestAnimationFrame(loopAmb);
+    }
+
+    /* ══════════════════════════════════════════════════════════
+       MOORISH GATE OPENING
+       Note: we do NOT use data-coi-* attributes. This template
+       has its own self-contained gate system (like jawa-exclusive).
+       cinematic-opening.blade.php is only included for its Lenis /
+       ScrollTrigger scroll-reveal helpers — it won't intercept our
+       button because [data-coi-btn] is absent from this template.
+    ══════════════════════════════════════════════════════════ */
+    var openBtn  = document.getElementById('al-open-btn');
+    var doorL    = document.getElementById('al-door-l');
+    var doorR    = document.getElementById('al-door-r');
+    var cover    = document.getElementById('al-cover');
+    var content  = document.getElementById('al-cover-content');
+    var mainEl   = document.getElementById('al-main');
+    var opened   = false;
+
+    /* ── CSS-level reveal (no GSAP dependency) ─────────────── */
+    function revealMain() {
+        if (!mainEl) return;
+        mainEl.style.transition = 'opacity 0.65s ease';
+        mainEl.style.opacity    = '1';
+        mainEl.classList.add('visible');
+        /* Fade in bottom navbar after gate is fully open */
+        setTimeout(function () {
+            var bn = document.getElementById('al-bottom-nav');
+            if (bn) { bn.style.opacity = '1'; bn.style.pointerEvents = 'auto'; }
+        }, 500);
+    }
+
+    /* ── Gold geometric burst — fires from seam as gate opens ── */
+    function spawnAndalusiaReveal() {
+        var bc  = document.createElement('canvas');
+        bc.style.cssText = 'position:fixed;inset:0;z-index:300;pointer-events:none;';
+        bc.width  = window.innerWidth;
+        bc.height = window.innerHeight;
+        document.body.appendChild(bc);
+
+        var bx   = bc.getContext('2d');
+        var cx   = bc.width  / 2;
+        var cy   = bc.height / 2;
+        var DURATION = 1600; // ms
+        var start    = null;
+
+        /* Build burst particles radiating from seam center */
+        var burst = [];
+        var COUNT = 55;
+        for (var i = 0; i < COUNT; i++) {
+            var angle = (Math.PI * 2 / COUNT) * i + (Math.random() - 0.5) * 0.18;
+            var spd   = 1.8 + Math.random() * 4.5;
+            burst.push({
+                vx:    Math.cos(angle) * spd,
+                vy:    Math.sin(angle) * spd,
+                r:     1.2 + Math.random() * 2.5,
+                type:  i % 3 === 0 ? 'diamond' : 'circle',
+                delay: Math.random() * 180   /* stagger */
+            });
+        }
+
+        /* Also add a central flash ring */
+        var flashDone = false;
+
+        function drawDiamond(ctx, x, y, r) {
+            ctx.beginPath();
+            ctx.moveTo(x,       y - r);
+            ctx.lineTo(x + r * 0.55, y);
+            ctx.lineTo(x,       y + r);
+            ctx.lineTo(x - r * 0.55, y);
+            ctx.closePath();
+        }
+
+        function animBurst(ts) {
+            if (!start) start = ts;
+            var elapsed = ts - start;
+            var progress = Math.min(elapsed / DURATION, 1);
+
+            bx.clearRect(0, 0, bc.width, bc.height);
+
+            /* Flash ring — fast expand + fade */
+            if (!flashDone) {
+                var fp = Math.min(elapsed / 400, 1);
+                var fr = fp * Math.min(bc.width, bc.height) * 0.55;
+                var fa = (1 - fp) * 0.45;
+                if (fa > 0) {
+                    bx.beginPath();
+                    bx.arc(cx, cy, fr, 0, Math.PI * 2);
+                    bx.strokeStyle = 'rgba(212,175,55,' + fa + ')';
+                    bx.lineWidth   = 2;
+                    bx.stroke();
+                }
+                if (fp >= 1) flashDone = true;
+            }
+
+            /* Burst particles */
+            for (var i = 0; i < burst.length; i++) {
+                var p = burst[i];
+                if (elapsed < p.delay) continue;
+                var pe = elapsed - p.delay;
+                var t  = pe * 0.001;          /* seconds since particle born */
+                var pp = Math.min(pe / (DURATION - p.delay), 1);
+
+                /* ease out: slow down over time */
+                var eased = 1 - Math.pow(1 - pp, 2);
+                var px = cx + p.vx * eased * 220;
+                var py = cy + p.vy * eased * 220;
+
+                /* fade in fast, hold, then fade out */
+                var alpha;
+                if (pp < 0.15)      alpha = pp / 0.15;
+                else if (pp < 0.65) alpha = 1;
+                else                alpha = 1 - (pp - 0.65) / 0.35;
+                alpha = Math.max(0, alpha) * 0.82;
+
+                bx.globalAlpha = alpha;
+                bx.fillStyle   = '#D4AF37';
+
+                if (p.type === 'diamond') {
+                    drawDiamond(bx, px, py, p.r * (1 + eased * 0.6));
+                    bx.fill();
+                } else {
+                    bx.beginPath();
+                    bx.arc(px, py, p.r, 0, Math.PI * 2);
+                    bx.fill();
+                }
+            }
+
+            bx.globalAlpha = 1;
+
+            if (progress < 1) {
+                requestAnimationFrame(animBurst);
+            } else {
+                bc.parentNode && bc.parentNode.removeChild(bc);
+            }
+        }
+
+        requestAnimationFrame(animBurst);
+    }
+
+    function onOpenComplete() {
+        spawnAndalusiaReveal();           /* Gold burst from seam */
+        if (cover) cover.style.display = 'none';
+        revealMain();
+        startAmbientParticles();
+        /* Autoplay music if enabled — user gesture from open button allows this */
+        if (window._musicAutoplay) {
+            var store = window.Alpine && window.Alpine.store('invitation');
+            if (store && !store.musicPlaying) store.toggleMusic();
+        }
+        /* Refresh AOS after a tick so layout is stable, then init parallax */
+        setTimeout(function () {
+            if (typeof AOS !== 'undefined') { AOS.refresh(); }
+            initScrollAnimations();
+        }, 80);
+    }
+
+    if (openBtn) {
+        openBtn.addEventListener('click', function () {
+            if (opened) return;
+            opened = true;
+
+            /* ─ GSAP path (premium animation) ─ */
+            if (typeof gsap !== 'undefined') {
+                if (typeof ScrollTrigger !== 'undefined') {
+                    gsap.registerPlugin(ScrollTrigger);
+                }
+
+                var tl = gsap.timeline({ onComplete: onOpenComplete });
+
+                /* 1. Button scale feedback */
+                tl.to(openBtn, { scale: 0.92, duration: 0.1, ease: 'power2.out' });
+
+                /* 2. Cover text fades out */
+                tl.to(content, {
+                    opacity: 0, y: -18,
+                    duration: 0.5, ease: 'power2.in'
+                }, 0.05);
+
+                /* 3. GATE SLIDING — left and right simultaneously */
+                tl.to(doorL, {
+                    x: '-102%', rotation: -3, scale: 0.97,
+                    duration: 1.55, ease: 'expo.inOut'
+                }, 0.5);
+                tl.to(doorR, {
+                    x: '102%', rotation: 3, scale: 0.97,
+                    duration: 1.55, ease: 'expo.inOut'
+                }, 0.5);
+
+                /* 5. Cover fades out */
+                tl.to(cover, {
+                    opacity: 0, duration: 0.5, ease: 'power2.inOut'
+                }, 1.6);
+
+                /* 7. Main content fades in (CSS transition, not GSAP) */
+                tl.add(function () { revealMain(); }, 1.75);
+
+            } else {
+                /* ─ CSS-only fallback (no GSAP) ─ */
+                if (content) content.style.transition = 'opacity 0.4s';
+                if (content) content.style.opacity    = '0';
+
+                /* Slide gates with CSS transitions */
+                if (doorL) {
+                    doorL.style.transition = 'transform 1.4s cubic-bezier(0.76,0,0.24,1)';
+                    doorL.style.transform  = 'translateX(-102%)';
+                }
+                if (doorR) {
+                    doorR.style.transition = 'transform 1.4s cubic-bezier(0.76,0,0.24,1)';
+                    doorR.style.transform  = 'translateX(102%)';
+                }
+                setTimeout(function () {
+                    if (cover) { cover.style.transition = 'opacity 0.5s'; cover.style.opacity = '0'; }
+                    setTimeout(onOpenComplete, 520);
+                }, 1500);
+            }
+        });
+    }
+
+    /* ══════════════════════════════════════════════════════════
+       SCROLL ANIMATIONS — Hero parallax only.
+       NOTE: Section content (event cards, photos, gallery) is
+       animated by AOS. Do NOT add gsap.from() on those elements
+       — AOS sets [data-aos^="fade"] to opacity:0 via CSS, so
+       gsap.from({opacity:0}) would read 0 as the "to" state and
+       keep elements permanently invisible.
+    ══════════════════════════════════════════════════════════ */
+    function initScrollAnimations() {
+        if (typeof gsap === 'undefined' || typeof ScrollTrigger === 'undefined') return;
+
+        /* Hero parallax — layer 2 (medallion SVG) */
+        var layer2 = document.getElementById('al-hero-layer2');
+        if (layer2) {
+            gsap.to(layer2, {
+                yPercent: -25,
+                ease: 'none',
+                scrollTrigger: {
+                    trigger: '#nav-top',
+                    start: 'top top',
+                    end:   'bottom top',
+                    scrub: true
+                }
+            });
+        }
+
+        /* Hero parallax — layer 3 (text content) */
+        var layer3 = document.getElementById('al-hero-layer3');
+        if (layer3) {
+            gsap.to(layer3, {
+                yPercent: -12,
+                ease: 'none',
+                scrollTrigger: {
+                    trigger: '#nav-top',
+                    start: 'top top',
+                    end:   'bottom top',
+                    scrub: 1.5
+                }
+            });
+        }
+
+        /* Footer medallion gentle float */
+        var footer = document.getElementById('nav-footer');
+        if (footer) {
+            gsap.from(footer.querySelector('svg'), {
+                yPercent: 15,
+                ease: 'none',
+                scrollTrigger: {
+                    trigger: footer,
+                    start: 'top bottom',
+                    end:   'top top',
+                    scrub: 2
+                }
+            });
+        }
+    }
+
+    /* ══════════════════════════════════════════════════════════
+       AOS INIT
+    ══════════════════════════════════════════════════════════ */
+    document.addEventListener('DOMContentLoaded', function () {
+        if (typeof AOS !== 'undefined') {
+            AOS.init({
+                duration: 800,
+                easing: 'ease-out-quart',
+                once: true,
+                offset: 60,
+                disable: false
+            });
+        }
+    });
+
+}());
+</script>
+
+{{-- NOTE: @livewireScripts is intentionally omitted here.
+     app.js imports Livewire ESM and calls Livewire.start() explicitly.
+     Loading @livewireScripts here would create a second Alpine instance. --}}
+
+</body>
+</html>

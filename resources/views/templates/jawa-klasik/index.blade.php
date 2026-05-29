@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>{{ $invitation->getCoupleName() }} — Undangan Pernikahan</title>
+    <meta name="description" content="Undangan Pernikahan {{ $invitation->getCoupleName() }}">
+    <meta property="og:title" content="Undangan: {{ $invitation->getCoupleName() }}">
+    <meta property="og:image" content="{{ $invitation->cover_photo_url ?? asset('img/og-default.jpg') }}">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;600&family=Pinyon+Script&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400;1,600&family=Montserrat:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/aos@2.3.1/dist/aos.css">
+
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @livewireStyles
+    @livewireScriptConfig
+
+    <style>
+        /* ── Colour tokens ──────────────────────────────────── */
+        :root {
+            --jw-maroon:  #600101;
+            --jw-maroon2: #832A2A;
+            --jw-dark:    #150303;
+            --jw-gold:    #BA9F54;
+            --jw-gold2:   #A78D59;
+            --jw-cream:   #E0D2B7;
+            --jw-cream2:  #C9B89A;
+            --jw-red:     #8B1A1A;
+        }
+
+        /* ── Base ───────────────────────────────────────────── */
+        body {
+            background: var(--jw-dark);
+            font-family: 'Montserrat', sans-serif;
+            overflow-x: hidden;
+            color: var(--jw-cream);
+        }
+
+        /* ── Font helpers ───────────────────────────────────── */
+        .font-cinzel     { font-family: 'Cinzel Decorative', serif; }
+        .font-cinzel-reg { font-family: 'Cinzel', serif; }
+        .font-pinyon     { font-family: 'Pinyon Script', cursive; }
+        .font-cormorant  { font-family: 'Cormorant Garamond', serif; }
+
+        /* ── Kawung batik SVG pattern ───────────────────────── */
+        .batik-bg {
+            background-color: var(--jw-dark);
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='100'%3E%3Cellipse cx='28' cy='18' rx='10' ry='14' fill='none' stroke='%23600101' stroke-width='0.8' opacity='0.35'/%3E%3Cellipse cx='28' cy='82' rx='10' ry='14' fill='none' stroke='%23600101' stroke-width='0.8' opacity='0.35'/%3E%3Cellipse cx='0' cy='50' rx='10' ry='14' fill='none' stroke='%23600101' stroke-width='0.8' opacity='0.35'/%3E%3Cellipse cx='56' cy='50' rx='10' ry='14' fill='none' stroke='%23600101' stroke-width='0.8' opacity='0.35'/%3E%3Ccircle cx='28' cy='50' r='5' fill='none' stroke='%23BA9F54' stroke-width='0.5' opacity='0.2'/%3E%3C/svg%3E");
+        }
+
+        /* ── Gold divider line ──────────────────────────────── */
+        .jw-divider {
+            display: flex; align-items: center; gap: 0.75rem;
+        }
+        .jw-divider::before,
+        .jw-divider::after {
+            content: ''; flex: 1; height: 1px;
+            background: linear-gradient(to right, transparent, var(--jw-gold2), transparent);
+        }
+
+        /* ── Oval photo frame ───────────────────────────────── */
+        .jw-oval-frame {
+            border-radius: 750px;
+            border: 3px solid var(--jw-maroon);
+            outline: 1.5px solid var(--jw-gold2);
+            outline-offset: 3px;
+            box-shadow: 0 0 0 5px var(--jw-dark), 0 0 20px rgba(186,159,84,0.25);
+            overflow: hidden;
+        }
+
+        /* ── Gold button ────────────────────────────────────── */
+        .jw-btn-gold {
+            background: linear-gradient(135deg, var(--jw-gold2), var(--jw-gold));
+            color: var(--jw-dark);
+            border: none;
+            font-family: 'Cinzel', serif;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+        }
+        .jw-btn-outline {
+            background: transparent;
+            border: 1.5px solid var(--jw-gold2);
+            color: var(--jw-gold);
+            font-family: 'Cinzel', serif;
+            letter-spacing: 0.08em;
+        }
+        .jw-btn-outline:hover { background: rgba(186,159,84,0.1); }
+
+        /* ── Card ───────────────────────────────────────────── */
+        .jw-card {
+            background: rgba(96,1,1,0.15);
+            border: 1px solid rgba(186,159,84,0.2);
+            border-radius: 1rem;
+        }
+
+        /* ── Cover entrance animation ───────────────────────── */
+        @keyframes jwSlideUp {
+            from { opacity: 0; transform: translateY(24px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .jw-in  { animation: jwSlideUp 1s ease-out both; }
+        .jw-d1  { animation-delay: 0.15s; }
+        .jw-d2  { animation-delay: 0.4s; }
+        .jw-d3  { animation-delay: 0.65s; }
+        .jw-d4  { animation-delay: 0.9s; }
+        .jw-d5  { animation-delay: 1.15s; }
+        .jw-d6  { animation-delay: 1.4s; }
+
+        /* ── Gold shimmer on titles ─────────────────────────── */
+        @keyframes jwShimmer {
+            0%,100% { opacity: 1; }
+            50%      { opacity: 0.85; text-shadow: 0 0 18px rgba(186,159,84,0.5); }
+        }
+        .jw-shimmer { animation: jwShimmer 3s ease-in-out infinite; }
+
+        /* ── Cover kawung particle canvas ───────────────────── */
+        #jw-cover-particles,
+        #jw-particles { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 0; }
+        #jw-particles  { position: fixed; z-index: 92; }
+
+        .jw-particle { position: absolute; }
+        @keyframes jwFloat {
+            0%   { transform: translateY(-60px) translateX(0) rotate(0deg); opacity: 0; }
+            8%   { opacity: 1; }
+            90%  { opacity: 0.6; }
+            100% { transform: translateY(110vh) translateX(var(--drift,40px)) rotate(var(--spin,360deg)); opacity: 0; }
+        }
+
+        /* ── RSVP token overrides ───────────────────────────── */
+        .rsvp-section {
+            --rsvp-accent: #BA9F54;
+            --rsvp-accent-bg: rgba(186,159,84,0.1);
+            --rsvp-gradient: linear-gradient(135deg,#832A2A,#600101);
+            --rsvp-label: rgba(186,159,84,0.9);
+            --rsvp-border: rgba(186,159,84,0.35);
+            --rsvp-input-bg: rgba(21,3,3,0.5);
+            --rsvp-text: #E0D2B7;
+            --rsvp-placeholder: rgba(186,159,84,0.4);
+            --rsvp-locked-bg: rgba(186,159,84,0.08);
+        }
+        /* Override input text colour for dark bg */
+        .rsvp-section .rsvp-input { color: var(--jw-cream) !important; }
+    </style>
+</head>
+<body x-data="{ opened: false }" @keydown.window.escape="opened = false"
+      x-init="$store.invitation.initMusic('{{ $invitation->music_url }}', {{ $invitation->music_autoplay ? 'true' : 'false' }})">
+
+{{-- ════════════════════════════════════════════════ --}}
+{{-- COVER SCREEN                                      --}}
+{{-- ════════════════════════════════════════════════ --}}
+<div data-coi-cover
+     x-show="!opened"
+     x-transition:leave="transition ease-in duration-600"
+     x-transition:leave-start="opacity-100 scale-100"
+     x-transition:leave-end="opacity-0 scale-95"
+     class="fixed inset-0 z-[100] flex flex-col items-center justify-center batik-bg">
+
+    {{-- Cover kawung particle canvas --}}
+    <div id="jw-cover-particles"></div>
+
+    {{-- Gold corner ornaments --}}
+    <svg class="absolute top-0 left-0 w-24 h-24 opacity-30 pointer-events-none" viewBox="0 0 80 80" fill="none">
+        <path d="M2 2 L40 2 L2 40Z" fill="none" stroke="#BA9F54" stroke-width="0.8"/>
+        <path d="M2 2 L20 2 L2 20Z" fill="rgba(186,159,84,0.15)"/>
+        <circle cx="2" cy="2" r="3" fill="#BA9F54" opacity=".6"/>
+    </svg>
+    <svg class="absolute top-0 right-0 w-24 h-24 opacity-30 pointer-events-none" viewBox="0 0 80 80" fill="none" style="transform:scaleX(-1)">
+        <path d="M2 2 L40 2 L2 40Z" fill="none" stroke="#BA9F54" stroke-width="0.8"/>
+        <path d="M2 2 L20 2 L2 20Z" fill="rgba(186,159,84,0.15)"/>
+        <circle cx="2" cy="2" r="3" fill="#BA9F54" opacity=".6"/>
+    </svg>
+    <svg class="absolute bottom-0 left-0 w-24 h-24 opacity-30 pointer-events-none" viewBox="0 0 80 80" fill="none" style="transform:scaleY(-1)">
+        <path d="M2 2 L40 2 L2 40Z" fill="none" stroke="#BA9F54" stroke-width="0.8"/>
+        <path d="M2 2 L20 2 L2 20Z" fill="rgba(186,159,84,0.15)"/>
+        <circle cx="2" cy="2" r="3" fill="#BA9F54" opacity=".6"/>
+    </svg>
+    <svg class="absolute bottom-0 right-0 w-24 h-24 opacity-30 pointer-events-none" viewBox="0 0 80 80" fill="none" style="transform:scale(-1,-1)">
+        <path d="M2 2 L40 2 L2 40Z" fill="none" stroke="#BA9F54" stroke-width="0.8"/>
+        <path d="M2 2 L20 2 L2 20Z" fill="rgba(186,159,84,0.15)"/>
+        <circle cx="2" cy="2" r="3" fill="#BA9F54" opacity=".6"/>
+    </svg>
+
+    {{-- Gold top line ornament --}}
+    <div class="jw-in jw-d1 absolute top-8 left-1/2 -translate-x-1/2 flex items-center gap-2 opacity-50 pointer-events-none">
+        <div class="w-12 h-px" style="background:linear-gradient(to right,transparent,#BA9F54)"></div>
+        <svg viewBox="0 0 20 20" class="w-3 h-3 fill-current" style="color:#BA9F54"><circle cx="10" cy="10" r="3"/><circle cx="10" cy="3" r="1.5"/><circle cx="10" cy="17" r="1.5"/><circle cx="3" cy="10" r="1.5"/><circle cx="17" cy="10" r="1.5"/></svg>
+        <div class="w-12 h-px" style="background:linear-gradient(to left,transparent,#BA9F54)"></div>
+    </div>
+
+    {{-- Content --}}
+    <div class="text-center px-8 max-w-sm relative z-10">
+        <p class="jw-in jw-d1 font-cormorant text-xs tracking-[0.4em] uppercase mb-3" style="color:var(--jw-gold2)">
+            Undangan Pernikahan
+        </p>
+
+        {{-- Horizontal gold rule --}}
+        <div class="jw-in jw-d1 flex items-center gap-3 mb-6">
+            <div class="flex-1 h-px" style="background:linear-gradient(to right,transparent,#BA9F54)"></div>
+            <svg viewBox="0 0 24 24" class="w-4 h-4 flex-shrink-0" style="color:#BA9F54" fill="currentColor">
+                <path d="M12 2l1.8 5.5H19l-4.6 3.4 1.8 5.5L12 13 7.8 16.4l1.8-5.5L5 7.5h5.2z"/>
+            </svg>
+            <div class="flex-1 h-px" style="background:linear-gradient(to left,transparent,#BA9F54)"></div>
+        </div>
+
+        <h1 class="jw-in jw-d2 font-cinzel leading-tight mb-0 jw-shimmer" style="font-size:clamp(1.7rem,9vw,2.4rem);color:var(--jw-gold)">
+            {{ $invitation->groom_name }}
+        </h1>
+        <p class="jw-in jw-d3 font-pinyon my-1" style="font-size:clamp(2rem,12vw,3rem);color:var(--jw-cream2);line-height:1">&amp;</p>
+        <h1 class="jw-in jw-d3 font-cinzel leading-tight jw-shimmer" style="font-size:clamp(1.7rem,9vw,2.4rem);color:var(--jw-gold)">
+            {{ $invitation->bride_name }}
+        </h1>
+
+        {{-- Main event date --}}
+        @if($events->isNotEmpty())
+        @php $mainEvent = $events->first(); @endphp
+        <p class="jw-in jw-d4 font-cormorant mt-4 italic" style="color:var(--jw-cream2);font-size:1rem">
+            {{ \Carbon\Carbon::parse($mainEvent->date)->translatedFormat('l, d F Y') }}
+        </p>
+        @endif
+
+        {{-- Guest name badge --}}
+        @if($guest)
+        <div class="jw-in jw-d4 mt-5 mx-auto px-4 py-3 rounded-xl" style="border:1px solid rgba(186,159,84,0.35);background:rgba(96,1,1,0.3)">
+            <p class="text-xs tracking-widest uppercase mb-1" style="color:var(--jw-gold2);font-family:'Cinzel',serif">Kepada Yth.</p>
+            <p class="font-cormorant text-lg" style="color:var(--jw-cream)">{{ $guest->name }}</p>
+            @if($guest->allocated_seats > 1)
+            <p class="text-xs mt-0.5" style="color:var(--jw-gold2)">({{ $guest->allocated_seats }} kursi)</p>
+            @endif
+        </div>
+        @endif
+
+        {{-- Divider --}}
+        <div class="jw-in jw-d5 flex items-center gap-3 my-6">
+            <div class="flex-1 h-px" style="background:linear-gradient(to right,transparent,#BA9F54)"></div>
+            <svg viewBox="0 0 24 24" class="w-4 h-4 flex-shrink-0" style="color:#BA9F54" fill="currentColor">
+                <path d="M12 2l1.8 5.5H19l-4.6 3.4 1.8 5.5L12 13 7.8 16.4l1.8-5.5L5 7.5h5.2z"/>
+            </svg>
+            <div class="flex-1 h-px" style="background:linear-gradient(to left,transparent,#BA9F54)"></div>
+        </div>
+
+        <button data-coi-btn @click="opened = true; $store.invitation.openEnvelope()"
+                class="jw-in jw-d6 jw-btn-gold inline-flex items-center gap-3 px-8 py-3.5 rounded-xl text-sm shadow-xl hover:shadow-2xl transition-all duration-300 active:scale-95">
+            <svg class="w-4 h-4 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+            </svg>
+            Buka Undangan
+        </button>
+
+        <p class="jw-in jw-d6 font-cormorant italic text-xs mt-5 opacity-40" style="color:var(--jw-cream)">Sentuh untuk membuka</p>
+    </div>
+
+    {{-- Gold bottom line ornament --}}
+    <div class="jw-in jw-d1 absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-2 opacity-50 pointer-events-none">
+        <div class="w-12 h-px" style="background:linear-gradient(to right,transparent,#BA9F54)"></div>
+        <svg viewBox="0 0 20 20" class="w-3 h-3 fill-current" style="color:#BA9F54"><circle cx="10" cy="10" r="3"/><circle cx="10" cy="3" r="1.5"/><circle cx="10" cy="17" r="1.5"/><circle cx="3" cy="10" r="1.5"/><circle cx="17" cy="10" r="1.5"/></svg>
+        <div class="w-12 h-px" style="background:linear-gradient(to left,transparent,#BA9F54)"></div>
+    </div>
+</div>
+
+{{-- ════════════════════════════════════════════════ --}}
+{{-- MAIN INVITATION CONTENT                           --}}
+{{-- ════════════════════════════════════════════════ --}}
+<div data-coi-main
+     x-show="opened"
+     style="padding-bottom:72px">
+
+    {{-- ═══ HERO SECTION ═══ --}}
+    <section id="nav-top" class="relative min-h-screen flex flex-col items-center justify-center overflow-hidden">
+        {{-- Cover photo with parallax --}}
+        @if($invitation->cover_photo)
+        <div class="absolute inset-0 overflow-hidden">
+            <img src="{{ $invitation->cover_photo_url }}" alt="Cover"
+                 class="w-full object-cover"
+                 style="height:130%;top:-15%;position:absolute;left:0;right:0"
+                 data-parallax-hero>
+            <div class="absolute inset-0" style="background:linear-gradient(to bottom,rgba(21,3,3,0.55) 0%,rgba(96,1,1,0.75) 100%)"></div>
+        </div>
+        @else
+        {{-- Fallback batik bg --}}
+        <div class="absolute inset-0 batik-bg"></div>
+        <div class="absolute inset-0" style="background:linear-gradient(160deg,rgba(131,42,42,0.6),rgba(21,3,3,0.8))"></div>
+        @endif
+
+        {{-- Batik frame overlay (top/bottom decorative bars) --}}
+        <div class="absolute top-0 left-0 right-0 h-2 pointer-events-none" style="background:linear-gradient(90deg,var(--jw-maroon),var(--jw-gold2),var(--jw-maroon))"></div>
+        <div class="absolute bottom-0 left-0 right-0 h-2 pointer-events-none" style="background:linear-gradient(90deg,var(--jw-maroon),var(--jw-gold2),var(--jw-maroon))"></div>
+
+        <div class="relative z-10 text-center px-6 py-24 max-w-sm mx-auto w-full">
+            {{-- Opening quote --}}
+            @if($invitation->opening_quote)
+            <div class="mb-10 max-w-xs mx-auto" data-aos="fade-down">
+                <p class="font-cormorant italic leading-relaxed" style="color:rgba(224,210,183,0.85);font-size:0.95rem">"{{ $invitation->opening_quote }}"</p>
+                @if($invitation->opening_quote_source)
+                <p class="text-xs mt-2 opacity-60" style="color:var(--jw-cream)">— {{ $invitation->opening_quote_source }}</p>
+                @endif
+            </div>
+            @endif
+
+            {{-- Bissmillah ornament --}}
+            <div class="mb-6 flex items-center gap-3" data-aos="fade-up">
+                <div class="flex-1 h-px" style="background:linear-gradient(to right,transparent,rgba(186,159,84,0.7))"></div>
+                <svg class="w-5 h-5 opacity-60 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="#BA9F54" stroke-width="1">
+                    <path d="M12 2l1.8 5.5H19l-4.6 3.4 1.8 5.5L12 13 7.8 16.4l1.8-5.5L5 7.5h5.2z"/>
+                </svg>
+                <div class="flex-1 h-px" style="background:linear-gradient(to left,transparent,rgba(186,159,84,0.7))"></div>
+            </div>
+
+            <p class="font-cinzel-reg text-xs tracking-[0.4em] uppercase mb-5 opacity-70" style="color:var(--jw-gold)" data-aos="fade-up">
+                Pernikahan
+            </p>
+
+            <h1 class="font-cinzel jw-shimmer leading-tight mb-1" style="font-size:clamp(1.8rem,9vw,2.6rem);color:var(--jw-gold)" data-aos="fade-up" data-aos-delay="80">
+                {{ $invitation->groom_name }}
+            </h1>
+            <p class="font-pinyon my-2 opacity-70" style="font-size:clamp(2.4rem,14vw,3.5rem);color:var(--jw-cream2);line-height:1" data-aos="fade-up" data-aos-delay="120">&amp;</p>
+            <h1 class="font-cinzel jw-shimmer leading-tight" style="font-size:clamp(1.8rem,9vw,2.6rem);color:var(--jw-gold)" data-aos="fade-up" data-aos-delay="160">
+                {{ $invitation->bride_name }}
+            </h1>
+
+            {{-- Main date --}}
+            @if($events->isNotEmpty())
+            <div class="mt-8" data-aos="fade-up" data-aos-delay="240">
+                <p class="font-cormorant text-lg italic" style="color:rgba(224,210,183,0.75)">
+                    {{ \Carbon\Carbon::parse($mainEvent->date)->translatedFormat('l, d F Y') }}
+                </p>
+            </div>
+            @endif
+
+            {{-- Scroll cue --}}
+            <div class="mt-14 animate-bounce">
+                <svg class="w-6 h-6 mx-auto opacity-40" style="color:var(--jw-gold)" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 9l-7 7-7-7"/>
+                </svg>
+            </div>
+        </div>
+    </section>
+
+    {{-- ═══ COUPLE SECTION ═══ --}}
+    <section id="nav-couple" class="py-20 px-6 batik-bg">
+        <div class="max-w-lg mx-auto text-center">
+            <div class="jw-divider mb-10" data-aos="fade-up">
+                <span class="font-cinzel-reg text-xs tracking-widest uppercase opacity-60" style="color:var(--jw-gold)">✦ Mempelai ✦</span>
+            </div>
+
+            {{-- Arabic bismillah styled text --}}
+            <p class="font-cormorant text-2xl italic mb-10 opacity-60" style="color:var(--jw-cream2)" data-aos="fade-up">
+                Dengan rahmat dan ridho Allah SWT
+            </p>
+
+            {{-- gap-4 instead of gap-8 → more column width for oval frames on mobile --}}
+            <div class="grid grid-cols-2 gap-4 items-start" data-aos="fade-up">
+                {{-- Groom --}}
+                <div class="text-center">
+                    @if($invitation->groom_photo)
+                    {{-- w-28 h-36 (112×144px) fits safely with box-shadow on all screens --}}
+                    <div class="w-28 h-36 mx-auto mb-4 jw-oval-frame">
+                        <img src="{{ $invitation->groom_photo_url }}" class="w-full h-full object-cover" alt="{{ $invitation->groom_name }}">
+                    </div>
+                    @else
+                    <div class="w-28 h-36 mx-auto mb-4 jw-oval-frame flex items-center justify-center" style="background:linear-gradient(135deg,var(--jw-maroon),var(--jw-maroon2))">
+                        <span class="font-cinzel text-3xl" style="color:var(--jw-gold)">{{ mb_substr($invitation->groom_name,0,1) }}</span>
+                    </div>
+                    @endif
+                    {{-- Cinzel Decorative + clamp size — matches opening screen --}}
+                    <h3 class="font-cinzel jw-shimmer mb-1 leading-tight" style="font-size:clamp(1rem,5vw,1.4rem);color:var(--jw-gold)">{{ $invitation->groom_name }}</h3>
+                    @if($invitation->groom_full_name)
+                    <p class="font-cormorant italic text-sm mb-1 leading-snug" style="color:var(--jw-cream2)">{{ $invitation->groom_full_name }}</p>
+                    @endif
+                    @if($invitation->groom_father || $invitation->groom_mother)
+                    <p class="text-[10px] opacity-50 mt-1" style="color:var(--jw-cream)">Putra dari</p>
+                    <p class="font-cormorant text-sm leading-snug" style="color:var(--jw-cream2)">
+                        {{ $invitation->groom_father }}{{ $invitation->groom_father && $invitation->groom_mother ? ' & ' : '' }}{{ $invitation->groom_mother }}
+                    </p>
+                    @endif
+                </div>
+
+                {{-- Bride --}}
+                <div class="text-center">
+                    @if($invitation->bride_photo)
+                    <div class="w-28 h-36 mx-auto mb-4 jw-oval-frame">
+                        <img src="{{ $invitation->bride_photo_url }}" class="w-full h-full object-cover" alt="{{ $invitation->bride_name }}">
+                    </div>
+                    @else
+                    <div class="w-28 h-36 mx-auto mb-4 jw-oval-frame flex items-center justify-center" style="background:linear-gradient(135deg,var(--jw-maroon),var(--jw-maroon2))">
+                        <span class="font-cinzel text-3xl" style="color:var(--jw-gold)">{{ mb_substr($invitation->bride_name,0,1) }}</span>
+                    </div>
+                    @endif
+                    <h3 class="font-cinzel jw-shimmer mb-1 leading-tight" style="font-size:clamp(1rem,5vw,1.4rem);color:var(--jw-gold)">{{ $invitation->bride_name }}</h3>
+                    @if($invitation->bride_full_name)
+                    <p class="font-cormorant italic text-sm mb-1 leading-snug" style="color:var(--jw-cream2)">{{ $invitation->bride_full_name }}</p>
+                    @endif
+                    @if($invitation->bride_father || $invitation->bride_mother)
+                    <p class="text-[10px] opacity-50 mt-1" style="color:var(--jw-cream)">Putri dari</p>
+                    <p class="font-cormorant text-sm leading-snug" style="color:var(--jw-cream2)">
+                        {{ $invitation->bride_father }}{{ $invitation->bride_father && $invitation->bride_mother ? ' & ' : '' }}{{ $invitation->bride_mother }}
+                    </p>
+                    @endif
+                </div>
+            </div>
+
+            {{-- Love story --}}
+            @if($invitation->story)
+            <div class="mt-14 max-w-sm mx-auto" data-aos="fade-up">
+                <div class="jw-divider mb-6">
+                    <span class="text-xs tracking-widest uppercase opacity-40 font-cinzel-reg" style="color:var(--jw-gold)">Cerita Kami</span>
+                </div>
+                <p class="font-cormorant text-lg italic leading-relaxed" style="color:var(--jw-cream2)">{{ $invitation->story }}</p>
+            </div>
+            @endif
+        </div>
+    </section>
+
+    {{-- ═══ EVENTS SECTION ═══ --}}
+    @if($events->isNotEmpty())
+    <section id="nav-events" class="py-20 px-6 relative" style="background:linear-gradient(160deg,var(--jw-maroon) 0%,var(--jw-dark) 100%)">
+        {{-- Batik pattern overlay on events --}}
+        <div class="absolute inset-0 batik-bg opacity-30 pointer-events-none"></div>
+        <div class="absolute top-0 left-0 right-0 h-1 pointer-events-none" style="background:linear-gradient(90deg,transparent,var(--jw-gold2),transparent)"></div>
+
+        <div class="relative z-10 max-w-lg mx-auto">
+            <div class="jw-divider mb-10" data-aos="fade-up">
+                <span class="font-cinzel-reg text-xs tracking-widest uppercase" style="color:var(--jw-gold)">✦ Jadwal Acara ✦</span>
+            </div>
+
+            <div class="space-y-6">
+                @foreach($events as $event)
+                <div class="jw-card p-6" data-aos="fade-up">
+                    {{-- Event name with gold accent --}}
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-1 h-8 rounded-full flex-shrink-0" style="background:linear-gradient(to bottom,var(--jw-gold),var(--jw-gold2))"></div>
+                        <h3 class="font-cinzel-reg text-lg" style="color:var(--jw-gold)">{{ $event->name }}</h3>
+                    </div>
+
+                    <div class="space-y-2 ml-4">
+                        <p class="text-sm flex items-center gap-2" style="color:var(--jw-cream2)">
+                            <span class="opacity-50">📅</span>
+                            {{ \Carbon\Carbon::parse($event->date)->translatedFormat('l, d F Y') }}
+                        </p>
+                        <p class="text-sm flex items-center gap-2" style="color:var(--jw-cream2)">
+                            <span class="opacity-50">🕐</span>
+                            {{ $event->time_start }}{{ $event->time_end ? ' — '.$event->time_end : '' }} WIB
+                        </p>
+                        <p class="text-sm flex items-center gap-2" style="color:var(--jw-cream2)">
+                            <span class="opacity-50">📍</span>
+                            {{ $event->venue }}
+                        </p>
+                        @if($event->venue_address)
+                        <p class="text-xs ml-6 opacity-50" style="color:var(--jw-cream)">{{ $event->venue_address }}</p>
+                        @endif
+                    </div>
+
+                    {{-- Countdown --}}
+                    @php $targetDate = \Carbon\Carbon::parse($event->date)->toIso8601String(); @endphp
+                    <div x-data="countdown('{{ $targetDate }}')" class="flex gap-2 mt-5">
+                        @foreach(['days'=>'Hari','hours'=>'Jam','minutes'=>'Mnt','seconds'=>'Dtk'] as $unit => $label)
+                        <div class="flex-1 text-center rounded-xl py-2.5 px-1" style="background:rgba(186,159,84,0.12);border:1px solid rgba(186,159,84,0.2)">
+                            <div class="font-cinzel text-2xl font-bold" style="color:var(--jw-gold)" x-text="{{ $unit }}"></div>
+                            <div class="text-xs mt-0.5 opacity-50" style="color:var(--jw-cream)">{{ $label }}</div>
+                        </div>
+                        @endforeach
+                    </div>
+
+                    {{-- Maps + calendar --}}
+                    <div class="flex items-center gap-4 mt-5 ml-1">
+                        @if($event->venue_maps_url)
+                        <a href="{{ $event->venue_maps_url }}" target="_blank"
+                           class="text-xs flex items-center gap-1.5 transition-opacity hover:opacity-100 opacity-60" style="color:var(--jw-gold)">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                            Google Maps
+                        </a>
+                        @endif
+                        <div x-data="saveToCalendar({
+                            title: '{{ addslashes($event->name . ' - ' . $invitation->getCoupleName()) }}',
+                            date: '{{ $event->date }}',
+                            time: '{{ $event->time_start }}',
+                            description: '{{ addslashes('Pernikahan ' . $invitation->getCoupleName()) }}',
+                            location: '{{ addslashes($event->venue . ' ' . $event->venue_address) }}'
+                        })">
+                            <button @click="addToCalendar()"
+                                    class="text-xs flex items-center gap-1.5 transition-opacity hover:opacity-100 opacity-60" style="color:var(--jw-gold)">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                Simpan Kalender
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                @endforeach
+            </div>
+        </div>
+        <div class="absolute bottom-0 left-0 right-0 h-1 pointer-events-none" style="background:linear-gradient(90deg,transparent,var(--jw-gold2),transparent)"></div>
+    </section>
+    @endif
+
+    {{-- ═══ GALLERY ═══ --}}
+    @if($galleries->isNotEmpty())
+    <section id="nav-gallery" class="py-20 batik-bg">
+        <div class="max-w-lg mx-auto px-6">
+            <div class="jw-divider mb-10" data-aos="fade-up">
+                <span class="font-cinzel-reg text-xs tracking-widest uppercase" style="color:var(--jw-gold)">✦ Galeri ✦</span>
+            </div>
+        </div>
+        @include('partials.gallery-collage', [
+            'galleries'   => $galleries,
+            'gcCellClass' => 'rounded-xl',
+            'gcGap'       => 4,
+        ])
+    </section>
+    @endif
+
+    {{-- ═══ GIFT / REKENING ═══ --}}
+    @if($gifts->isNotEmpty())
+    <section class="py-20 px-6 relative" style="background:linear-gradient(160deg,var(--jw-dark),var(--jw-maroon) 100%)">
+        <div class="absolute inset-0 batik-bg opacity-20 pointer-events-none"></div>
+        <div class="max-w-lg mx-auto relative z-10">
+            <div class="jw-divider mb-4" data-aos="fade-up">
+                <span class="font-cinzel-reg text-xs tracking-widest uppercase" style="color:var(--jw-gold)">✦ Hadiah Pernikahan ✦</span>
+            </div>
+            <p class="text-center font-cormorant italic mb-10 text-sm opacity-60" style="color:var(--jw-cream)" data-aos="fade-up">
+                Doa restu Anda adalah hadiah terindah. Namun jika ingin berbagi kebaikan:
+            </p>
+
+            <div class="space-y-4">
+                @foreach($gifts as $gift)
+                <div class="jw-card p-5" data-aos="fade-up">
+                    <div class="flex items-start gap-4">
+                        <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style="background:rgba(186,159,84,0.15)">
+                            @if($gift->type === 'qris')
+                            <svg class="w-5 h-5" style="color:var(--jw-gold)" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1" stroke-width="2"/><rect x="14" y="3" width="7" height="7" rx="1" stroke-width="2"/><rect x="3" y="14" width="7" height="7" rx="1" stroke-width="2"/><rect x="14" y="14" width="3" height="3" rx="0.5" stroke-width="2"/><rect x="18" y="18" width="3" height="3" rx="0.5" stroke-width="2"/></svg>
+                            @else
+                            <svg class="w-5 h-5" style="color:var(--jw-gold)" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+                            @endif
+                        </div>
+                        <div class="flex-1">
+                            <p class="font-cinzel-reg text-sm mb-1" style="color:var(--jw-gold)">{{ $gift->label ?: ($gift->bank_name ?: 'QRIS') }}</p>
+                            @if($gift->account_number)
+                            <p class="font-mono text-xl font-bold mt-1" style="color:var(--jw-cream)">{{ $gift->account_number }}</p>
+                            <p class="text-xs opacity-60 mt-0.5" style="color:var(--jw-cream)">{{ $gift->account_name }}</p>
+                            <button onclick="navigator.clipboard.writeText('{{ $gift->account_number }}')"
+                                    class="mt-2 text-xs flex items-center gap-1 transition-opacity hover:opacity-100 opacity-50" style="color:var(--jw-gold)">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                                Salin nomor
+                            </button>
+                            @endif
+                            @if($gift->qris_image)
+                            <img src="{{ $gift->qris_image_url }}" alt="QRIS" class="mt-3 max-w-[180px] rounded-xl shadow-sm">
+                            @endif
+                        </div>
+                    </div>
+                </div>
+                @endforeach
+            </div>
+        </div>
+    </section>
+    @endif
+
+    {{-- ═══ RSVP ═══ --}}
+    @if($invitation->is_open)
+    <section class="py-20 px-6 rsvp-section batik-bg">
+        <div class="max-w-lg mx-auto">
+            <div class="jw-divider mb-4" data-aos="fade-up">
+                <span class="font-cinzel-reg text-xs tracking-widest uppercase" style="color:var(--jw-gold)">✦ Konfirmasi Kehadiran ✦</span>
+            </div>
+            <p class="text-center font-cormorant italic text-sm mb-10 opacity-60" style="color:var(--jw-cream)" data-aos="fade-up">
+                Mohon konfirmasi kehadiran Anda sebelum
+                {{ $invitation->rsvp_deadline ? \Carbon\Carbon::parse($invitation->rsvp_deadline)->translatedFormat('d F Y') : 'hari H' }}
+            </p>
+            <livewire:invitation.rsvp-form :invitation="$invitation" :guest="$guest" />
+        </div>
+    </section>
+    @endif
+
+    {{-- ═══ WISHES ═══ --}}
+    <section class="py-20 px-6" style="background:linear-gradient(160deg,var(--jw-dark) 0%,var(--jw-maroon) 100%)">
+        <div class="absolute inset-0 batik-bg opacity-20 pointer-events-none"></div>
+        <div class="max-w-lg mx-auto relative">
+            <div class="jw-divider mb-10" data-aos="fade-up">
+                <span class="font-cinzel-reg text-xs tracking-widest uppercase" style="color:var(--jw-gold)">✦ Ucapan & Doa ✦</span>
+            </div>
+            <livewire:invitation.guest-wishes :invitation="$invitation" />
+        </div>
+    </section>
+
+    {{-- ═══ FOOTER ═══ --}}
+    <footer class="py-14 text-center px-6 relative batik-bg" style="border-top:1px solid rgba(186,159,84,0.25)">
+        <div class="jw-divider mb-8">
+            <svg viewBox="0 0 24 24" class="w-5 h-5 flex-shrink-0" style="color:var(--jw-gold)" fill="currentColor">
+                <path d="M12 2l1.8 5.5H19l-4.6 3.4 1.8 5.5L12 13 7.8 16.4l1.8-5.5L5 7.5h5.2z"/>
+            </svg>
+        </div>
+        <p class="font-cormorant italic text-base mb-3 opacity-60" style="color:var(--jw-cream)">
+            Merupakan kehormatan bagi kami atas kehadiran Anda
+        </p>
+        <p class="font-cinzel jw-shimmer" style="font-size:clamp(1.2rem,6vw,1.8rem);color:var(--jw-gold)">
+            {{ $invitation->getCoupleName() }}
+        </p>
+
+        @if($show_watermark)
+        <div class="mt-8">
+            <p class="text-xs opacity-30" style="color:var(--jw-cream)">Dibuat dengan ❤ oleh</p>
+            <a href="{{ config('app.url') }}" class="text-xs opacity-50 hover:opacity-80 transition-opacity" style="color:var(--jw-gold)">Invora.id</a>
+        </div>
+        @endif
+    </footer>
+
+    {{-- BOTTOM NAVBAR --}}
+    @include('partials.invitation-navbar', ['navStyle' => 'dark'])
+
+</div>{{-- end opened --}}
+
+{{-- MUSIC CONTROL --}}
+@if($invitation->music_url)
+<div x-show="opened" class="fixed bottom-20 right-4 z-[80]">
+    <button @click="$store.invitation.toggleMusic()"
+            class="w-12 h-12 rounded-full flex items-center justify-center shadow-xl"
+            style="background:rgba(96,1,1,0.9);border:2px solid rgba(186,159,84,0.5);backdrop-filter:blur(8px)">
+        <svg x-show="!$store.invitation.musicPlaying" class="w-5 h-5" style="color:var(--jw-gold)" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 10a9.972 9.972 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 10c0-2.21-.894-4.208-2.343-5.657a1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 10a5.984 5.984 0 01-1.757 4.243 1 1 0 01-1.415-1.415A3.984 3.984 0 0013 10a3.983 3.983 0 00-1.172-2.828 1 1 0 010-1.415z" clip-rule="evenodd"/>
+        </svg>
+        <svg x-show="$store.invitation.musicPlaying" class="w-5 h-5" style="color:var(--jw-gold)" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/>
+        </svg>
+    </button>
+    @if($invitation->music_name)
+    <div class="absolute right-14 top-1/2 -translate-y-1/2 backdrop-blur-sm rounded-full px-3 py-1.5 shadow-sm"
+         style="background:rgba(21,3,3,0.9);border:1px solid rgba(186,159,84,0.3)"
+         x-show="$store.invitation.musicPlaying">
+        <p class="text-xs truncate max-w-[120px]" style="color:var(--jw-gold)">♪ {{ $invitation->music_name }}</p>
+    </div>
+    @endif
+</div>
+@endif
+
+{{-- WATERMARK --}}
+@if($show_watermark)
+<div x-show="opened" class="watermark pointer-events-auto" style="color:var(--jw-gold)">
+    <a href="{{ config('app.url') }}" target="_blank" class="hover:opacity-100 transition-opacity opacity-50">
+        ❤ Invora.id
+    </a>
+</div>
+@endif
+
+{{-- Global kawung particle canvas --}}
+<div id="jw-particles"></div>
+
+@include('partials.cinematic-opening')
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<script>
+    AOS.init({ duration: 900, once: true, offset: 50 });
+
+    // ── Kawung / Gold particle system ─────────────────────────────
+    (function () {
+        // Particle shapes: kawung petal, diamond, star-dot
+        function mkParticle(type, color) {
+            if (type === 0) {
+                // Oval / kawung petal
+                return '<svg viewBox="0 0 20 32" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%">'
+                     + '<ellipse cx="10" cy="16" rx="7" ry="14" fill="' + color + '" opacity=".7"/>'
+                     + '</svg>';
+            }
+            if (type === 1) {
+                // Diamond
+                return '<svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%">'
+                     + '<polygon points="10,1 19,10 10,19 1,10" fill="' + color + '" opacity=".6"/>'
+                     + '</svg>';
+            }
+            // Star dot
+            return '<svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%">'
+                 + '<circle cx="10" cy="10" r="4" fill="' + color + '" opacity=".8"/>'
+                 + '</svg>';
+        }
+
+        var COLORS = ['#BA9F54','#A78D59','#C9B89A','#E0D2B7','#D4AF6A'];
+
+        function spawnParticles(canvasId, N) {
+            var c = document.getElementById(canvasId);
+            if (!c) return;
+            for (var i = 0; i < N; i++) {
+                var color = COLORS[Math.floor(Math.random() * COLORS.length)];
+                var type  = Math.floor(Math.random() * 3);
+                var sz    = 4 + Math.random() * 10;
+                var dur   = 12 + Math.random() * 16;
+                var drift = (Math.random() > .5 ? 1 : -1) * (20 + Math.random() * 60);
+                var spin  = (Math.random() > .5 ? 1 : -1) * (180 + Math.random() * 360);
+                var el    = document.createElement('div');
+                el.className = 'jw-particle';
+                el.style.cssText =
+                    'left:'   + (Math.random() * 100) + '%;'
+                  + 'top:-60px;'
+                  + 'width:'  + sz + 'px;'
+                  + 'height:' + sz + 'px;'
+                  + '--drift:' + drift + 'px;'
+                  + '--spin:'  + spin  + 'deg;'
+                  + 'animation:jwFloat ' + dur + 's linear ' + (-(Math.random() * dur)) + 's infinite;';
+                el.innerHTML = mkParticle(type, color);
+                c.appendChild(el);
+            }
+        }
+
+        spawnParticles('jw-cover-particles', 28); // cover screen
+        spawnParticles('jw-particles',       20); // main content fixed overlay
+    })();
+
+    // ── Parallax hero ─────────────────────────────────────────────
+    (function () {
+        var hero = document.querySelector('[data-parallax-hero]');
+        if (!hero) return;
+        function onScroll() {
+            var s = window.scrollY;
+            hero.style.transform = 'translateY(' + (s * 0.35) + 'px)';
+        }
+        window.addEventListener('scroll', onScroll, { passive: true });
+    })();
+</script>
+</body>
+</html>

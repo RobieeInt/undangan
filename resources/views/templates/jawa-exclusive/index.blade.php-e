@@ -1,0 +1,1956 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>{{ $invitation->getCoupleName() }} — Undangan Pernikahan</title>
+    <meta name="description" content="Undangan Pernikahan {{ $invitation->getCoupleName() }}">
+    <meta property="og:title" content="{{ $invitation->getCoupleName() }} — Undangan Pernikahan">
+    <meta property="og:image" content="{{ $invitation->cover_photo_url ?? asset'img/og-default.jpg' }}">
+    <meta name="theme-color" content="#1a0407">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500;1,600&family=Great+Vibes&family=Cinzel:wght@400;500;600&family=Raleway:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @livewireStyles
+    @livewireScriptConfig
+
+    <style>
+        /* ══ TOKENS ══ */
+        :root {
+            --c-night:   #1a0407;   /* door bg — near-black burgundy */
+            --c-deep:    #240609;   /* dark sections */
+            --c-forest:  #3a0c12;   /* mid-dark */
+            --c-green:   #7B1E25;   /* primary — deep burgundy */
+            --c-emerald: #5C1019;   /* hover — deeper burgundy */
+            --c-ivory:   #F7F0E5;   /* light sections */
+            --c-cream:   #E2D7C8;   /* surface / warm beige */
+            --c-gold:    #C9A86A;   /* secondary gold */
+            --c-gold2:   #D4B478;
+            --c-goldpale:#E8D4A0;
+            --c-text:    #2A2920;
+            --c-muted:   #6B5B4E;
+            --c-muted2:  #9A8A74;
+        }
+
+        /* ══ RESET ══ */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body { width: 100%; overflow-x: hidden; }
+        html { scroll-behavior: smooth; }
+        body {
+            background: var(--c-ivory);
+            font-family: 'Raleway', sans-serif;
+            color: var(--c-text);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        [x-cloak] { display: none !important; }
+
+        /* ══ FONTS ══ */
+        .ff-script   { font-family: 'Great Vibes', cursive; }
+        .ff-garamond { font-family: 'Cormorant Garamond', Georgia, serif; }
+        .ff-cinzel   { font-family: 'Cinzel', serif; }
+        .ff-raleway  { font-family: 'Raleway', sans-serif; }
+
+        /* ══ PATTERNS ══ */
+        .pat-kawung {
+            background-color: var(--c-night);
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='72' height='72'%3E%3Cellipse cx='36' cy='11' rx='10' ry='11' fill='none' stroke='%23C9A86A' stroke-width='0.5' opacity='0.18'/%3E%3Cellipse cx='36' cy='61' rx='10' ry='11' fill='none' stroke='%23C9A86A' stroke-width='0.5' opacity='0.18'/%3E%3Cellipse cx='11' cy='36' rx='11' ry='10' fill='none' stroke='%23C9A86A' stroke-width='0.5' opacity='0.18'/%3E%3Cellipse cx='61' cy='36' rx='11' ry='10' fill='none' stroke='%23C9A86A' stroke-width='0.5' opacity='0.18'/%3E%3Ccircle cx='36' cy='36' r='5' fill='none' stroke='%23C9A86A' stroke-width='0.4' opacity='0.1'/%3E%3C/svg%3E");
+        }
+        .pat-kawung-ivory {
+            background-color: var(--c-ivory);
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='72' height='72'%3E%3Cellipse cx='36' cy='11' rx='10' ry='11' fill='none' stroke='%23C9A86A' stroke-width='0.45' opacity='0.12'/%3E%3Cellipse cx='36' cy='61' rx='10' ry='11' fill='none' stroke='%23C9A86A' stroke-width='0.45' opacity='0.12'/%3E%3Cellipse cx='11' cy='36' rx='11' ry='10' fill='none' stroke='%23C9A86A' stroke-width='0.45' opacity='0.12'/%3E%3Cellipse cx='61' cy='36' rx='11' ry='10' fill='none' stroke='%23C9A86A' stroke-width='0.45' opacity='0.12'/%3E%3C/svg%3E");
+        }
+        .pat-deep {
+            background-color: var(--c-deep);
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='72' height='72'%3E%3Cellipse cx='36' cy='11' rx='10' ry='11' fill='none' stroke='%23C9A86A' stroke-width='0.45' opacity='0.07'/%3E%3Cellipse cx='36' cy='61' rx='10' ry='11' fill='none' stroke='%23C9A86A' stroke-width='0.45' opacity='0.07'/%3E%3Cellipse cx='11' cy='36' rx='11' ry='10' fill='none' stroke='%23C9A86A' stroke-width='0.45' opacity='0.07'/%3E%3Cellipse cx='61' cy='36' rx='11' ry='10' fill='none' stroke='%23C9A86A' stroke-width='0.45' opacity='0.07'/%3E%3C/svg%3E");
+        }
+        .pat-parang-strip {
+            height: 24px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='24'%3E%3Cpath d='M0 12 Q25 2 50 12 Q75 22 100 12' fill='none' stroke='%23C9A86A' stroke-width='0.7' opacity='0.22'/%3E%3C/svg%3E");
+            background-size: 100px 24px;
+            background-color: rgba(201,168,106,.06);
+        }
+
+        /* ══ COVER & DOOR ANIMATION ══ */
+        #je-cover {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            z-index: 200;
+            overflow: hidden;
+        }
+
+        /* Door panels */
+        .je-door {
+            position: absolute;
+            top: 0; bottom: 0;
+            width: 50%;
+            will-change: transform;
+            transition: transform 1.25s cubic-bezier(.76,0,.24,1);
+        }
+        .je-door-l { left: 0; }
+        .je-door-r { right: 0; }
+        .je-door-l.open { transform: translateX(-100%); }
+        .je-door-r.open { transform: translateX(100%); }
+
+        /* Door inner bg */
+        .je-door-bg {
+            position: absolute; inset: 0;
+        }
+
+        /* Gold center-seam glow */
+        .je-seam {
+            position: absolute;
+            top: 0; bottom: 0;
+            left: 50%;
+            width: 2px;
+            transform: translateX(-50%);
+            background: linear-gradient(180deg,
+                transparent 0%,
+                rgba(201,168,106,.2) 15%,
+                rgba(201,168,106,.7) 40%,
+                rgba(201,168,106,.9) 50%,
+                rgba(201,168,106,.7) 60%,
+                rgba(201,168,106,.2) 85%,
+                transparent 100%
+            );
+            box-shadow: 0 0 18px 4px rgba(201,168,106,.35), 0 0 40px 10px rgba(201,168,106,.12);
+            z-index: 5;
+            pointer-events: none;
+        }
+        @keyframes seam-pulse {
+            0%,100% { opacity:.7; }
+            50%      { opacity:1; box-shadow: 0 0 26px 6px rgba(201,168,106,.5), 0 0 60px 16px rgba(201,168,106,.18); }
+        }
+        .je-seam { animation: seam-pulse 2.8s ease-in-out infinite; }
+
+        /* Cover center card */
+        #je-card {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+            width: min(88vw, 380px);
+            pointer-events: none;
+            transition: opacity .5s ease, transform .5s ease;
+        }
+        #je-card.fading { opacity: 0; transform: translate(-50%, -52%) scale(.97); }
+        #je-card .card-cta { pointer-events: auto; }
+
+        /* ══ OPEN BUTTON ══ */
+        .je-open-btn {
+            display: inline-flex; align-items: center; gap: .6rem;
+            padding: .85rem 2rem;
+            font-family: 'Cinzel', serif;
+            font-size: .68rem;
+            font-weight: 500;
+            letter-spacing: .2em;
+            text-transform: uppercase;
+            color: var(--c-goldpale);
+            background: transparent;
+            border: 1px solid rgba(201,168,106,.55);
+            border-radius: .35rem;
+            cursor: pointer;
+            transition: background .3s, border-color .3s, box-shadow .3s, transform .2s;
+            box-shadow: 0 0 20px rgba(201,168,106,.1), inset 0 1px 0 rgba(255,255,255,.05);
+        }
+        @keyframes btn-breathe {
+            0%,100% { box-shadow: 0 0 12px rgba(201,168,106,.1), inset 0 1px 0 rgba(255,255,255,.05); }
+            50%      { box-shadow: 0 0 28px rgba(201,168,106,.28), inset 0 1px 0 rgba(255,255,255,.05); }
+        }
+        .je-open-btn { animation: btn-breathe 3s ease-in-out infinite; }
+        .je-open-btn:hover {
+            background: rgba(201,168,106,.1);
+            border-color: rgba(201,168,106,.9);
+            transform: translateY(-2px);
+        }
+        .je-open-btn:active { transform: translateY(0); }
+
+        /* ══ MAIN SECTION BUTTON ══ */
+        .je-btn {
+            display: inline-flex; align-items: center; gap: .55rem;
+            padding: .8rem 1.8rem;
+            font-family: 'Cinzel', serif;
+            font-size: .68rem; font-weight: 500;
+            letter-spacing: .18em; text-transform: uppercase;
+            background: var(--c-green); color: #fff;
+            border: 1px solid rgba(201,168,106,.45);
+            border-radius: .35rem;
+            cursor: pointer;
+            transition: background .3s, box-shadow .3s, transform .2s;
+            box-shadow: 0 4px 20px rgba(123,30,37,.25);
+        }
+        .je-btn:hover { background: var(--c-emerald); transform: translateY(-2px); box-shadow: 0 8px 28px rgba(123,30,37,.35); }
+        .je-btn:active { transform: translateY(0); }
+        .je-btn-outline {
+            background: transparent;
+            color: rgba(201,168,106,.85);
+            border-color: rgba(201,168,106,.4);
+            box-shadow: none;
+        }
+        .je-btn-outline:hover { background: rgba(201,168,106,.08); box-shadow: 0 0 16px rgba(201,168,106,.15); }
+
+        /* ══ DIVIDERS ══ */
+        .je-rule {
+            display: flex; align-items: center; gap: .7rem;
+        }
+        .je-rule::before, .je-rule::after {
+            content: ''; flex: 1; height: 1px;
+            background: linear-gradient(to right, transparent, rgba(201,168,106,.4), transparent);
+        }
+        .je-hrule { height: 1px; background: linear-gradient(90deg, transparent, rgba(201,168,106,.4), transparent); }
+
+        /* ══ OVAL FRAME ══ */
+        .je-oval {
+            border-radius: 999px; overflow: hidden; position: relative;
+            box-shadow: 0 16px 48px rgba(0,0,0,.3);
+        }
+        .je-oval::before {
+            content: ''; position: absolute; inset: -6px;
+            border-radius: 999px;
+            border: 1.5px solid rgba(201,168,106,.6);
+            z-index: 10; pointer-events: none;
+        }
+        .je-oval::after {
+            content: ''; position: absolute; inset: -12px;
+            border-radius: 999px;
+            border: 1px solid rgba(201,168,106,.22);
+            z-index: 10; pointer-events: none;
+        }
+
+        /* ══ GRAND OVAL — Mempelai portraits ══ */
+        .je-oval-grand {
+            border-radius: 999px; overflow: hidden; position: relative;
+            box-shadow:
+                0 0 0 2px rgba(201,168,106,.65),
+                0 0 0 10px rgba(26,4,7,.85),
+                0 0 0 12px rgba(201,168,106,.3),
+                0 24px 64px rgba(0,0,0,.5),
+                0 0 36px rgba(201,168,106,.15);
+        }
+        .je-oval-grand::before {
+            content: ''; position: absolute; inset: -22px;
+            border-radius: 999px;
+            border: 1px solid rgba(201,168,106,.15);
+            z-index: 10; pointer-events: none;
+        }
+        /* Light-bg variant — override shadow rings */
+        .je-oval-grand.light {
+            box-shadow:
+                0 0 0 2px rgba(201,168,106,.55),
+                0 0 0 10px rgba(247,240,229,.9),
+                0 0 0 12px rgba(201,168,106,.28),
+                0 24px 56px rgba(0,0,0,.18),
+                0 0 28px rgba(201,168,106,.1);
+        }
+        .je-oval-grand.light::before {
+            border-color: rgba(201,168,106,.12);
+        }
+
+        /* ══ PROCLAMATION DATE — Large event date display ══ */
+        .je-date-num {
+            font-family: 'Cormorant Garamond', Georgia, serif;
+            font-weight: 300;
+            line-height: .82;
+            color: var(--c-text);
+        }
+
+        /* ══ CARDS ══ */
+        .je-card-light {
+            background: rgba(255,255,255,.75);
+            border: 1px solid rgba(201,168,106,.2);
+            border-radius: 1.25rem;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+        .je-card-dark {
+            background: rgba(255,255,255,.05);
+            border: 1px solid rgba(201,168,106,.2);
+            border-radius: 1.25rem;
+        }
+
+        /* ══ RSVP INPUTS ══ */
+        .je-input {
+            width: 100%;
+            background: rgba(255,255,255,.07);
+            border: 1px solid rgba(201,168,106,.3);
+            border-radius: .5rem;
+            padding: .75rem 1rem;
+            font-family: 'Raleway', sans-serif;
+            font-size: .875rem;
+            color: #fff;
+            outline: none;
+            transition: border-color .25s;
+        }
+        .je-input::placeholder { color: rgba(255,255,255,.3); }
+        .je-input:focus { border-color: rgba(201,168,106,.65); }
+        .je-input option { color: var(--c-text); background: #fff; }
+
+        /* ══ SCROLL REVEAL ══ */
+        [data-sr] {
+            opacity: 0;
+            transform: translateY(32px);
+            transition: opacity .75s ease, transform .75s ease;
+        }
+        [data-sr].on  { opacity: 1; transform: none; }
+        [data-sr="fade"]  { transform: none; }
+        [data-sr="left"]  { transform: translateX(-32px); }
+        [data-sr="right"] { transform: translateX(32px); }
+
+        /* ══ COVER ENTRANCE ANIM ══ */
+        @keyframes cr-up {
+            from { opacity: 0; transform: translateY(18px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .cr { animation: cr-up .85s ease both; }
+        .d1 { animation-delay: .2s; }
+        .d2 { animation-delay: .45s; }
+        .d3 { animation-delay: .65s; }
+        .d4 { animation-delay: .85s; }
+        .d5 { animation-delay: 1.05s; }
+        .d6 { animation-delay: 1.25s; }
+        .d7 { animation-delay: 1.45s; }
+
+        /* ══ HERO ZOOM ══ */
+        @keyframes hero-zoom {
+            from { transform: scale(1.1); }
+            to   { transform: scale(1.01); }
+        }
+        .je-hero-zoom { animation: hero-zoom 3s ease-out forwards; }
+
+        /* ══ SHIMMER ══ */
+        @keyframes gold-shimmer {
+            0%,100% { text-shadow: 0 2px 18px rgba(201,168,106,.0); }
+            50%      { text-shadow: 0 2px 18px rgba(201,168,106,.55), 0 0 40px rgba(201,168,106,.15); }
+        }
+        .je-shimmer { animation: gold-shimmer 4.5s ease-in-out infinite; }
+
+        /* ══ FLOAT ══ */
+        @keyframes float-y {
+            0%,100% { transform: translateY(0); }
+            50%      { transform: translateY(-10px); }
+        }
+        .je-float { animation: float-y var(--fd, 8s) ease-in-out infinite; }
+
+        /* ══ SWAY ══ */
+        @keyframes sway {
+            0%,100% { transform: rotate(0deg); }
+            50%      { transform: rotate(var(--sa, 4deg)); }
+        }
+        .je-sway { animation: sway var(--sd, 12s) ease-in-out infinite; }
+
+        /* ══ CONTENT CONTAINER — keeps invitation at mobile width on desktop ══ */
+        .je-page {
+            max-width: 480px;
+            margin: 0 auto;
+            position: relative;
+            /* clip absolute decorations to this column */
+            overflow: hidden;
+        }
+        .je-page section,
+        .je-page footer {
+            /* ensure sections fill column width */
+            width: 100%;
+        }
+        /* Section content centering */
+        .je-section-inner {
+            max-width: 380px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* ══ GARLAND — fixed max-width so flowers stay sized correctly ══ */
+        .je-garland {
+            max-width: 380px;
+            width: 100%;
+            display: block;
+            margin: 0 auto;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation: none !important; transition: none !important; }
+            [data-sr] { opacity: 1; transform: none; }
+        }
+    </style>
+</head>
+
+{{-- Alpine root: opened = main content visible; opening = door slide triggered --}}
+<body x-data="{ opened: false, opening: false }"
+      x-init="$store.invitation.initMusic('{{ $invitation->music_url }}', {{ $invitation->music_autoplay ? 'true' : 'false' }})">
+
+{{-- ★ SHARED SVG DEFS — always in DOM so <use href="#jf/hf"> works even after cover hides ★ --}}
+<svg width="0" height="0" style="position:absolute;overflow:hidden" aria-hidden="true">
+    <defs>
+        {{-- Jasmine flower (5 petals + gold center) --}}
+        <g id="jf">
+            <ellipse cx="0" cy="-6" rx="3.8" ry="6" fill="white" opacity=".8"/>
+            <ellipse cx="5.7" cy="-1.8" rx="3.8" ry="6" fill="white" opacity=".75" transform="rotate(72)"/>
+            <ellipse cx="3.5" cy="4.9"  rx="3.8" ry="6" fill="white" opacity=".75" transform="rotate(144)"/>
+            <ellipse cx="-3.5" cy="4.9" rx="3.8" ry="6" fill="white" opacity=".75" transform="rotate(216)"/>
+            <ellipse cx="-5.7" cy="-1.8" rx="3.8" ry="6" fill="white" opacity=".75" transform="rotate(288)"/>
+            <circle cx="0" cy="0" r="2.4" fill="#C9A86A" opacity=".9"/>
+        </g>
+    </defs>
+</svg>
+
+{{-- ╔══════════════════════════════════════════════════════════╗
+     ║  COVER — KERATON GATE SPLIT DOOR                        ║
+     ╚══════════════════════════════════════════════════════════╝ --}}
+<div id="je-cover"
+     x-show="!opened"
+     x-transition:leave="transition ease-in duration-500"
+     x-transition:leave-start="opacity-100"
+     x-transition:leave-end="opacity-0">
+
+    {{-- ── CANVAS: jasmine petals ── --}}
+    <canvas id="je-petals" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1" aria-hidden="true"></canvas>
+
+    {{-- ── LEFT DOOR ── --}}
+    <div class="je-door je-door-l" :class="{ open: opening }">
+        <div class="je-door-bg pat-kawung"></div>
+
+        {{-- Gradient fade to seam --}}
+        <div class="absolute inset-0" style="background:linear-gradient(to right,rgba(26,4,7,.0) 60%,rgba(26,4,7,.55) 100%)"></div>
+
+        {{-- Half Keraton gate ghost — deep center --}}
+        <div class="absolute inset-0 flex items-center justify-end pointer-events-none" style="padding-right:0" aria-hidden="true">
+            <svg viewBox="0 0 180 380" fill="none" class="h-[75%] w-auto" style="max-height:520px;opacity:.14">
+                <g fill="#C9A86A">
+                    <polygon points="90,8 100,30 80,30"/>
+                    <polygon points="76,30 104,30 113,56 67,56"/>
+                    <polygon points="58,56 122,56 134,90 46,90"/>
+                    <polygon points="36,90 144,90 158,130 22,130"/>
+                    <rect x="18" y="130" width="144" height="14" rx="1"/>
+                    <rect x="26" y="144" width="128" height="218" rx="1"/>
+                    <rect x="26" y="144" width="20" height="218"/>
+                    <rect x="134" y="144" width="20" height="218"/>
+                    <rect x="4"  y="238" width="24" height="124" rx="1"/>
+                    <rect x="0"  y="354" width="180" height="15" rx="1"/>
+                    <rect x="0"  y="367" width="180" height="12" rx="1"/>
+                </g>
+                <path d="M68,362 L68,280 Q90,252 112,280 L112,362 Z" fill="rgba(26,4,7,.9)"/>
+                <g stroke="rgba(201,168,106,.18)" stroke-width="0.8" fill="none">
+                    <path d="M34,190 Q62,178 90,190 Q118,202 146,190"/>
+                    <path d="M34,214 Q62,202 90,214 Q118,226 146,214"/>
+                    <path d="M34,238 Q62,226 90,238 Q118,250 146,238"/>
+                </g>
+            </svg>
+        </div>
+
+        {{-- Large botanical branch — top left — Asset 9 --}}
+        <div class="je-sway absolute top-0 left-0 pointer-events-none select-none"
+             style="width:clamp(120px,35vw,200px);--sd:14s;--sa:3deg;transform-origin:0 0;opacity:.42" aria-hidden="true">
+            <svg viewBox="0 0 180 240" fill="none">
+                <path d="M12 4 Q30 30 60 80 Q80 120 110 180 Q130 215 158 238"
+                      stroke="#C9A86A" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+                <path d="M12 4 Q45 20 75 60" stroke="#C9A86A" stroke-width="1" fill="none" opacity=".55"/>
+                <path d="M38 55 Q25 40 14 28" stroke="#C9A86A" stroke-width=".8" fill="none" opacity=".4"/>
+                {{-- leaves --}}
+                <ellipse cx="56" cy="76"  rx="22" ry="9"  fill="#306D29" opacity=".65" transform="rotate(-50 56 76)"/>
+                <ellipse cx="80" cy="120" rx="24" ry="9"  fill="#306D29" opacity=".6"  transform="rotate(-40 80 120)"/>
+                <ellipse cx="100" cy="162" rx="22" ry="8.5" fill="#306D29" opacity=".6" transform="rotate(-30 100 162)"/>
+                <ellipse cx="32" cy="48"  rx="16" ry="6.5" fill="#306D29" opacity=".55" transform="rotate(-60 32 48)"/>
+                <ellipse cx="130" cy="200" rx="18" ry="7"  fill="#306D29" opacity=".5" transform="rotate(-22 130 200)"/>
+                {{-- jasmine buds --}}
+                <circle cx="62"  cy="80"  r="5"   fill="white" opacity=".65"/>
+                <circle cx="84"  cy="124" r="4.5" fill="white" opacity=".6"/>
+                <circle cx="103" cy="165" r="4"   fill="white" opacity=".55"/>
+                <circle cx="36"  cy="52"  r="3.5" fill="white" opacity=".5"/>
+                {{-- yellow centers --}}
+                <circle cx="62"  cy="80"  r="2"   fill="#C9A86A" opacity=".9"/>
+                <circle cx="84"  cy="124" r="1.8" fill="#C9A86A" opacity=".9"/>
+                <circle cx="103" cy="165" r="1.6" fill="#C9A86A" opacity=".9"/>
+            </svg>
+        </div>
+
+        {{-- Botanical branch — bottom left --}}
+        <div class="je-sway absolute bottom-0 left-0 pointer-events-none select-none"
+             style="width:clamp(100px,28vw,160px);--sd:16s;--sa:-3deg;transform-origin:0 100%;opacity:.38" aria-hidden="true">
+            <svg viewBox="0 0 160 200" fill="none" style="transform:scaleY(-1)">
+                <path d="M10 4 Q28 28 55 68 Q75 100 105 160 Q125 188 152 198"
+                      stroke="#C9A86A" stroke-width="1.4" stroke-linecap="round" fill="none"/>
+                <ellipse cx="50" cy="65"  rx="20" ry="8"  fill="#306D29" opacity=".6" transform="rotate(-48 50 65)"/>
+                <ellipse cx="76" cy="105" rx="22" ry="8.5" fill="#306D29" opacity=".55" transform="rotate(-35 76 105)"/>
+                <ellipse cx="98" cy="148" rx="18" ry="7"  fill="#306D29" opacity=".5" transform="rotate(-25 98 148)"/>
+                <circle cx="54"  cy="68"  r="4.5" fill="white" opacity=".6"/>
+                <circle cx="80"  cy="108" r="4"   fill="white" opacity=".55"/>
+                <circle cx="56"  cy="69"  r="1.8" fill="#C9A86A" opacity=".9"/>
+            </svg>
+        </div>
+
+        {{-- Parang diagonal lines —  Asset 2 --}}
+        <div class="absolute inset-0 pointer-events-none" style="background-image:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='90' height='90'%3E%3Cpath d='M0 45 Q22 5 45 45 Q67 85 90 45' fill='none' stroke='%23C9A86A' stroke-width='0.5' opacity='0.08'/%3E%3Cpath d='M0 90 Q22 50 45 90 Q67 130 90 90' fill='none' stroke='%23C9A86A' stroke-width='0.5' opacity='0.08'/%3E%3C/svg%3E\")"></div>
+
+        {{-- Corner gold ornament TL --}}
+        <div class="absolute top-4 left-4 pointer-events-none" style="opacity:.45" aria-hidden="true">
+            <svg viewBox="0 0 60 60" fill="none" class="w-12 h-12">
+                <path d="M2,28 L2,2 L28,2" stroke="#C9A86A" stroke-width="1.2" fill="none"/>
+                <path d="M2,22 Q12,12 22,2" stroke="#C9A86A" stroke-width=".7" fill="none" opacity=".6"/>
+                <circle cx="2"  cy="2"  r="2.5" fill="#C9A86A"/>
+                <circle cx="15" cy="2"  r="1.5" fill="#C9A86A" opacity=".6"/>
+                <circle cx="2"  cy="15" r="1.5" fill="#C9A86A" opacity=".6"/>
+            </svg>
+        </div>
+        {{-- Corner gold ornament BL --}}
+        <div class="absolute bottom-4 left-4 pointer-events-none" style="opacity:.45" aria-hidden="true">
+            <svg viewBox="0 0 60 60" fill="none" class="w-12 h-12" style="transform:scaleY(-1)">
+                <path d="M2,28 L2,2 L28,2" stroke="#C9A86A" stroke-width="1.2" fill="none"/>
+                <path d="M2,22 Q12,12 22,2" stroke="#C9A86A" stroke-width=".7" fill="none" opacity=".6"/>
+                <circle cx="2" cy="2" r="2.5" fill="#C9A86A"/>
+                <circle cx="15" cy="2" r="1.5" fill="#C9A86A" opacity=".6"/>
+                <circle cx="2" cy="15" r="1.5" fill="#C9A86A" opacity=".6"/>
+            </svg>
+        </div>
+    </div>
+
+    {{-- ── RIGHT DOOR (mirror) ── --}}
+    <div class="je-door je-door-r" :class="{ open: opening }">
+        <div class="je-door-bg pat-kawung"></div>
+
+        {{-- Gradient fade to seam --}}
+        <div class="absolute inset-0" style="background:linear-gradient(to left,rgba(26,4,7,.0) 60%,rgba(26,4,7,.55) 100%)"></div>
+
+        {{-- Half Keraton gate ghost — mirror --}}
+        <div class="absolute inset-0 flex items-center justify-start pointer-events-none" aria-hidden="true">
+            <svg viewBox="0 0 180 380" fill="none" class="h-[75%] w-auto" style="max-height:520px;opacity:.14;transform:scaleX(-1)">
+                <g fill="#C9A86A">
+                    <polygon points="90,8 100,30 80,30"/>
+                    <polygon points="76,30 104,30 113,56 67,56"/>
+                    <polygon points="58,56 122,56 134,90 46,90"/>
+                    <polygon points="36,90 144,90 158,130 22,130"/>
+                    <rect x="18" y="130" width="144" height="14" rx="1"/>
+                    <rect x="26" y="144" width="128" height="218" rx="1"/>
+                    <rect x="26" y="144" width="20" height="218"/>
+                    <rect x="134" y="144" width="20" height="218"/>
+                    <rect x="152" y="238" width="24" height="124" rx="1"/>
+                    <rect x="0"  y="354" width="180" height="15" rx="1"/>
+                    <rect x="0"  y="367" width="180" height="12" rx="1"/>
+                </g>
+                <path d="M68,362 L68,280 Q90,252 112,280 L112,362 Z" fill="rgba(26,4,7,.9)"/>
+                <g stroke="rgba(201,168,106,.18)" stroke-width="0.8" fill="none">
+                    <path d="M34,190 Q62,178 90,190 Q118,202 146,190"/>
+                    <path d="M34,214 Q62,202 90,214 Q118,226 146,214"/>
+                    <path d="M34,238 Q62,226 90,238 Q118,250 146,238"/>
+                </g>
+            </svg>
+        </div>
+
+        {{-- Botanical branch — top right --}}
+        <div class="je-sway absolute top-0 right-0 pointer-events-none select-none"
+             style="width:clamp(120px,35vw,200px);--sd:13s;--sa:-3deg;transform-origin:100% 0;opacity:.42" aria-hidden="true">
+            <svg viewBox="0 0 180 240" fill="none" style="transform:scaleX(-1)">
+                <path d="M12 4 Q30 30 60 80 Q80 120 110 180 Q130 215 158 238"
+                      stroke="#C9A86A" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+                <path d="M12 4 Q45 20 75 60" stroke="#C9A86A" stroke-width="1" fill="none" opacity=".55"/>
+                <ellipse cx="56" cy="76"  rx="22" ry="9"  fill="#306D29" opacity=".65" transform="rotate(-50 56 76)"/>
+                <ellipse cx="80" cy="120" rx="24" ry="9"  fill="#306D29" opacity=".6"  transform="rotate(-40 80 120)"/>
+                <ellipse cx="100" cy="162" rx="22" ry="8.5" fill="#306D29" opacity=".6" transform="rotate(-30 100 162)"/>
+                <ellipse cx="32" cy="48"  rx="16" ry="6.5" fill="#306D29" opacity=".55" transform="rotate(-60 32 48)"/>
+                <ellipse cx="130" cy="200" rx="18" ry="7"  fill="#306D29" opacity=".5" transform="rotate(-22 130 200)"/>
+                <circle cx="62"  cy="80"  r="5"   fill="white" opacity=".65"/>
+                <circle cx="84"  cy="124" r="4.5" fill="white" opacity=".6"/>
+                <circle cx="103" cy="165" r="4"   fill="white" opacity=".55"/>
+                <circle cx="62"  cy="80"  r="2"   fill="#C9A86A" opacity=".9"/>
+                <circle cx="84"  cy="124" r="1.8" fill="#C9A86A" opacity=".9"/>
+            </svg>
+        </div>
+
+        {{-- Botanical branch — bottom right --}}
+        <div class="je-sway absolute bottom-0 right-0 pointer-events-none select-none"
+             style="width:clamp(100px,28vw,160px);--sd:15s;--sa:3deg;transform-origin:100% 100%;opacity:.38" aria-hidden="true">
+            <svg viewBox="0 0 160 200" fill="none" style="transform:scale(-1,-1)">
+                <path d="M10 4 Q28 28 55 68 Q75 100 105 160 Q125 188 152 198"
+                      stroke="#C9A86A" stroke-width="1.4" stroke-linecap="round" fill="none"/>
+                <ellipse cx="50" cy="65"  rx="20" ry="8"  fill="#306D29" opacity=".6" transform="rotate(-48 50 65)"/>
+                <ellipse cx="76" cy="105" rx="22" ry="8.5" fill="#306D29" opacity=".55" transform="rotate(-35 76 105)"/>
+                <circle cx="54"  cy="68"  r="4.5" fill="white" opacity=".6"/>
+                <circle cx="56"  cy="69"  r="1.8" fill="#C9A86A" opacity=".9"/>
+            </svg>
+        </div>
+
+        {{-- Parang diagonals --}}
+        <div class="absolute inset-0 pointer-events-none" style="background-image:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='90' height='90'%3E%3Cpath d='M0 45 Q22 5 45 45 Q67 85 90 45' fill='none' stroke='%23C9A86A' stroke-width='0.5' opacity='0.08'/%3E%3C/svg%3E\")"></div>
+
+        {{-- Corner TR --}}
+        <div class="absolute top-4 right-4 pointer-events-none" style="opacity:.45" aria-hidden="true">
+            <svg viewBox="0 0 60 60" fill="none" class="w-12 h-12" style="transform:scaleX(-1)">
+                <path d="M2,28 L2,2 L28,2" stroke="#C9A86A" stroke-width="1.2" fill="none"/>
+                <path d="M2,22 Q12,12 22,2" stroke="#C9A86A" stroke-width=".7" fill="none" opacity=".6"/>
+                <circle cx="2" cy="2" r="2.5" fill="#C9A86A"/>
+                <circle cx="15" cy="2" r="1.5" fill="#C9A86A" opacity=".6"/>
+                <circle cx="2" cy="15" r="1.5" fill="#C9A86A" opacity=".6"/>
+            </svg>
+        </div>
+        {{-- Corner BR --}}
+        <div class="absolute bottom-4 right-4 pointer-events-none" style="opacity:.45" aria-hidden="true">
+            <svg viewBox="0 0 60 60" fill="none" class="w-12 h-12" style="transform:scale(-1,-1)">
+                <path d="M2,28 L2,2 L28,2" stroke="#C9A86A" stroke-width="1.2" fill="none"/>
+                <path d="M2,22 Q12,12 22,2" stroke="#C9A86A" stroke-width=".7" fill="none" opacity=".6"/>
+                <circle cx="2" cy="2" r="2.5" fill="#C9A86A"/>
+                <circle cx="15" cy="2" r="1.5" fill="#C9A86A" opacity=".6"/>
+                <circle cx="2" cy="15" r="1.5" fill="#C9A86A" opacity=".6"/>
+            </svg>
+        </div>
+    </div>
+
+    {{-- ── GOLD CENTER SEAM ── --}}
+    <div class="je-seam" aria-hidden="true"></div>
+
+    {{-- ══════════════════════════════════════════
+         CENTER INVITATION CARD
+    ══════════════════════════════════════════ --}}
+    <div id="je-card">
+
+        {{-- Jasmine hanging garland — Asset 4 --}}
+        <div class="cr d1 w-full pointer-events-none mb-2" aria-hidden="true">
+            <svg viewBox="0 0 340 58" fill="none" class="w-full" style="max-width:340px;display:block;margin:0 auto">
+                {{-- Garland curves --}}
+                <path d="M0,8 C85,50 255,50 340,8" stroke="#C9A86A" stroke-width=".9" opacity=".5" fill="none"/>
+                <path d="M0,8 C85,50 255,50 340,8" stroke="#C9A86A" stroke-width="1.6" opacity=".3" fill="none"/>
+                {{-- Leaves --}}
+                <ellipse cx="36"  cy="30" rx="11" ry="4.5" fill="#306D29" opacity=".5" transform="rotate(-32 36 30)"/>
+                <ellipse cx="95"  cy="44" rx="13" ry="5"   fill="#306D29" opacity=".5" transform="rotate(-18 95 44)"/>
+                <ellipse cx="170" cy="52" rx="14" ry="5.5" fill="#306D29" opacity=".5"/>
+                <ellipse cx="245" cy="44" rx="13" ry="5"   fill="#306D29" opacity=".5" transform="rotate(18 245 44)"/>
+                <ellipse cx="304" cy="30" rx="11" ry="4.5" fill="#306D29" opacity=".5" transform="rotate(32 304 30)"/>
+                {{-- Flowers --}}
+                <use href="#jf" transform="translate(20,30)  scale(.85)"/>
+                <use href="#jf" transform="translate(65,40)  scale(.9)"/>
+                <use href="#jf" transform="translate(118,48) scale(.95)"/>
+                <use href="#jf" transform="translate(170,54)"/>
+                <use href="#jf" transform="translate(222,48) scale(.95)"/>
+                <use href="#jf" transform="translate(275,40) scale(.9)"/>
+                <use href="#jf" transform="translate(320,30) scale(.85)"/>
+            </svg>
+        </div>
+
+        {{-- Card body with Royal Frame — Asset 8 --}}
+        <div class="relative" style="background:rgba(26,4,7,.72);border:1px solid rgba(201,168,106,.3);border-radius:.5rem;padding:2rem 1.75rem 2.25rem;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)">
+
+            {{-- Royal Frame SVG (corner scrollwork) --}}
+            <div class="absolute inset-0 pointer-events-none" aria-hidden="true">
+                <svg viewBox="0 0 300 420" fill="none" class="w-full h-full" preserveAspectRatio="none">
+                    <rect x="6" y="6" width="288" height="408" rx="3" stroke="rgba(201,168,106,.3)" stroke-width=".8"/>
+                    <rect x="13" y="13" width="274" height="394" rx="2" stroke="rgba(201,168,106,.15)" stroke-width=".5"/>
+                    {{-- Corner scrollwork --}}
+                    <g stroke="rgba(201,168,106,.55)" stroke-width="1" fill="none">
+                        <path d="M6,44 L6,6 L44,6"/><path d="M6,38 Q20,20 38,6"/>
+                        <circle cx="10" cy="10" r="3" fill="rgba(201,168,106,.5)" stroke="none"/>
+                        <circle cx="24" cy="6"  r="1.8" fill="rgba(201,168,106,.35)" stroke="none"/>
+                        <circle cx="6"  cy="24" r="1.8" fill="rgba(201,168,106,.35)" stroke="none"/>
+                        <path d="M256,6 L294,6 L294,44"/><path d="M262,6 Q280,20 294,38"/>
+                        <circle cx="290" cy="10" r="3" fill="rgba(201,168,106,.5)" stroke="none"/>
+                        <path d="M6,376 L6,414 L44,414"/><path d="M6,382 Q20,398 38,414"/>
+                        <circle cx="10" cy="410" r="3" fill="rgba(201,168,106,.5)" stroke="none"/>
+                        <path d="M256,414 L294,414 L294,376"/><path d="M262,414 Q280,398 294,382"/>
+                        <circle cx="290" cy="410" r="3" fill="rgba(201,168,106,.5)" stroke="none"/>
+                    </g>
+                    {{-- Side filigree --}}
+                    <g stroke="rgba(201,168,106,.15)" stroke-width=".6" fill="none">
+                        <path d="M6,160 Q14,195 6,230 Q14,265 6,300"/>
+                        <path d="M294,160 Q286,195 294,230 Q286,265 294,300"/>
+                        <path d="M110,6 Q150,14 190,6"/>
+                        <path d="M110,414 Q150,406 190,414"/>
+                    </g>
+                </svg>
+            </div>
+
+            {{-- Gold floral top ornament — Asset 5 --}}
+            <div class="cr d1 je-rule mb-5" aria-hidden="true">
+                <svg viewBox="0 0 36 22" class="w-8 flex-shrink-0" fill="none">
+                    <path d="M18 1 L30 11 L18 21 L6 11 Z" stroke="#C9A86A" stroke-width=".8" opacity=".7"/>
+                    <circle cx="18" cy="11" r="3.5" fill="#C9A86A" opacity=".6"/>
+                    <path d="M18 1 L18 21 M6 11 L30 11" stroke="#C9A86A" stroke-width=".35" opacity=".25"/>
+                    <circle cx="6"  cy="11" r="1.8" fill="#C9A86A" opacity=".35"/>
+                    <circle cx="30" cy="11" r="1.8" fill="#C9A86A" opacity=".35"/>
+                </svg>
+            </div>
+
+            <p class="cr d2 ff-cinzel text-center" style="font-size:.58rem;letter-spacing:.4em;text-transform:uppercase;color:rgba(201,168,106,.6)">
+                Undangan Pernikahan
+            </p>
+
+            <div class="cr d2 je-rule my-4" aria-hidden="true">
+                <svg viewBox="0 0 36 22" class="w-7 flex-shrink-0" fill="none">
+                    <path d="M18 1 L30 11 L18 21 L6 11 Z" stroke="#C9A86A" stroke-width=".7" opacity=".6"/>
+                    <circle cx="18" cy="11" r="3" fill="#C9A86A" opacity=".5"/>
+                </svg>
+            </div>
+
+            {{-- GROOM NAME --}}
+            <h1 class="cr d3 ff-script je-shimmer text-center leading-none"
+                style="font-size:clamp(3.4rem,17vw,5.2rem);color:#F0E8C8;margin-bottom:-.4rem;text-shadow:0 4px 24px rgba(201,168,106,.22)">
+                {{ $invitation->groom_name }}
+            </h1>
+
+            {{-- & --}}
+            <p class="cr d3 ff-garamond italic text-center"
+               style="font-size:clamp(1.8rem,9vw,2.6rem);color:rgba(201,168,106,.6);line-height:1.15;margin:.1rem 0">
+                &amp;
+            </p>
+
+            {{-- BRIDE NAME --}}
+            <h1 class="cr d4 ff-script je-shimmer text-center leading-none"
+                style="font-size:clamp(3.4rem,17vw,5.2rem);color:#F0E8C8;margin-top:-.4rem;text-shadow:0 4px 24px rgba(201,168,106,.22)">
+                {{ $invitation->bride_name }}
+            </h1>
+
+            {{-- Javanese carving divider — Asset 6 --}}
+            <div class="cr d4 my-5 pointer-events-none" aria-hidden="true">
+                <svg viewBox="0 0 260 16" fill="none" class="w-full opacity-55">
+                    <line x1="0" y1="8" x2="260" y2="8" stroke="rgba(201,168,106,.3)" stroke-width=".5"/>
+                    <circle cx="130" cy="8" r="5" fill="none" stroke="#C9A86A" stroke-width=".8" opacity=".65"/>
+                    <circle cx="130" cy="8" r="2.5" fill="rgba(201,168,106,.5)"/>
+                    <g fill="none" stroke="rgba(201,168,106,.45)" stroke-width=".75">
+                        <path d="M108,8 Q113,3 118,8 Q113,13 108,8 Z"/>
+                        <path d="M84,8  Q89,3  94,8  Q89,13  84,8  Z"/>
+                        <path d="M152,8 Q147,3 142,8 Q147,13 152,8 Z"/>
+                        <path d="M176,8 Q171,3 166,8 Q171,13 176,8 Z"/>
+                    </g>
+                    <circle cx="98"  cy="8" r="1.5" fill="rgba(201,168,106,.35)"/>
+                    <circle cx="162" cy="8" r="1.5" fill="rgba(201,168,106,.35)"/>
+                    <polygon points="8,8 14,5 14,11"  fill="rgba(201,168,106,.3)"/>
+                    <polygon points="252,8 246,5 246,11" fill="rgba(201,168,106,.3)"/>
+                </svg>
+            </div>
+
+            {{-- Date --}}
+            @if($events->isNotEmpty())
+            @php $coverEv = $events->first(); @endphp
+            <p class="cr d4 ff-cinzel text-center" style="font-size:.65rem;letter-spacing:.22em;text-transform:uppercase;color:rgba(201,168,106,.55)">
+                {{ \Carbon\Carbon::parse($coverEv->date)->translatedFormat('l, d F Y') }}
+            </p>
+            @endif
+
+            {{-- Guest name --}}
+            @if($guest)
+            <div class="cr d5 mt-5 text-center">
+                <div class="inline-block px-5 py-3" style="background:rgba(255,255,255,.06);border:1px solid rgba(201,168,106,.22);border-radius:.75rem">
+                    <p class="ff-cinzel text-center mb-1" style="font-size:.55rem;letter-spacing:.3em;text-transform:uppercase;color:rgba(201,168,106,.5)">Kepada Yth.</p>
+                    <p class="ff-garamond text-center font-medium" style="font-size:1.2rem;color:#F0E8C8">{{ $guest->name }}</p>
+                    @if($guest->allocated_seats > 1)
+                    <p class="ff-raleway text-center text-xs mt-0.5" style="color:rgba(240,232,200,.45)">({{ $guest->allocated_seats }} kursi)</p>
+                    @endif
+                </div>
+            </div>
+            @endif
+
+            {{-- CTA --}}
+            <div class="cr d6 card-cta mt-6 text-center">
+                <button
+                    @click="
+                        opening = true;
+                        document.getElementById('je-card').classList.add('fading');
+                        $store.invitation.openEnvelope();
+                        setTimeout(() => { opened = true }, 1300);
+                    "
+                    class="je-open-btn"
+                    aria-label="Buka undangan {{ $invitation->getCoupleName() }}">
+                    <svg class="w-3.5 h-3.5 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                              d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                    </svg>
+                    Buka Undangan
+                </button>
+            </div>
+
+            <p class="cr d7 ff-garamond italic text-center mt-3" style="font-size:.8rem;color:rgba(201,168,106,.3)">
+                Sentuh untuk membuka
+            </p>
+        </div>
+    </div>
+</div>
+
+
+{{-- ╔══════════════════════════════════════════════════════════╗
+     ║  MAIN INVITATION CONTENT                                ║
+     ╚══════════════════════════════════════════════════════════╝ --}}
+<div x-show="opened" x-cloak>
+<div class="je-page" style="padding-bottom:88px">
+
+    {{-- ══════════════════════════════════════════
+         §1  HERO
+    ══════════════════════════════════════════ --}}
+    <section id="nav-top"
+             class="relative flex flex-col items-center justify-center overflow-hidden"
+             style="min-height:100svh;background:var(--c-night)"
+             aria-label="Hero">
+
+        {{-- Cover photo --}}
+        @if($invitation->cover_photo)
+        <div class="absolute inset-0">
+            <img src="{{ Storage::url($invitation->cover_photo) }}"
+                 alt="{{ $invitation->getCoupleName() }}"
+                 class="je-hero-zoom w-full h-full object-cover"
+                 style="opacity:.62">
+            {{-- Vignette: top edge, center glow, bottom gradient --}}
+            <div class="absolute inset-0" style="background:linear-gradient(180deg,rgba(26,4,7,.72) 0%,rgba(26,4,7,.1) 25%,transparent 55%)"></div>
+            <div class="absolute inset-0" style="background:radial-gradient(ellipse 100% 60% at 50% 40%,transparent 30%,rgba(26,4,7,.35) 65%,rgba(26,4,7,.8) 100%)"></div>
+            <div class="absolute inset-0" style="background:linear-gradient(0deg,rgba(26,4,7,.97) 0%,rgba(26,4,7,.55) 30%,transparent 62%)"></div>
+        </div>
+        @else
+        <div class="absolute inset-0" style="background:linear-gradient(160deg,#130306 0%,#3a0c12 50%,#1a0407 100%)"></div>
+        @endif
+
+        {{-- Keraton gate ghost bg — Asset 1 --}}
+        <div class="absolute inset-0 flex items-center justify-center pointer-events-none" aria-hidden="true">
+            <svg viewBox="0 0 360 460" fill="none" class="w-full h-full" style="max-width:420px;max-height:100%;opacity:.05">
+                <g fill="#C9A86A">
+                    <polygon points="180,6 193,34 167,34"/>
+                    <polygon points="163,34 197,34 208,64 152,64"/>
+                    <polygon points="140,64 220,64 236,104 124,104"/>
+                    <polygon points="112,104 248,104 266,152 94,152"/>
+                    <rect x="88" y="152" width="184" height="16"/>
+                    <rect x="98" y="168" width="164" height="262"/>
+                    <rect x="98" y="168" width="24" height="262"/>
+                    <rect x="238" y="168" width="24" height="262"/>
+                    <rect x="52"  y="280" width="48" height="150"/>
+                    <rect x="260" y="280" width="48" height="150"/>
+                    <rect x="30"  y="420" width="300" height="20"/>
+                    <rect x="14"  y="438" width="332" height="18"/>
+                </g>
+                <path d="M140,430 L140,334 Q180,296 220,334 L220,430 Z" fill="rgba(26,4,7,.85)"/>
+            </svg>
+        </div>
+
+        {{-- Hanging jasmine garland — Asset 10 --}}
+        <div class="absolute top-0 left-0 right-0 pointer-events-none" aria-hidden="true">
+            <svg viewBox="0 0 400 62" fill="none" class="je-garland">
+                <path d="M0,6 C100,50 300,50 400,6" stroke="#C9A86A" stroke-width=".8" opacity=".3" fill="none"/>
+                <ellipse cx="50"  cy="28" rx="11" ry="4.5" fill="#306D29" opacity=".35" transform="rotate(-28 50 28)"/>
+                <ellipse cx="120" cy="42" rx="13" ry="5"   fill="#306D29" opacity=".35" transform="rotate(-12 120 42)"/>
+                <ellipse cx="200" cy="50" rx="15" ry="5.5" fill="#306D29" opacity=".35"/>
+                <ellipse cx="280" cy="42" rx="13" ry="5"   fill="#306D29" opacity=".35" transform="rotate(12 280 42)"/>
+                <ellipse cx="350" cy="28" rx="11" ry="4.5" fill="#306D29" opacity=".35" transform="rotate(28 350 28)"/>
+                <use href="#jf" transform="translate(28,28)  scale(.82)"/>
+                <use href="#jf" transform="translate(90,40)  scale(.88)"/>
+                <use href="#jf" transform="translate(155,48) scale(.94)"/>
+                <use href="#jf" transform="translate(200,52)"/>
+                <use href="#jf" transform="translate(245,48) scale(.94)"/>
+                <use href="#jf" transform="translate(310,40) scale(.88)"/>
+                <use href="#jf" transform="translate(372,28) scale(.82)"/>
+            </svg>
+        </div>
+
+        {{-- Parang strip bottom — Asset 2 --}}
+        <div class="absolute bottom-0 left-0 right-0 pat-parang-strip pointer-events-none" aria-hidden="true"></div>
+
+        {{-- Hero text --}}
+        <div class="relative z-10 je-section-inner px-6 pb-8 text-center" style="margin-top:-8vh">
+            <p data-sr="fade" class="ff-cinzel mb-10"
+               style="font-size:.6rem;letter-spacing:.48em;text-transform:uppercase;color:rgba(201,168,106,.65)">
+                The Wedding of
+            </p>
+            <h2 data-sr class="ff-script je-shimmer leading-none mb-0"
+                style="font-size:clamp(3.6rem,18vw,5.8rem);color:#F0E8C8;text-shadow:0 4px 32px rgba(201,168,106,.25)">
+                {{ $invitation->groom_name }}
+            </h2>
+            <p data-sr="fade" class="ff-garamond italic"
+               style="font-size:clamp(2rem,10vw,3rem);color:rgba(201,168,106,.55);line-height:1.1">
+                &amp;
+            </p>
+            <h2 data-sr class="ff-script je-shimmer leading-none"
+                style="font-size:clamp(3.6rem,18vw,5.8rem);color:#F0E8C8;text-shadow:0 4px 32px rgba(201,168,106,.25)">
+                {{ $invitation->bride_name }}
+            </h2>
+
+            @if($events->isNotEmpty())
+            <div data-sr class="je-rule mt-7 mb-4" aria-hidden="true">
+                <svg viewBox="0 0 36 22" class="w-7 flex-shrink-0" fill="none">
+                    <path d="M18 1 L30 11 L18 21 L6 11 Z" stroke="#C9A86A" stroke-width=".8" opacity=".65"/>
+                    <circle cx="18" cy="11" r="3.5" fill="#C9A86A" opacity=".55"/>
+                </svg>
+            </div>
+            <p data-sr="fade" class="ff-cinzel" style="font-size:.64rem;letter-spacing:.24em;text-transform:uppercase;color:rgba(201,168,106,.55)">
+                {{ \Carbon\Carbon::parse($events->first()->date)->translatedFormat('l, d F Y') }}
+            </p>
+            @endif
+
+            @if($invitation->opening_words)
+            <p data-sr class="ff-garamond italic mt-6 leading-relaxed"
+               style="font-size:1.05rem;color:rgba(240,232,200,.55)">
+                {{ $invitation->opening_words }}
+            </p>
+            @endif
+        </div>
+    </section>
+
+
+    {{-- ══════════════════════════════════════════
+         §2  OPENING MESSAGE
+    ══════════════════════════════════════════ --}}
+    <section class="relative py-16 px-6 overflow-hidden pat-kawung-ivory" aria-label="Pembukaan">
+
+        {{-- Wayang left — Asset 7 --}}
+        <div class="absolute left-0 top-1/2 -translate-y-1/2 pointer-events-none" style="width:64px;opacity:.07" aria-hidden="true">
+            <svg viewBox="0 0 65 230" fill="var(--c-gold)">
+                <ellipse cx="32" cy="20" rx="13" ry="17"/>
+                <path d="M20,34 Q8,52 6,76 Q5,96 14,106 Q8,116 10,136 Q12,155 20,170 L16,196 Q14,216 22,228 L27,228 Q21,218 23,196 L27,170 Q31,180 32,183 Q33,180 37,170 L41,196 Q43,218 37,228 L42,228 Q50,216 48,196 L44,170 Q52,155 54,136 Q56,116 50,106 Q59,96 58,76 Q56,52 44,34 Q40,44 32,46 Q24,44 20,34 Z"/>
+                <polygon points="20,4 26,-2 32,6 38,-2 44,4 37,2 32,10 27,2" opacity=".85"/>
+            </svg>
+        </div>
+        {{-- Wayang right — Asset 7 --}}
+        <div class="absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none" style="width:64px;opacity:.07;transform:translateY(-50%) scaleX(-1)" aria-hidden="true">
+            <svg viewBox="0 0 65 230" fill="var(--c-gold)">
+                <ellipse cx="32" cy="20" rx="13" ry="17"/>
+                <path d="M20,34 Q8,52 6,76 Q5,96 14,106 Q8,116 10,136 Q12,155 20,170 L16,196 Q14,216 22,228 L27,228 Q21,218 23,196 L27,170 Q31,180 32,183 Q33,180 37,170 L41,196 Q43,218 37,228 L42,228 Q50,216 48,196 L44,170 Q52,155 54,136 Q56,116 50,106 Q59,96 58,76 Q56,52 44,34 Q40,44 32,46 Q24,44 20,34 Z"/>
+                <polygon points="20,4 26,-2 32,6 38,-2 44,4 37,2 32,10 27,2" opacity=".85"/>
+            </svg>
+        </div>
+
+        {{-- Carving top — Asset 6 --}}
+        <div class="w-full je-section-inner mb-8 pointer-events-none" aria-hidden="true">
+            <svg viewBox="0 0 300 18" fill="none" style="width:100%;max-width:300px;display:block;margin:0 auto;opacity:.5">
+                <line x1="0" y1="9" x2="300" y2="9" stroke="rgba(201,168,106,.3)" stroke-width=".5"/>
+                <circle cx="150" cy="9" r="5" fill="none" stroke="#C9A86A" stroke-width=".8" opacity=".65"/>
+                <circle cx="150" cy="9" r="2.5" fill="rgba(201,168,106,.5)"/>
+                <g fill="none" stroke="rgba(201,168,106,.4)" stroke-width=".75">
+                    <path d="M124,9 Q129,4 134,9 Q129,14 124,9 Z"/>
+                    <path d="M96,9  Q101,4 106,9 Q101,14 96,9  Z"/>
+                    <path d="M176,9 Q171,4 166,9 Q171,14 176,9 Z"/>
+                    <path d="M204,9 Q199,4 194,9 Q199,14 204,9 Z"/>
+                </g>
+                <circle cx="110" cy="9" r="1.5" fill="rgba(201,168,106,.3)"/>
+                <circle cx="190" cy="9" r="1.5" fill="rgba(201,168,106,.3)"/>
+                <polygon points="4,9 10,6 10,12"  fill="rgba(201,168,106,.3)"/>
+                <polygon points="296,9 290,6 290,12" fill="rgba(201,168,106,.3)"/>
+            </svg>
+        </div>
+
+        <div class="je-section-inner text-center relative z-10">
+
+            {{-- Ceremonial frame around message --}}
+            <div data-sr class="relative px-6 py-8 mx-auto"
+                 style="border:1px solid rgba(201,168,106,.22);border-radius:.5rem;background:rgba(247,240,229,.5)">
+
+                {{-- Corner ornaments --}}
+                <div class="absolute top-2 left-2 pointer-events-none opacity-40" aria-hidden="true">
+                    <svg viewBox="0 0 28 28" fill="none" class="w-5 h-5">
+                        <path d="M2,14 L2,2 L14,2" stroke="#C9A86A" stroke-width="1.1" fill="none"/>
+                        <circle cx="2" cy="2" r="2" fill="#C9A86A"/>
+                    </svg>
+                </div>
+                <div class="absolute top-2 right-2 pointer-events-none opacity-40" aria-hidden="true">
+                    <svg viewBox="0 0 28 28" fill="none" class="w-5 h-5" style="transform:scaleX(-1)">
+                        <path d="M2,14 L2,2 L14,2" stroke="#C9A86A" stroke-width="1.1" fill="none"/>
+                        <circle cx="2" cy="2" r="2" fill="#C9A86A"/>
+                    </svg>
+                </div>
+                <div class="absolute bottom-2 left-2 pointer-events-none opacity-40" aria-hidden="true">
+                    <svg viewBox="0 0 28 28" fill="none" class="w-5 h-5" style="transform:scaleY(-1)">
+                        <path d="M2,14 L2,2 L14,2" stroke="#C9A86A" stroke-width="1.1" fill="none"/>
+                        <circle cx="2" cy="2" r="2" fill="#C9A86A"/>
+                    </svg>
+                </div>
+                <div class="absolute bottom-2 right-2 pointer-events-none opacity-40" aria-hidden="true">
+                    <svg viewBox="0 0 28 28" fill="none" class="w-5 h-5" style="transform:scale(-1,-1)">
+                        <path d="M2,14 L2,2 L14,2" stroke="#C9A86A" stroke-width="1.1" fill="none"/>
+                        <circle cx="2" cy="2" r="2" fill="#C9A86A"/>
+                    </svg>
+                </div>
+
+                <p class="ff-garamond italic mb-5"
+                   style="font-size:1.2rem;color:var(--c-muted2);letter-spacing:.03em">
+                    Bismillahirrahmanirrahim
+                </p>
+
+                <div style="height:1px;background:linear-gradient(90deg,transparent,rgba(201,168,106,.3),transparent);margin:0 auto 1.25rem;max-width:8rem"></div>
+
+                <p class="ff-garamond leading-loose"
+                   style="font-size:1.08rem;color:var(--c-text);line-height:1.9">
+                    {{ $invitation->message ?? 'Dengan memohon rahmat dan ridho Allah SWT, kami bermaksud menyelenggarakan pernikahan putra-putri kami. Kehadiran serta doa restu Bapak/Ibu/Saudara/i sangat berarti bagi kami.' }}
+                </p>
+            </div>
+
+            <div data-sr class="je-rule mt-8" aria-hidden="true">
+                <svg viewBox="0 0 36 22" class="w-7 flex-shrink-0" fill="none">
+                    <path d="M18 1 L30 11 L18 21 L6 11 Z" stroke="#C9A86A" stroke-width=".8" opacity=".6"/>
+                    <circle cx="18" cy="11" r="3" fill="#C9A86A" opacity=".5"/>
+                </svg>
+            </div>
+        </div>
+
+        {{-- Carving bottom --}}
+        <div class="w-full je-section-inner mt-8 pointer-events-none" aria-hidden="true">
+            <svg viewBox="0 0 300 18" fill="none" style="width:100%;max-width:300px;display:block;margin:0 auto;opacity:.4">
+                <line x1="0" y1="9" x2="300" y2="9" stroke="rgba(201,168,106,.3)" stroke-width=".5"/>
+                <circle cx="150" cy="9" r="5" fill="none" stroke="#C9A86A" stroke-width=".8" opacity=".65"/>
+                <circle cx="150" cy="9" r="2.5" fill="rgba(201,168,106,.5)"/>
+                <g fill="none" stroke="rgba(201,168,106,.35)" stroke-width=".7">
+                    <path d="M124,9 Q129,4 134,9 Q129,14 124,9 Z"/>
+                    <path d="M176,9 Q171,4 166,9 Q171,14 176,9 Z"/>
+                </g>
+            </svg>
+        </div>
+    </section>
+
+
+    {{-- ══════════════════════════════════════════
+         §3  COUPLE
+    ══════════════════════════════════════════ --}}
+    <section id="nav-couple" class="relative overflow-hidden" aria-label="Mempelai">
+
+        {{-- ─────────── GROOM (dark) ─────────── --}}
+        <div class="relative overflow-hidden pat-kawung" style="padding:6.5rem 1.5rem 5rem">
+
+            {{-- Hanging jasmine top --}}
+            <div class="absolute top-0 left-0 right-0 pointer-events-none" aria-hidden="true">
+                <svg viewBox="0 0 400 56" fill="none" class="je-garland" style="opacity:.35">
+                    <path d="M0,5 C100,46 300,46 400,5" stroke="#C9A86A" stroke-width=".8" fill="none"/>
+                    <use href="#jf" transform="translate(30,26)  scale(.78)"/>
+                    <use href="#jf" transform="translate(90,38)  scale(.85)"/>
+                    <use href="#jf" transform="translate(155,46) scale(.92)"/>
+                    <use href="#jf" transform="translate(200,50)"/>
+                    <use href="#jf" transform="translate(245,46) scale(.92)"/>
+                    <use href="#jf" transform="translate(310,38) scale(.85)"/>
+                    <use href="#jf" transform="translate(370,26) scale(.78)"/>
+                </svg>
+            </div>
+
+            {{-- Wayang silhouettes --}}
+            <div class="absolute left-0 top-1/2 pointer-events-none" style="width:52px;opacity:.1;transform:translateY(-50%)" aria-hidden="true">
+                <svg viewBox="0 0 55 220" fill="#C9A86A"><ellipse cx="28" cy="18" rx="12" ry="15"/><path d="M17,30 Q6,48 4,70 Q3,88 12,98 Q6,108 8,128 Q10,147 18,162 L14,186 Q12,204 19,216 L23,216 Q18,206 20,186 L24,162 Q28,172 28,174 Q28,172 32,162 L36,186 Q38,206 33,216 L37,216 Q44,204 42,186 L38,162 Q46,147 48,128 Q50,108 44,98 Q53,88 52,70 Q50,48 39,30 Q35,40 28,42 Q21,40 17,30 Z"/><polygon points="17,2 23,-3 28,5 33,-3 39,2 33,0 28,8 23,0" opacity=".85"/></svg>
+            </div>
+            <div class="absolute right-0 top-1/2 pointer-events-none" style="width:52px;opacity:.1;transform:translateY(-50%) scaleX(-1)" aria-hidden="true">
+                <svg viewBox="0 0 55 220" fill="#C9A86A"><ellipse cx="28" cy="18" rx="12" ry="15"/><path d="M17,30 Q6,48 4,70 Q3,88 12,98 Q6,108 8,128 Q10,147 18,162 L14,186 Q12,204 19,216 L23,216 Q18,206 20,186 L24,162 Q28,172 28,174 Q28,172 32,162 L36,186 Q38,206 33,216 L37,216 Q44,204 42,186 L38,162 Q46,147 48,128 Q50,108 44,98 Q53,88 52,70 Q50,48 39,30 Q35,40 28,42 Q21,40 17,30 Z"/><polygon points="17,2 23,-3 28,5 33,-3 39,2 33,0 28,8 23,0" opacity=".85"/></svg>
+            </div>
+
+            <div class="je-section-inner flex flex-col items-center text-center relative z-10">
+
+                {{-- Section label --}}
+                <p data-sr="fade" class="ff-cinzel mb-7"
+                   style="font-size:.55rem;letter-spacing:.5em;text-transform:uppercase;color:rgba(201,168,106,.4)">
+                    Mempelai Pria
+                </p>
+
+                {{-- Grand oval portrait --}}
+                @if($invitation->groom_photo)
+                <div data-sr class="je-oval-grand mx-auto mb-9" style="width:13rem;height:17rem">
+                    <img src="{{ Storage::url($invitation->groom_photo) }}" alt="{{ $invitation->groom_name }}" class="w-full h-full object-cover">
+                </div>
+                @endif
+
+                {{-- Name ornament line --}}
+                <div class="flex justify-center mb-5 pointer-events-none" aria-hidden="true">
+                    <svg viewBox="0 0 160 16" fill="none" class="w-36 opacity-50">
+                        <line x1="0" y1="8" x2="160" y2="8" stroke="rgba(201,168,106,.28)" stroke-width=".5"/>
+                        <g fill="none" stroke="rgba(201,168,106,.65)" stroke-width=".9">
+                            <path d="M66,8 Q71,2 76,8 Q71,14 66,8 Z"/>
+                            <path d="M76,8 Q81,2 86,8 Q81,14 76,8 Z"/>
+                            <path d="M54,8 Q59,3 64,8 Q59,13 54,8 Z"/>
+                            <path d="M88,8 Q93,3 98,8 Q93,13 88,8 Z"/>
+                        </g>
+                        <circle cx="76" cy="8" r="3" fill="rgba(201,168,106,.6)"/>
+                        <polygon points="4,8 10,5 10,11" fill="rgba(201,168,106,.3)"/>
+                        <polygon points="156,8 150,5 150,11" fill="rgba(201,168,106,.3)"/>
+                    </svg>
+                </div>
+
+                {{-- Script name --}}
+                <h3 data-sr class="ff-script je-shimmer leading-none"
+                    style="font-size:clamp(3.2rem,15vw,5rem);color:#F0E8C8">
+                    {{ $invitation->groom_name }}
+                </h3>
+
+                @if($invitation->groom_full_name)
+                <p class="ff-garamond italic mt-3"
+                   style="font-size:1.1rem;color:rgba(231,225,177,.6);letter-spacing:.02em">
+                    {{ $invitation->groom_full_name }}
+                </p>
+                @endif
+
+                @if($invitation->groom_father || $invitation->groom_mother)
+                <div class="mt-5">
+                    <p class="ff-cinzel" style="font-size:.5rem;letter-spacing:.32em;text-transform:uppercase;color:rgba(201,168,106,.38)">
+                        Putra dari
+                    </p>
+                    <p class="ff-garamond italic mt-1.5 leading-snug"
+                       style="font-size:1rem;color:rgba(231,225,177,.45)">
+                        @if($invitation->groom_father && $invitation->groom_mother)
+                            Bpk. {{ $invitation->groom_father }} &amp; Ibu {{ $invitation->groom_mother }}
+                        @elseif($invitation->groom_father)
+                            Bpk. {{ $invitation->groom_father }}
+                        @else
+                            Ibu {{ $invitation->groom_mother }}
+                        @endif
+                    </p>
+                </div>
+                @endif
+
+            </div>
+        </div>
+
+        {{-- ─────────── ELEGANT & SEPARATOR ─────────── --}}
+        <div class="relative py-14 px-6 pat-kawung-ivory overflow-hidden">
+
+            {{-- Large background diamond --}}
+            <div class="absolute inset-0 flex items-center justify-center pointer-events-none" aria-hidden="true">
+                <svg viewBox="0 0 220 130" fill="none" class="w-64 opacity-[0.04]">
+                    <path d="M110 8 L212 65 L110 122 L8 65 Z" stroke="#C9A86A" stroke-width="1.2"/>
+                    <path d="M110 24 L196 65 L110 106 L24 65 Z" stroke="#C9A86A" stroke-width=".7"/>
+                    <circle cx="110" cy="65" r="18" stroke="#C9A86A" stroke-width=".8"/>
+                </svg>
+            </div>
+
+            <div class="relative z-10 text-center">
+                {{-- Top ornamental bar --}}
+                <div class="flex justify-center mb-4" aria-hidden="true">
+                    <svg viewBox="0 0 240 18" fill="none" class="w-52 opacity-55">
+                        <line x1="0" y1="9" x2="240" y2="9" stroke="rgba(201,168,106,.22)" stroke-width=".5"/>
+                        <g fill="none" stroke="rgba(201,168,106,.55)" stroke-width=".85">
+                            <path d="M99,9  Q104,3 109,9 Q104,15 99,9 Z"/>
+                            <path d="M109,9 Q114,3 119,9 Q114,15 109,9 Z"/>
+                            <path d="M119,9 Q124,3 129,9 Q124,15 129,9 Z"/>
+                            <path d="M87,9  Q92,4  97,9  Q92,14  87,9  Z"/>
+                            <path d="M131,9 Q136,4 141,9 Q136,14 131,9 Z"/>
+                        </g>
+                        <circle cx="114" cy="9" r="3.2" fill="rgba(201,168,106,.65)"/>
+                        <polygon points="6,9 13,6 13,12" fill="rgba(201,168,106,.28)"/>
+                        <polygon points="234,9 227,6 227,12" fill="rgba(201,168,106,.28)"/>
+                    </svg>
+                </div>
+
+                {{-- Ampersand --}}
+                <p data-sr="fade" class="ff-script"
+                   style="font-size:clamp(4.5rem,20vw,7rem);color:rgba(201,168,106,.52);line-height:1">
+                    &amp;
+                </p>
+
+                {{-- Bottom ornamental bar --}}
+                <div class="flex justify-center mt-4" aria-hidden="true">
+                    <svg viewBox="0 0 240 18" fill="none" class="w-52 opacity-55">
+                        <line x1="0" y1="9" x2="240" y2="9" stroke="rgba(201,168,106,.22)" stroke-width=".5"/>
+                        <g fill="none" stroke="rgba(201,168,106,.55)" stroke-width=".85">
+                            <path d="M99,9  Q104,3 109,9 Q104,15 99,9 Z"/>
+                            <path d="M109,9 Q114,3 119,9 Q114,15 109,9 Z"/>
+                            <path d="M119,9 Q124,3 129,9 Q124,15 129,9 Z"/>
+                            <path d="M87,9  Q92,4  97,9  Q92,14  87,9  Z"/>
+                            <path d="M131,9 Q136,4 141,9 Q136,14 131,9 Z"/>
+                        </g>
+                        <circle cx="114" cy="9" r="3.2" fill="rgba(201,168,106,.65)"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        {{-- ─────────── BRIDE (ivory) ─────────── --}}
+        <div class="relative overflow-hidden pat-kawung-ivory" style="padding:5rem 1.5rem 7rem">
+
+            {{-- Botanical corner left --}}
+            <div class="absolute top-4 left-0 pointer-events-none" style="width:68px;opacity:.22;transform-origin:0 0" aria-hidden="true">
+                <svg viewBox="0 0 70 90" fill="none">
+                    <path d="M6,84 Q24,60 50,34 Q62,20 68,6" stroke="#C9A86A" stroke-width="1.1" stroke-linecap="round"/>
+                    <ellipse cx="36" cy="48" rx="14" ry="5.5" fill="#306D29" opacity=".5" transform="rotate(-44 36 48)"/>
+                    <ellipse cx="54" cy="28" rx="11" ry="5" fill="#306D29" opacity=".45" transform="rotate(-52 54 28)"/>
+                    <circle cx="38" cy="50" r="3.5" fill="white" opacity=".5"/>
+                    <circle cx="39" cy="51" r="1.4" fill="#C9A86A" opacity=".9"/>
+                    <circle cx="56" cy="30" r="3" fill="white" opacity=".45"/>
+                </svg>
+            </div>
+            {{-- Botanical corner right --}}
+            <div class="absolute top-4 right-0 pointer-events-none" style="width:68px;opacity:.22;transform:scaleX(-1);transform-origin:100% 0" aria-hidden="true">
+                <svg viewBox="0 0 70 90" fill="none">
+                    <path d="M6,84 Q24,60 50,34 Q62,20 68,6" stroke="#C9A86A" stroke-width="1.1" stroke-linecap="round"/>
+                    <ellipse cx="36" cy="48" rx="14" ry="5.5" fill="#306D29" opacity=".5" transform="rotate(-44 36 48)"/>
+                    <ellipse cx="54" cy="28" rx="11" ry="5" fill="#306D29" opacity=".45" transform="rotate(-52 54 28)"/>
+                    <circle cx="38" cy="50" r="3.5" fill="white" opacity=".5"/>
+                    <circle cx="39" cy="51" r="1.4" fill="#C9A86A" opacity=".9"/>
+                </svg>
+            </div>
+
+            {{-- Wayang silhouettes (light-toned) --}}
+            <div class="absolute left-0 top-1/2 pointer-events-none" style="width:52px;opacity:.06;transform:translateY(-50%)" aria-hidden="true">
+                <svg viewBox="0 0 55 220" fill="var(--c-night)"><ellipse cx="28" cy="18" rx="12" ry="15"/><path d="M17,30 Q6,48 4,70 Q3,88 12,98 Q6,108 8,128 Q10,147 18,162 L14,186 Q12,204 19,216 L23,216 Q18,206 20,186 L24,162 Q28,172 28,174 Q28,172 32,162 L36,186 Q38,206 33,216 L37,216 Q44,204 42,186 L38,162 Q46,147 48,128 Q50,108 44,98 Q53,88 52,70 Q50,48 39,30 Q35,40 28,42 Q21,40 17,30 Z"/></svg>
+            </div>
+            <div class="absolute right-0 top-1/2 pointer-events-none" style="width:52px;opacity:.06;transform:translateY(-50%) scaleX(-1)" aria-hidden="true">
+                <svg viewBox="0 0 55 220" fill="var(--c-night)"><ellipse cx="28" cy="18" rx="12" ry="15"/><path d="M17,30 Q6,48 4,70 Q3,88 12,98 Q6,108 8,128 Q10,147 18,162 L14,186 Q12,204 19,216 L23,216 Q18,206 20,186 L24,162 Q28,172 28,174 Q28,172 32,162 L36,186 Q38,206 33,216 L37,216 Q44,204 42,186 L38,162 Q46,147 48,128 Q50,108 44,98 Q53,88 52,70 Q50,48 39,30 Q35,40 28,42 Q21,40 17,30 Z"/></svg>
+            </div>
+
+            <div class="je-section-inner flex flex-col items-center text-center relative z-10">
+
+                {{-- Section label --}}
+                <p data-sr="fade" class="ff-cinzel mb-7"
+                   style="font-size:.55rem;letter-spacing:.5em;text-transform:uppercase;color:var(--c-muted2)">
+                    Mempelai Wanita
+                </p>
+
+                {{-- Grand oval portrait --}}
+                @if($invitation->bride_photo)
+                <div data-sr class="je-oval-grand light mx-auto mb-9" style="width:13rem;height:17rem">
+                    <img src="{{ Storage::url($invitation->bride_photo) }}" alt="{{ $invitation->bride_name }}" class="w-full h-full object-cover">
+                </div>
+                @endif
+
+                {{-- Name ornament line --}}
+                <div class="flex justify-center mb-5 pointer-events-none" aria-hidden="true">
+                    <svg viewBox="0 0 160 16" fill="none" class="w-36 opacity-45">
+                        <line x1="0" y1="8" x2="160" y2="8" stroke="rgba(201,168,106,.28)" stroke-width=".5"/>
+                        <g fill="none" stroke="rgba(201,168,106,.6)" stroke-width=".9">
+                            <path d="M66,8 Q71,2 76,8 Q71,14 66,8 Z"/>
+                            <path d="M76,8 Q81,2 86,8 Q81,14 76,8 Z"/>
+                            <path d="M54,8 Q59,3 64,8 Q59,13 54,8 Z"/>
+                            <path d="M88,8 Q93,3 98,8 Q93,13 88,8 Z"/>
+                        </g>
+                        <circle cx="76" cy="8" r="3" fill="rgba(201,168,106,.55)"/>
+                        <polygon points="4,8 10,5 10,11" fill="rgba(201,168,106,.28)"/>
+                        <polygon points="156,8 150,5 150,11" fill="rgba(201,168,106,.28)"/>
+                    </svg>
+                </div>
+
+                {{-- Script name --}}
+                <h3 data-sr class="ff-script leading-none"
+                    style="font-size:clamp(3.2rem,15vw,5rem);color:var(--c-night);text-shadow:0 2px 20px rgba(201,168,106,.2)">
+                    {{ $invitation->bride_name }}
+                </h3>
+
+                @if($invitation->bride_full_name)
+                <p class="ff-garamond italic mt-3"
+                   style="font-size:1.1rem;color:rgba(26,4,7,.52);letter-spacing:.02em">
+                    {{ $invitation->bride_full_name }}
+                </p>
+                @endif
+
+                @if($invitation->bride_father || $invitation->bride_mother)
+                <div class="mt-5">
+                    <p class="ff-cinzel" style="font-size:.5rem;letter-spacing:.32em;text-transform:uppercase;color:var(--c-muted2)">
+                        Putri dari
+                    </p>
+                    <p class="ff-garamond italic mt-1.5 leading-snug"
+                       style="font-size:1rem;color:var(--c-muted)">
+                        @if($invitation->bride_father && $invitation->bride_mother)
+                            Bpk. {{ $invitation->bride_father }} &amp; Ibu {{ $invitation->bride_mother }}
+                        @elseif($invitation->bride_father)
+                            Bpk. {{ $invitation->bride_father }}
+                        @else
+                            Ibu {{ $invitation->bride_mother }}
+                        @endif
+                    </p>
+                </div>
+                @endif
+
+            </div>
+
+            <div class="absolute bottom-0 left-0 right-0 pat-parang-strip pointer-events-none" aria-hidden="true"></div>
+        </div>
+
+    </section>
+
+
+    {{-- ══════════════════════════════════════════
+         §4  EVENTS
+    ══════════════════════════════════════════ --}}
+    <section id="nav-events"
+             class="relative py-20 px-6 overflow-hidden pat-kawung-ivory"
+             aria-label="Acara">
+
+        {{-- Corner botanical decorations --}}
+        <div class="absolute top-0 left-0 pointer-events-none" style="width:80px;opacity:.2" aria-hidden="true">
+            <svg viewBox="0 0 80 90" fill="none">
+                <path d="M6,84 Q24,60 50,34 Q62,20 76,6" stroke="#C9A86A" stroke-width="1.2" stroke-linecap="round"/>
+                <ellipse cx="36" cy="50" rx="14" ry="5.5" fill="#306D29" opacity=".55" transform="rotate(-44 36 50)"/>
+                <ellipse cx="56" cy="28" rx="11" ry="5" fill="#306D29" opacity=".5" transform="rotate(-52 56 28)"/>
+                <circle cx="38" cy="52" r="3.5" fill="white" opacity=".5"/>
+                <circle cx="39" cy="53" r="1.4" fill="#C9A86A" opacity=".9"/>
+                <circle cx="58" cy="30" r="3" fill="white" opacity=".45"/>
+            </svg>
+        </div>
+        <div class="absolute top-0 right-0 pointer-events-none" style="width:80px;opacity:.2;transform:scaleX(-1)" aria-hidden="true">
+            <svg viewBox="0 0 80 90" fill="none">
+                <path d="M6,84 Q24,60 50,34 Q62,20 76,6" stroke="#C9A86A" stroke-width="1.2" stroke-linecap="round"/>
+                <ellipse cx="36" cy="50" rx="14" ry="5.5" fill="#306D29" opacity=".55" transform="rotate(-44 36 50)"/>
+                <ellipse cx="56" cy="28" rx="11" ry="5" fill="#306D29" opacity=".5" transform="rotate(-52 56 28)"/>
+                <circle cx="38" cy="52" r="3.5" fill="white" opacity=".5"/>
+                <circle cx="39" cy="53" r="1.4" fill="#C9A86A" opacity=".9"/>
+            </svg>
+        </div>
+
+        <div class="je-section-inner">
+
+            {{-- Section header --}}
+            <div class="text-center mb-14">
+                <p data-sr="fade" class="ff-cinzel mb-3"
+                   style="font-size:.6rem;letter-spacing:.45em;text-transform:uppercase;color:var(--c-muted2)">
+                    Acara Pernikahan
+                </p>
+                <div data-sr class="je-rule" aria-hidden="true">
+                    <svg viewBox="0 0 36 22" class="w-7 flex-shrink-0" fill="none">
+                        <path d="M18 1 L30 11 L18 21 L6 11 Z" stroke="#C9A86A" stroke-width=".8" opacity=".6"/>
+                        <circle cx="18" cy="11" r="3" fill="#C9A86A" opacity=".5"/>
+                    </svg>
+                </div>
+            </div>
+
+            @foreach($events as $event)
+            <div data-sr class="text-center mb-16">
+
+                {{-- Event name badge —— framed with thin gold lines --}}
+                <div class="inline-block mb-7 px-7 py-2" style="border-left:1.5px solid rgba(201,168,106,.4);border-right:1.5px solid rgba(201,168,106,.4)">
+                    <p class="ff-cinzel" style="font-size:.65rem;letter-spacing:.32em;text-transform:uppercase;color:var(--c-gold)">
+                        {{ $event->name }}
+                    </p>
+                </div>
+
+                @if($event->date)
+                {{-- Proclamation-style large date --}}
+                <div class="mb-7">
+                    <p class="ff-cinzel" style="font-size:.62rem;letter-spacing:.25em;text-transform:uppercase;color:var(--c-muted2)">
+                        {{ \Carbon\Carbon::parse($event->date)->translatedFormat('l') }}
+                    </p>
+                    <p class="je-date-num" style="font-size:clamp(5rem,24vw,8rem);margin:.15rem 0">
+                        {{ \Carbon\Carbon::parse($event->date)->format('d') }}
+                    </p>
+                    <p class="ff-cinzel" style="font-size:.75rem;letter-spacing:.22em;text-transform:uppercase;color:var(--c-muted)">
+                        {{ \Carbon\Carbon::parse($event->date)->translatedFormat('F Y') }}
+                    </p>
+                </div>
+                @endif
+
+                {{-- Thin gold rule --}}
+                <div style="height:1px;background:linear-gradient(90deg,transparent,rgba(201,168,106,.35),transparent);margin:0 auto 1.4rem;max-width:10rem"></div>
+
+                @if($event->time_start)
+                <p class="ff-garamond italic mb-2" style="font-size:1.1rem;color:var(--c-muted)">
+                    {{ $event->time_start }}{{ $event->time_end ? ' — '.$event->time_end : '' }} WIB
+                </p>
+                @endif
+
+                @if($event->venue)
+                <p class="ff-garamond font-medium mt-1" style="font-size:1.25rem;color:var(--c-text)">
+                    {{ $event->venue }}
+                </p>
+                @if($event->venue_address)
+                <p class="ff-raleway mt-1 leading-relaxed" style="font-size:.82rem;color:var(--c-muted2)">
+                    {{ $event->venue_address }}
+                </p>
+                @endif
+                @endif
+
+                @if($event->venue_maps_url)
+                <div class="mt-7">
+                    <a href="{{ $event->venue_maps_url }}" target="_blank" rel="noopener noreferrer"
+                       class="je-btn je-btn-outline inline-flex" style="font-size:.62rem;padding:.65rem 1.6rem">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        </svg>
+                        Lihat Lokasi
+                    </a>
+                </div>
+                @endif
+
+                @if($event->date)
+                <div x-data="countdown('{{ \Carbon\Carbon::parse($event->date.' '.($event->time_start ?? '00:00'))->toIso8601String() }}')"
+                     class="mt-8 grid grid-cols-4 gap-2 text-center">
+                    @foreach(['days'=>'Hari','hours'=>'Jam','minutes'=>'Menit','seconds'=>'Detik'] as $key => $label)
+                    <div class="rounded-lg py-3" style="background:rgba(201,168,106,.07);border:1px solid rgba(201,168,106,.18)">
+                        <div class="ff-cinzel font-semibold text-xl leading-none" style="color:var(--c-gold)" x-text="{{ $key }}">0</div>
+                        <div class="ff-raleway mt-1" style="font-size:.5rem;letter-spacing:.12em;text-transform:uppercase;color:var(--c-muted2)">{{ $label }}</div>
+                    </div>
+                    @endforeach
+                </div>
+                @endif
+            </div>
+
+            @if(!$loop->last)
+            <div class="mb-16 pointer-events-none" aria-hidden="true">
+                <svg viewBox="0 0 280 22" fill="none" class="w-full max-w-xs mx-auto block opacity-30">
+                    <line x1="0" y1="11" x2="280" y2="11" stroke="rgba(201,168,106,.3)" stroke-width=".5"/>
+                    <circle cx="140" cy="11" r="5" fill="none" stroke="#C9A86A" stroke-width=".8" opacity=".65"/>
+                    <circle cx="140" cy="11" r="2.5" fill="rgba(201,168,106,.5)"/>
+                    <g fill="none" stroke="rgba(201,168,106,.4)" stroke-width=".75">
+                        <path d="M118,11 Q123,5 128,11 Q123,17 118,11 Z"/>
+                        <path d="M96,11  Q101,5 106,11 Q101,17 96,11 Z"/>
+                        <path d="M162,11 Q157,5 152,11 Q157,17 162,11 Z"/>
+                        <path d="M184,11 Q179,5 174,11 Q179,17 184,11 Z"/>
+                    </g>
+                </svg>
+            </div>
+            @endif
+            @endforeach
+
+            @if($events->isNotEmpty())
+            @php $mainEv = $events->first(); @endphp
+            <div data-sr class="text-center mt-4">
+                <button x-data
+                        @click="saveToCalendar({
+                            title: '{{ addslashes('Pernikahan '.$invitation->getCoupleName()) }}',
+                            start: '{{ \Carbon\Carbon::parse($mainEv->date.' '.($mainEv->time_start??'00:00'))->format('Ymd\THis') }}',
+                            end:   '{{ \Carbon\Carbon::parse($mainEv->date.' '.($mainEv->time_end??'02:00'))->format('Ymd\THis') }}',
+                            location: '{{ addslashes(($mainEv->venue ?? '').' '.($mainEv->venue_address ?? '')) }}',
+                            description: '{{ addslashes('Undangan pernikahan '.$invitation->getCoupleName()) }}'
+                        })"
+                        class="je-btn je-btn-outline">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <rect x="3" y="4" width="18" height="18" rx="2" stroke-width="1.5"/>
+                        <path d="M16 2v4M8 2v4M3 10h18" stroke-width="1.5"/>
+                    </svg>
+                    Simpan ke Kalender
+                </button>
+            </div>
+            @endif
+
+        </div>
+    </section>
+
+
+
+
+    {{-- ══════════════════════════════════════════
+         §5  GALLERY
+    ══════════════════════════════════════════ --}}
+    @if($invitation->gallery && count($invitation->gallery) > 0)
+    <section id="nav-gallery"
+             class="relative py-20 px-6 overflow-hidden pat-deep"
+             aria-label="Galeri">
+
+        <div class="absolute top-0 left-0 right-0 pat-parang-strip pointer-events-none" aria-hidden="true"></div>
+
+        <div class="je-section-inner text-center mb-8">
+            <p data-sr="fade" class="ff-cinzel mb-2"
+               style="font-size:.6rem;letter-spacing:.42em;text-transform:uppercase;color:rgba(201,168,106,.55)">
+                Galeri Foto
+            </p>
+            <div data-sr class="je-rule" aria-hidden="true">
+                <svg viewBox="0 0 36 22" class="w-7 flex-shrink-0" fill="none">
+                    <path d="M18 1 L30 11 L18 21 L6 11 Z" stroke="#C9A86A" stroke-width=".8" opacity=".65"/>
+                    <circle cx="18" cy="11" r="3.5" fill="#C9A86A" opacity=".55"/>
+                </svg>
+            </div>
+        </div>
+
+        @include('partials.gallery-collage', [
+            'photos' => $invitation->gallery,
+            'couple' => $invitation->getCoupleName(),
+        ])
+
+        <div class="absolute bottom-0 left-0 right-0 pat-parang-strip pointer-events-none" aria-hidden="true"></div>
+    </section>
+    @endif
+
+
+    {{-- ══════════════════════════════════════════
+         §6  RSVP
+    ══════════════════════════════════════════ --}}
+    @if($invitation->is_open)
+    <section id="nav-rsvp"
+             class="relative py-20 px-6 overflow-hidden pat-deep"
+             aria-label="RSVP">
+
+        <div class="absolute top-0 left-0 right-0 pat-parang-strip pointer-events-none" aria-hidden="true"></div>
+
+        {{-- Wayang silhouettes — subtle --}}
+        <div class="absolute left-0 top-1/2 pointer-events-none" style="width:48px;opacity:.07;transform:translateY(-50%)" aria-hidden="true">
+            <svg viewBox="0 0 55 220" fill="#C9A86A"><ellipse cx="28" cy="18" rx="12" ry="15"/><path d="M17,30 Q6,48 4,70 Q3,88 12,98 Q6,108 8,128 Q10,147 18,162 L14,186 Q12,204 19,216 L23,216 Q18,206 20,186 L24,162 Q28,172 28,174 Q28,172 32,162 L36,186 Q38,206 33,216 L37,216 Q44,204 42,186 L38,162 Q46,147 48,128 Q50,108 44,98 Q53,88 52,70 Q50,48 39,30 Q35,40 28,42 Q21,40 17,30 Z"/></svg>
+        </div>
+        <div class="absolute right-0 top-1/2 pointer-events-none" style="width:48px;opacity:.07;transform:translateY(-50%) scaleX(-1)" aria-hidden="true">
+            <svg viewBox="0 0 55 220" fill="#C9A86A"><ellipse cx="28" cy="18" rx="12" ry="15"/><path d="M17,30 Q6,48 4,70 Q3,88 12,98 Q6,108 8,128 Q10,147 18,162 L14,186 Q12,204 19,216 L23,216 Q18,206 20,186 L24,162 Q28,172 28,174 Q28,172 32,162 L36,186 Q38,206 33,216 L37,216 Q44,204 42,186 L38,162 Q46,147 48,128 Q50,108 44,98 Q53,88 52,70 Q50,48 39,30 Q35,40 28,42 Q21,40 17,30 Z"/></svg>
+        </div>
+
+        <div class="je-section-inner relative z-10">
+            <p data-sr="fade" class="ff-cinzel text-center mb-2"
+               style="font-size:.6rem;letter-spacing:.42em;text-transform:uppercase;color:rgba(201,168,106,.55)">
+                Konfirmasi Kehadiran
+            </p>
+            <div data-sr class="je-rule mb-6" aria-hidden="true">
+                <svg viewBox="0 0 36 22" class="w-7 flex-shrink-0" fill="none">
+                    <path d="M18 1 L30 11 L18 21 L6 11 Z" stroke="#C9A86A" stroke-width=".8" opacity=".6"/>
+                    <circle cx="18" cy="11" r="3" fill="#C9A86A" opacity=".5"/>
+                </svg>
+            </div>
+            @if($invitation->rsvp_deadline)
+            <p data-sr="fade" class="ff-garamond italic text-center mb-8"
+               style="font-size:.95rem;color:rgba(201,168,106,.5)">
+                Mohon konfirmasi sebelum {{ \Carbon\Carbon::parse($invitation->rsvp_deadline)->translatedFormat('d F Y') }}
+            </p>
+            @else
+            <p data-sr="fade" class="ff-garamond italic text-center mb-8"
+               style="font-size:.95rem;color:rgba(201,168,106,.45)">
+                Kehadiran Anda adalah kehormatan bagi kami
+            </p>
+            @endif
+
+            {{-- Light card so form text (gray-800) stays readable on dark bg --}}
+            <div class="je-card-light p-6"
+                 style="
+                    --rsvp-accent:#7B1E25;
+                    --rsvp-accent-bg:rgba(123,30,37,0.1);
+                    --rsvp-accent-rgb:123 30 37;
+                    --rsvp-gradient:linear-gradient(135deg,#7B1E25,#3a0c12);
+                    --rsvp-label:rgba(43,33,22,0.75);
+                    --rsvp-border:rgba(201,168,106,0.4);
+                    --rsvp-input-bg:rgba(247,240,229,0.5);
+                    --rsvp-text:#2A2920;
+                    --rsvp-placeholder:rgba(43,33,22,0.38);
+                    --rsvp-locked-bg:rgba(123,30,37,0.05);
+                 ">
+                <livewire:invitation.rsvp-form :invitation="$invitation" :guest="$guest" />
+            </div>
+        </div>
+
+        <div class="absolute bottom-0 left-0 right-0 pat-parang-strip pointer-events-none" aria-hidden="true"></div>
+    </section>
+    @endif
+
+
+    {{-- ══════════════════════════════════════════
+         §7  DIGITAL GIFT
+    ══════════════════════════════════════════ --}}
+    @if($invitation->bank_accounts && count($invitation->bank_accounts) > 0)
+    <section id="nav-gift"
+             class="relative py-20 px-6 overflow-hidden pat-kawung-ivory"
+             aria-label="Hadiah">
+
+        <div class="je-section-inner text-center">
+            <p data-sr="fade" class="ff-cinzel mb-2"
+               style="font-size:.6rem;letter-spacing:.42em;text-transform:uppercase;color:var(--c-muted2)">
+                Hadiah Digital
+            </p>
+            <div data-sr class="je-rule mb-2" aria-hidden="true">
+                <svg viewBox="0 0 36 22" class="w-7 flex-shrink-0" fill="none">
+                    <path d="M18 1 L30 11 L18 21 L6 11 Z" stroke="#C9A86A" stroke-width=".8" opacity=".6"/>
+                    <circle cx="18" cy="11" r="3" fill="#C9A86A" opacity=".5"/>
+                </svg>
+            </div>
+            <p data-sr="fade" class="ff-garamond italic mb-8"
+               style="font-size:1rem;color:var(--c-muted2)">
+                Doa restu Anda adalah hadiah terindah
+            </p>
+
+            <div class="space-y-4">
+                @foreach($invitation->bank_accounts as $account)
+                <div data-sr class="je-card-light p-5 text-left relative">
+                    {{-- Gold floral — Asset 5 --}}
+                    <div class="absolute top-3 right-3 pointer-events-none opacity-25" aria-hidden="true">
+                        <svg viewBox="0 0 32 32" fill="none" class="w-7 h-7">
+                            <g stroke="#C9A86A" stroke-width=".9" fill="none">
+                                <path d="M16,2 Q19,9 16,16 Q13,9 16,2 Z"/>
+                                <path d="M16,16 Q9,13 2,16 Q9,19 16,16 Z"/>
+                                <path d="M16,16 Q23,19 30,16 Q23,13 16,16 Z"/>
+                                <path d="M16,16 Q19,23 16,30 Q13,23 16,16 Z"/>
+                            </g>
+                            <circle cx="16" cy="16" r="2.5" fill="rgba(201,168,106,.5)"/>
+                        </svg>
+                    </div>
+                    <p class="ff-cinzel mb-0.5" style="font-size:.58rem;letter-spacing:.25em;text-transform:uppercase;color:var(--c-muted2)">
+                        {{ $account['bank_name'] ?? 'Bank' }}
+                    </p>
+                    <p class="ff-garamond font-medium mb-1" style="font-size:1.35rem;color:var(--c-text);letter-spacing:.04em">
+                        {{ $account['account_number'] }}
+                    </p>
+                    <p class="ff-raleway text-xs mb-4" style="color:var(--c-muted)">
+                        a.n. {{ $account['account_name'] }}
+                    </p>
+                    <button
+                        x-data
+                        @click="navigator.clipboard.writeText('{{ $account['account_number'] }}').then(() => $dispatch('notify',{message:'Nomor rekening disalin!'}))"
+                        class="je-btn" style="font-size:.62rem;padding:.55rem 1.2rem">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                        </svg>
+                        Salin Nomor
+                    </button>
+                </div>
+                @endforeach
+            </div>
+        </div>
+    </section>
+    @endif
+
+
+    {{-- ══════════════════════════════════════════
+         §8  UCAPAN & DOA
+    ══════════════════════════════════════════ --}}
+    <section id="nav-wishes"
+             class="relative py-20 px-6 overflow-hidden pat-kawung-ivory"
+             aria-label="Ucapan">
+
+        <div class="je-section-inner">
+            <div class="text-center mb-10">
+                <p data-sr="fade" class="ff-cinzel mb-2"
+                   style="font-size:.6rem;letter-spacing:.42em;text-transform:uppercase;color:var(--c-muted2)">
+                    Ucapan &amp; Doa
+                </p>
+                <div data-sr class="je-rule" aria-hidden="true">
+                    <svg viewBox="0 0 36 22" class="w-7 flex-shrink-0" fill="none">
+                        <path d="M18 1 L30 11 L18 21 L6 11 Z" stroke="#C9A86A" stroke-width=".8" opacity=".6"/>
+                        <circle cx="18" cy="11" r="3" fill="#C9A86A" opacity=".5"/>
+                    </svg>
+                </div>
+            </div>
+            <livewire:invitation.guest-wishes :invitation="$invitation" />
+        </div>
+    </section>
+
+
+    {{-- ══════════════════════════════════════════
+         §9  FOOTER
+    ══════════════════════════════════════════ --}}
+    <footer class="relative py-20 px-6 text-center overflow-hidden pat-deep" aria-label="Footer">
+
+        {{-- Large Keraton gate ghost — Asset 1 --}}
+        <div class="absolute inset-0 flex items-end justify-center pointer-events-none" aria-hidden="true">
+            <svg viewBox="0 0 360 420" fill="none" class="w-full opacity-[0.065]" style="max-width:460px">
+                <g fill="#C9A86A">
+                    <polygon points="180,6 193,34 167,34"/>
+                    <polygon points="163,34 197,34 208,64 152,64"/>
+                    <polygon points="140,64 220,64 236,104 124,104"/>
+                    <polygon points="112,104 248,104 266,152 94,152"/>
+                    <rect x="88" y="152" width="184" height="16"/>
+                    <rect x="98" y="168" width="164" height="228"/>
+                    <rect x="98" y="168" width="24" height="228"/>
+                    <rect x="238" y="168" width="24" height="228"/>
+                    <rect x="52"  y="268" width="48" height="128"/>
+                    <rect x="260" y="268" width="48" height="128"/>
+                    <rect x="24"  y="388" width="312" height="18"/>
+                    <rect x="8"   y="404" width="344" height="16"/>
+                </g>
+                <path d="M140,396 L140,308 Q180,272 220,308 L220,396 Z" fill="rgba(26,6,10,.9)"/>
+            </svg>
+        </div>
+
+        {{-- Corner branches — Asset 9 --}}
+        <div class="absolute bottom-0 left-0 w-24 pointer-events-none opacity-22" aria-hidden="true">
+            <svg viewBox="0 0 90 100" fill="none" style="transform:scaleY(-1)">
+                <path d="M5,96 Q28,70 56,42 Q68,28 84,8" stroke="#C9A86A" stroke-width="1.3" stroke-linecap="round"/>
+                <ellipse cx="38" cy="58" rx="14" ry="6" fill="#306D29" opacity=".55" transform="rotate(-42 38 58)"/>
+                <ellipse cx="58" cy="36" rx="12" ry="5" fill="#306D29" opacity=".5"  transform="rotate(-50 58 36)"/>
+                <circle cx="40"  cy="60" r="3"   fill="white" opacity=".45"/>
+                <circle cx="60"  cy="38" r="2.5" fill="white" opacity=".4"/>
+                <circle cx="41"  cy="61" r="1.2" fill="#C9A86A" opacity=".85"/>
+            </svg>
+        </div>
+        <div class="absolute bottom-0 right-0 w-24 pointer-events-none opacity-22" aria-hidden="true">
+            <svg viewBox="0 0 90 100" fill="none" style="transform:scale(-1,-1)">
+                <path d="M5,96 Q28,70 56,42 Q68,28 84,8" stroke="#C9A86A" stroke-width="1.3" stroke-linecap="round"/>
+                <ellipse cx="38" cy="58" rx="14" ry="6" fill="#306D29" opacity=".55" transform="rotate(-42 38 58)"/>
+                <ellipse cx="58" cy="36" rx="12" ry="5" fill="#306D29" opacity=".5"  transform="rotate(-50 58 36)"/>
+                <circle cx="40"  cy="60" r="3"   fill="white" opacity=".45"/>
+            </svg>
+        </div>
+
+        <div class="relative z-10 je-section-inner">
+            {{-- Jasmine garland — Asset 4 --}}
+            <div class="w-full mb-6 pointer-events-none" aria-hidden="true">
+                <svg viewBox="0 0 300 52" fill="none" class="je-garland" style="opacity:.45">
+                    <path d="M0,8 C75,44 225,44 300,8" stroke="#C9A86A" stroke-width=".8" fill="none"/>
+                    <use href="#jf" transform="translate(22,26)  scale(.8)"/>
+                    <use href="#jf" transform="translate(75,38)  scale(.88)"/>
+                    <use href="#jf" transform="translate(150,44)"/>
+                    <use href="#jf" transform="translate(225,38) scale(.88)"/>
+                    <use href="#jf" transform="translate(278,26) scale(.8)"/>
+                </svg>
+            </div>
+
+            <p class="ff-cinzel mb-5"
+               style="font-size:.58rem;letter-spacing:.42em;text-transform:uppercase;color:rgba(201,168,106,.4)">
+                Terima Kasih
+            </p>
+
+            <h2 class="ff-script je-shimmer leading-none"
+                style="font-size:clamp(3rem,14vw,4.2rem);color:#E7E1B1">
+                {{ $invitation->groom_name }}
+            </h2>
+            <p class="ff-garamond italic my-1"
+               style="font-size:clamp(1.6rem,8vw,2.2rem);color:rgba(201,168,106,.55)">
+                &amp;
+            </p>
+            <h2 class="ff-script je-shimmer leading-none"
+                style="font-size:clamp(3rem,14vw,4.2rem);color:#E7E1B1">
+                {{ $invitation->bride_name }}
+            </h2>
+
+            <div class="je-rule my-7" aria-hidden="true">
+                <svg viewBox="0 0 36 22" class="w-7 flex-shrink-0" fill="none">
+                    <path d="M18 1 L30 11 L18 21 L6 11 Z" stroke="#C9A86A" stroke-width=".8" opacity=".65"/>
+                    <circle cx="18" cy="11" r="3.5" fill="#C9A86A" opacity=".55"/>
+                </svg>
+            </div>
+
+            <p class="ff-garamond italic leading-loose"
+               style="font-size:.95rem;color:rgba(231,225,177,.45);max-width:280px;margin:0 auto">
+                "Dan di antara tanda-tanda kekuasaan-Nya ialah Dia menciptakan untukmu istri-istri dari jenismu sendiri, supaya kamu cenderung dan merasa tenteram kepadanya."
+            </p>
+            <p class="ff-cinzel mt-3"
+               style="font-size:.55rem;letter-spacing:.16em;color:rgba(201,168,106,.3)">
+                QS. Ar-Rum: 21
+            </p>
+
+            <div class="je-hrule mt-10 mb-5 opacity-20"></div>
+            <p class="ff-raleway text-xs" style="color:rgba(231,225,177,.2)">
+                Dibuat dengan ♡ · Invora.id
+            </p>
+        </div>
+    </footer>
+
+</div>{{-- /je-page --}}
+</div>{{-- /main --}}
+
+{{-- NAVBAR --}}
+@include('partials.invitation-navbar', ['navStyle' => 'dark'])
+
+{{-- WATERMARK --}}
+@if($show_watermark)
+<div x-show="opened" x-cloak
+     class="fixed bottom-20 left-1/2 z-40 pointer-events-none select-none"
+     style="transform:translateX(-50%)"
+     aria-hidden="true">
+    <a href="{{ config('app.url') }}" target="_blank" rel="noopener noreferrer"
+       class="pointer-events-auto inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full"
+       style="background:rgba(201,168,106,.1);border:1px solid rgba(201,168,106,.22);color:rgba(201,168,106,.5);font-family:'Cinzel',serif;font-size:.58rem;letter-spacing:.14em;text-transform:uppercase;text-decoration:none">
+        Invora.id
+    </a>
+</div>
+@endif
+
+{{-- ═══════════════════════════════════════════
+     SCRIPTS
+═══════════════════════════════════════════ --}}
+<script>
+/* ── JASMINE PETAL PARTICLE SYSTEM ── */
+(function () {
+    const canvas = document.getElementById('je-petals');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let W, H, RAF, particles = [];
+
+    function resize() {
+        W = canvas.width  = window.innerWidth;
+        H = canvas.height = window.innerHeight;
+    }
+
+    function Particle() {
+        this.reset = function (fresh) {
+            this.x   = Math.random() * W;
+            this.y   = fresh ? -12 : Math.random() * H;
+            this.vy  = .35 + Math.random() * .55;
+            this.vx  = (Math.random() - .5) * .5;
+            this.r   = 2.5 + Math.random() * 3;
+            this.o   = .2 + Math.random() * .45;
+            this.rot = Math.random() * Math.PI * 2;
+            this.dr  = (Math.random() - .5) * .022;
+        };
+        this.reset(false);
+    }
+
+    function drawPetal(r) {
+        ctx.beginPath();
+        ctx.ellipse(0, -r * .85, r * .42, r, 0, 0, Math.PI * 2);
+    }
+
+    function tick() {
+        ctx.clearRect(0, 0, W, H);
+        particles.forEach(p => {
+            p.y   += p.vy;
+            p.x   += p.vx + Math.sin(p.y * .025) * .3;
+            p.rot += p.dr;
+            if (p.y > H + 16) p.reset(true);
+
+            ctx.save();
+            ctx.translate(p.x, p.y);
+            ctx.rotate(p.rot);
+            ctx.globalAlpha = p.o;
+
+            for (let i = 0; i < 5; i++) {
+                ctx.save();
+                ctx.rotate(i * Math.PI * 2 / 5);
+                drawPetal(p.r);
+                ctx.fillStyle = '#ffffff';
+                ctx.fill();
+                ctx.restore();
+            }
+            ctx.beginPath();
+            ctx.arc(0, 0, p.r * .3, 0, Math.PI * 2);
+            ctx.fillStyle = '#C9A86A';
+            ctx.fill();
+            ctx.restore();
+        });
+        RAF = requestAnimationFrame(tick);
+    }
+
+    resize();
+    window.addEventListener('resize', resize);
+
+    for (let i = 0; i < 55; i++) {
+        const p = new Particle();
+        particles.push(p);
+    }
+    tick();
+
+    // Stop when cover closes
+    document.addEventListener('alpine:init', () => {
+        Alpine.effect(() => {
+            if (Alpine.store && false) cancelAnimationFrame(RAF);
+        });
+    });
+})();
+
+/* ── DOOR-OPENING JASMINE BURST ── */
+(function () {
+    function jasmineFlowerSvg(sz) {
+        const d = sz * 2;
+        return `<svg width="${d}" height="${d}" viewBox="-10 -10 20 20" xmlns="http://www.w3.org/2000/svg">
+            <ellipse cx="0" cy="-5.5" rx="3.1" ry="5.5" fill="white" opacity=".88"/>
+            <ellipse cx="0" cy="-5.5" rx="3.1" ry="5.5" fill="white" opacity=".82" transform="rotate(72)"/>
+            <ellipse cx="0" cy="-5.5" rx="3.1" ry="5.5" fill="white" opacity=".82" transform="rotate(144)"/>
+            <ellipse cx="0" cy="-5.5" rx="3.1" ry="5.5" fill="white" opacity=".82" transform="rotate(216)"/>
+            <ellipse cx="0" cy="-5.5" rx="3.1" ry="5.5" fill="white" opacity=".82" transform="rotate(288)"/>
+            <circle cx="0" cy="0" r="2.1" fill="#C9A86A" opacity=".95"/>
+        </svg>`;
+    }
+
+    function spawnJasmineBurst() {
+        const wrap = document.createElement('div');
+        wrap.style.cssText = 'position:fixed;inset:0;z-index:250;pointer-events:none;overflow:hidden';
+        document.body.appendChild(wrap);
+
+        const specs = [
+            {xp:48,  yp:78, sz:18, dl:0,    ry:-18,  sw:-45},
+            {xp:52,  yp:82, sz:14, dl:0.1,  ry:22,   sw:38},
+            {xp:44,  yp:72, sz:12, dl:0.22, ry:-32,  sw:-30},
+            {xp:56,  yp:75, sz:16, dl:0.15, ry:16,   sw:28},
+            {xp:50,  yp:86, sz:10, dl:0.05, ry:-10,  sw:-18},
+            {xp:42,  yp:66, sz:13, dl:0.35, ry:28,   sw:-55},
+            {xp:58,  yp:68, sz:15, dl:0.28, ry:-24,  sw:48},
+            {xp:47,  yp:58, sz:9,  dl:0.50, ry:38,   sw:-24},
+            {xp:53,  yp:60, sz:11, dl:0.42, ry:-28,  sw:34},
+            {xp:45,  yp:50, sz:13, dl:0.58, ry:14,   sw:-40},
+            {xp:55,  yp:46, sz:10, dl:0.65, ry:-22,  sw:22},
+            {xp:50,  yp:40, sz:12, dl:0.75, ry:32,   sw:-28},
+            {xp:40,  yp:88, sz:8,  dl:0.38, ry:-42,  sw:-62},
+            {xp:60,  yp:84, sz:9,  dl:0.32, ry:35,   sw:56},
+            {xp:35,  yp:80, sz:7,  dl:0.55, ry:-18,  sw:-70},
+            {xp:65,  yp:76, sz:8,  dl:0.48, ry:24,   sw:65},
+        ];
+
+        specs.forEach(s => {
+            const el = document.createElement('div');
+            el.style.cssText = [
+                `position:absolute`,
+                `left:${s.xp}%`,
+                `top:${s.yp}%`,
+                `margin-left:-${s.sz}px`,
+                `margin-top:-${s.sz}px`,
+                `opacity:0`,
+                `will-change:transform,opacity`,
+            ].join(';');
+            el.innerHTML = jasmineFlowerSvg(s.sz);
+            wrap.appendChild(el);
+
+            const upDist = 120 + Math.random() * 170;
+            el.animate([
+                { opacity: 0, transform: `translate(0,0) rotate(0deg) scale(0.3)` },
+                { opacity: 0.82, transform: `translate(${s.sw * 0.6}px,${-upDist * 0.5}px) rotate(${s.ry * 0.5}deg) scale(1)`, offset: 0.4 },
+                { opacity: 0.72, transform: `translate(${s.sw}px,${-upDist}px) rotate(${s.ry}deg) scale(0.85)`, offset: 0.8 },
+                { opacity: 0,    transform: `translate(${s.sw * 1.2}px,${-upDist * 1.3}px) rotate(${s.ry * 1.4}deg) scale(0.5)` },
+            ], {
+                duration: (2200 + Math.random() * 1400),
+                delay: s.dl * 1000,
+                easing: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+                fill: 'forwards',
+            });
+        });
+
+        setTimeout(() => {
+            if (wrap.parentNode) wrap.parentNode.removeChild(wrap);
+        }, 5500);
+
+        // After cover fades out, start the ambient loop on the hero
+        setTimeout(startAmbientJasmineHero, 1600);
+    }
+
+    /* ── AMBIENT JASMINE LOOP — gentle flowers rising over hero after open ── */
+    function startAmbientJasmineHero() {
+        // Prevent double-start
+        if (document.getElementById('je-ambient-flowers')) return;
+
+        const wrap = document.createElement('div');
+        wrap.id = 'je-ambient-flowers';
+        wrap.style.cssText =
+            'position:fixed;inset:0;z-index:10;pointer-events:none;overflow:hidden;';
+        document.body.appendChild(wrap);
+
+        let batchCount = 0;
+        const MAX_BATCHES = 14; // ~60s total
+
+        function spawnBatch() {
+            if (batchCount >= MAX_BATCHES) {
+                setTimeout(() => {
+                    if (wrap.parentNode) wrap.parentNode.removeChild(wrap);
+                }, 7000);
+                return;
+            }
+            batchCount++;
+
+            const n = 2 + Math.floor(Math.random() * 2);
+            for (let i = 0; i < n; i++) {
+                const sz = 7 + Math.random() * 10;
+                const el = document.createElement('div');
+                const xp = 8 + Math.random() * 84;
+                const yp = 68 + Math.random() * 28;
+                el.style.cssText = [
+                    `position:absolute`,
+                    `left:${xp}%`,
+                    `top:${yp}%`,
+                    `opacity:0`,
+                    `will-change:transform,opacity`,
+                ].join(';');
+                el.innerHTML = jasmineFlowerSvg(sz);
+                wrap.appendChild(el);
+
+                const upDist = 270 + Math.random() * 260;
+                const sw     = (Math.random() - 0.5) * 58;
+                const rx     = (Math.random() - 0.5) * 65;
+                el.animate([
+                    { opacity: 0, transform: `translate(0,0) rotate(0deg) scale(0.35)` },
+                    { opacity: 0.68, transform: `translate(${sw*.4}px,${-upDist*.45}px) rotate(${rx*.4}deg) scale(1)`, offset: 0.4 },
+                    { opacity: 0.48, transform: `translate(${sw*.75}px,${-upDist*.78}px) rotate(${rx*.75}deg) scale(0.85)`, offset: 0.75 },
+                    { opacity: 0,   transform: `translate(${sw}px,${-upDist}px) rotate(${rx}deg) scale(0.5)` },
+                ], {
+                    duration: 4800 + Math.random() * 2800,
+                    delay: Math.random() * 600,
+                    easing: 'cubic-bezier(0.25,0.46,0.45,0.94)',
+                    fill: 'forwards',
+                });
+
+                setTimeout(() => {
+                    if (el.parentNode) el.parentNode.removeChild(el);
+                }, 9000);
+            }
+
+            setTimeout(spawnBatch, 4200 + Math.random() * 2000);
+        }
+
+        spawnBatch();
+    }
+
+    // Watch for door open click
+    document.addEventListener('click', e => {
+        if (e.target.closest('.je-open-btn')) {
+            setTimeout(spawnJasmineBurst, 150);
+        }
+    }, { once: true });
+})();
+
+/* ── SCROLL REVEAL ── */
+(function () {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const io = new IntersectionObserver(entries => {
+        entries.forEach(e => {
+            if (e.isIntersecting) { e.target.classList.add('on'); io.unobserve(e.target); }
+        });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('[data-sr]').forEach(el => io.observe(el));
+})();
+</script>
+
+@include('partials.cinematic-opening')
+@livewireScripts
+</body>
+</html>

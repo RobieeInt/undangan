@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="csrf-token" content="{{ csrf_token() }}"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>{{ $invitation->getCoupleName() }} — Undangan Pernikahan</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=Montserrat:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/aos@2.3.1/dist/aos.css">
+    {{-- swiper removed, replaced by collage --}}
+    @vite(['resources/css/app.css','resources/js/app.js'])
+    @livewireStyles
+    @livewireScriptConfig
+    <style>
+        :root { --gold: #C9A84C; --dark: #0F0F0F; --dark2: #1A1A1A; }
+        body { background: var(--dark); color: #E8E0CC; font-family: 'Montserrat',sans-serif; }
+        .fc { font-family: 'Cormorant Garamond', serif; }
+        .gold { color: var(--gold); }
+        .border-gold { border-color: var(--gold) !important; }
+        .line-gold { height:1px; background: linear-gradient(to right, transparent, var(--gold), transparent); }
+
+        /* ── Global gold particle canvas ── */
+        #de-global-particles { position:fixed;inset:0;pointer-events:none;z-index:92;overflow:hidden; }
+        /* ── Cover + global gold particle animation ── */
+        .de-particle { position:absolute; pointer-events:none; }
+        @keyframes deParticleFloat {
+            /* start scattered in lower viewport, travel all the way up & off-screen */
+            0%   { transform:translateY(0) translateX(0) rotate(0deg); opacity:0; }
+            8%   { opacity:var(--po,0.7); }
+            90%  { opacity:calc(var(--po,0.7) * 0.55); }
+            100% { transform:translateY(-118vh) translateX(var(--drift,30px)) rotate(var(--spin,180deg)); opacity:0; }
+        }
+        /* ── Bokeh canvas ── */
+        #de-bokeh {
+            position:absolute;inset:0;width:100%;height:100%;
+            pointer-events:none;z-index:2;
+        }
+
+        /* ── Center ambient glow pulse ── */
+        .de-center-glow {
+            position:absolute;left:50%;top:50%;
+            transform:translate(-50%,-50%);
+            width:min(520px,95vw);height:min(520px,95vw);
+            border-radius:50%;pointer-events:none;z-index:1;
+            background:radial-gradient(circle at center,
+                rgba(201,168,76,.14) 0%,
+                rgba(201,168,76,.07) 35%,
+                rgba(201,168,76,.02) 60%,
+                transparent 75%);
+            animation:deGlowPulse 5.5s ease-in-out infinite;
+            will-change:transform,opacity;
+        }
+        @keyframes deGlowPulse {
+            0%,100% { opacity:.5;  transform:translate(-50%,-50%) scale(1);    }
+            50%     { opacity:1;   transform:translate(-50%,-50%) scale(1.25); }
+        }
+
+        /* ── Diagonal light sweep ── */
+        .de-light-sweep {
+            position:absolute;inset:0;
+            background:linear-gradient(108deg,
+                transparent 0%,
+                rgba(201,168,76,.03)  32%,
+                rgba(201,168,76,.10)  50%,
+                rgba(201,168,76,.03)  68%,
+                transparent 100%);
+            transform:translateX(-140%);
+            pointer-events:none;z-index:3;
+            animation:deSweep 10s ease-in-out 1.5s infinite;
+        }
+        @keyframes deSweep {
+            0%   { transform:translateX(-140%); opacity:0; }
+            4%   { opacity:1; }
+            46%  { opacity:1; }
+            52%  { transform:translateX(140%);  opacity:0; }
+            100% { transform:translateX(-140%); opacity:0; }
+        }
+
+        /* ── Name shimmer glow ── */
+        @keyframes deNameShimmer {
+            0%,100% { text-shadow:0 0 0 transparent; }
+            50%     { text-shadow:0 0 36px rgba(201,168,76,.22), 0 0 72px rgba(201,168,76,.09); }
+        }
+        .de-shimmer { animation:deNameShimmer 6.5s ease-in-out infinite; }
+
+        /* ── Cover corner ornament draw-in ── */
+        .de-corner-line {
+            stroke-dasharray: 200;
+            stroke-dashoffset: 200;
+            animation: deLineDraw 2s ease-out 0.3s forwards;
+        }
+        @keyframes deLineDraw { to { stroke-dashoffset: 0; } }
+        /* ── Cover text stagger fade-up ── */
+        @keyframes deFadeUp {
+            from { opacity:0; transform:translateY(20px); }
+            to   { opacity:1; transform:translateY(0); }
+        }
+        .de-in   { animation: deFadeUp 0.9s ease-out both; }
+        .de-in-1 { animation-delay: 0.4s; }
+        .de-in-2 { animation-delay: 0.7s; }
+        .de-in-3 { animation-delay: 1.0s; }
+        .de-in-4 { animation-delay: 1.3s; }
+        .de-in-5 { animation-delay: 1.6s; }
+    </style>
+</head>
+<body x-data="{ opened: false }" x-init="$store.invitation.initMusic('{{ $invitation->music_url }}', {{ $invitation->music_autoplay ? 'true' : 'false' }})">
+
+{{-- COVER --}}
+<div data-coi-cover
+     x-show="!opened" x-transition:leave="transition duration-500" x-transition:leave-end="opacity-0 scale-95"
+     class="fixed inset-0 z-[100] flex items-center justify-center" style="background:#0F0F0F">
+    @if($invitation->cover_photo)
+    <div class="absolute inset-0 opacity-30">
+        <img src="{{ Storage::url($invitation->cover_photo) }}" class="w-full h-full object-cover">
+    </div>
+    @endif
+
+    {{-- Gold particle canvas --}}
+    <div class="absolute inset-0 overflow-hidden pointer-events-none" id="de-cover-particles"></div>
+
+    {{-- Bokeh gold orbs --}}
+    <canvas id="de-bokeh" aria-hidden="true"></canvas>
+
+    {{-- Center ambient glow --}}
+    <div class="de-center-glow" aria-hidden="true"></div>
+
+    {{-- Diagonal light sweep --}}
+    <div class="de-light-sweep" aria-hidden="true"></div>
+
+    {{-- Corner frame ornaments --}}
+    <svg class="absolute top-0 left-0 w-28 h-28 opacity-25 pointer-events-none" viewBox="0 0 80 80" fill="none">
+        <polyline class="de-corner-line" points="4,40 4,4 40,4" stroke="#C9A84C" stroke-width="1"/>
+        <polyline style="stroke-dasharray:80;stroke-dashoffset:80;animation:deLineDraw 1.5s ease-out 0.8s forwards" points="4,18 4,4 18,4" stroke="#C9A84C" stroke-width="0.5"/>
+        <circle cx="4" cy="4" r="2.5" fill="#C9A84C" style="opacity:0;animation:deFadeUp 0.4s ease-out 2s forwards"/>
+    </svg>
+    <svg class="absolute top-0 right-0 w-28 h-28 opacity-25 pointer-events-none" viewBox="0 0 80 80" fill="none">
+        <polyline class="de-corner-line" points="76,40 76,4 40,4" stroke="#C9A84C" stroke-width="1"/>
+        <polyline style="stroke-dasharray:80;stroke-dashoffset:80;animation:deLineDraw 1.5s ease-out 0.8s forwards" points="76,18 76,4 62,4" stroke="#C9A84C" stroke-width="0.5"/>
+        <circle cx="76" cy="4" r="2.5" fill="#C9A84C" style="opacity:0;animation:deFadeUp 0.4s ease-out 2s forwards"/>
+    </svg>
+    <svg class="absolute bottom-0 left-0 w-28 h-28 opacity-25 pointer-events-none" viewBox="0 0 80 80" fill="none">
+        <polyline class="de-corner-line" points="4,40 4,76 40,76" stroke="#C9A84C" stroke-width="1"/>
+        <polyline style="stroke-dasharray:80;stroke-dashoffset:80;animation:deLineDraw 1.5s ease-out 0.8s forwards" points="4,62 4,76 18,76" stroke="#C9A84C" stroke-width="0.5"/>
+        <circle cx="4" cy="76" r="2.5" fill="#C9A84C" style="opacity:0;animation:deFadeUp 0.4s ease-out 2s forwards"/>
+    </svg>
+    <svg class="absolute bottom-0 right-0 w-28 h-28 opacity-25 pointer-events-none" viewBox="0 0 80 80" fill="none">
+        <polyline class="de-corner-line" points="76,40 76,76 40,76" stroke="#C9A84C" stroke-width="1"/>
+        <polyline style="stroke-dasharray:80;stroke-dashoffset:80;animation:deLineDraw 1.5s ease-out 0.8s forwards" points="76,62 76,76 62,76" stroke="#C9A84C" stroke-width="0.5"/>
+        <circle cx="76" cy="76" r="2.5" fill="#C9A84C" style="opacity:0;animation:deFadeUp 0.4s ease-out 2s forwards"/>
+    </svg>
+
+    <div class="relative text-center px-8">
+        <div class="de-in de-in-1 line-gold mb-8 max-w-[200px] mx-auto"></div>
+        <p class="de-in de-in-1 text-xs tracking-[0.5em] uppercase mb-6" style="color:var(--gold)">Wedding Invitation</p>
+        <h1 class="de-in de-in-2 fc text-6xl mb-1 de-shimmer" style="color:#E8E0CC">{{ $invitation->groom_name }}</h1>
+        <p class="de-in de-in-2 fc text-3xl italic my-2" style="color:var(--gold)">&amp;</p>
+        <h1 class="de-in de-in-3 fc text-6xl mb-8 de-shimmer" style="color:#E8E0CC;animation-delay:3.25s">{{ $invitation->bride_name }}</h1>
+        @if($guest)
+        <p class="de-in de-in-3 text-xs tracking-widest text-gray-500 mb-1">Kepada Yth.</p>
+        <p class="de-in de-in-3 fc text-xl mb-6" style="color:var(--gold)">{{ $guest->name }}</p>
+        @endif
+        <button data-coi-btn @click="opened=true;$store.invitation.openEnvelope()"
+                class="de-in de-in-4 px-8 py-3 text-xs tracking-[0.3em] uppercase border transition-all hover:opacity-80"
+                style="border-color:var(--gold);color:var(--gold)">
+            Buka Undangan
+        </button>
+        <div class="de-in de-in-5 line-gold mt-8 max-w-[200px] mx-auto"></div>
+    </div>
+</div>
+
+{{-- Global gold particle canvas — always on, cover (z-100) sits above it, main content below --}}
+<div id="de-global-particles"></div>
+
+<div data-coi-main
+     x-show="opened" x-transition:enter="transition duration-700" x-transition:enter-start="opacity-0"
+     style="padding-bottom:72px">
+    {{-- HERO --}}
+    <section id="nav-top" class="min-h-screen relative flex flex-col items-center justify-center">
+        @if($invitation->cover_photo)
+        <div class="absolute inset-0 overflow-hidden">
+            <img src="{{ Storage::url($invitation->cover_photo) }}" class="opacity-20 w-full object-cover"
+                 style="height:130%;top:-15%;position:absolute;left:0;right:0" data-parallax-hero>
+        </div>
+        @endif
+        <div class="relative z-10 text-center px-6">
+            @if($invitation->opening_quote)
+            <p class="fc text-sm italic text-gray-500 mb-8 max-w-xs mx-auto" data-aos="fade-down">"{{ $invitation->opening_quote }}"</p>
+            @endif
+            <p class="text-xs tracking-[0.5em] uppercase mb-6" style="color:var(--gold)" data-aos="fade-up">The Wedding of</p>
+            <h1 class="fc text-7xl mb-2" style="color:#E8E0CC" data-aos="fade-up" data-aos-delay="100">{{ $invitation->groom_name }}</h1>
+            <p class="fc text-4xl italic my-2" style="color:var(--gold)" data-aos="fade-up" data-aos-delay="150">&amp;</p>
+            <h1 class="fc text-7xl" style="color:#E8E0CC" data-aos="fade-up" data-aos-delay="200">{{ $invitation->bride_name }}</h1>
+            @if($events->isNotEmpty())
+            <div class="mt-10 line-gold max-w-[100px] mx-auto"></div>
+            <p class="fc text-lg mt-4 text-gray-400" data-aos="fade-up" data-aos-delay="300">{{ \Carbon\Carbon::parse($events->first()->date)->translatedFormat('d F Y') }}</p>
+            @endif
+        </div>
+    </section>
+
+    {{-- COUPLE --}}
+    <section id="nav-couple" class="py-20 px-6" style="background:#1A1A1A">
+        <div class="max-w-sm mx-auto">
+            <div class="line-gold mb-12"></div>
+            <div class="grid grid-cols-2 gap-8 text-center">
+                <div data-aos="fade-right">
+                    @if($invitation->groom_photo)<img src="{{ Storage::url($invitation->groom_photo) }}" class="w-28 h-28 rounded-full object-cover mx-auto mb-4 ring-2 border-gold" alt="" style="ring-color:var(--gold)">@endif
+                    <p class="fc text-2xl" style="color:#E8E0CC">{{ $invitation->groom_name }}</p>
+                    @if($invitation->groom_full_name)<p class="text-xs text-gray-600 mt-1">{{ $invitation->groom_full_name }}</p>@endif
+                    @if($invitation->groom_father)<p class="text-xs text-gray-600 mt-2">Putra: {{ $invitation->groom_father }}</p>@endif
+                </div>
+                <div data-aos="fade-left">
+                    @if($invitation->bride_photo)<img src="{{ Storage::url($invitation->bride_photo) }}" class="w-28 h-28 rounded-full object-cover mx-auto mb-4" alt="">@endif
+                    <p class="fc text-2xl" style="color:#E8E0CC">{{ $invitation->bride_name }}</p>
+                    @if($invitation->bride_full_name)<p class="text-xs text-gray-600 mt-1">{{ $invitation->bride_full_name }}</p>@endif
+                    @if($invitation->bride_father)<p class="text-xs text-gray-600 mt-2">Putri: {{ $invitation->bride_father }}</p>@endif
+                </div>
+            </div>
+            <div class="line-gold mt-12"></div>
+        </div>
+    </section>
+
+    {{-- EVENTS --}}
+    @if($events->isNotEmpty())
+    <section id="nav-events" class="py-20 px-6" style="background:#0F0F0F">
+        <div class="max-w-sm mx-auto">
+            <p class="text-xs tracking-[0.4em] uppercase text-center mb-10" style="color:var(--gold)" data-aos="fade-up">Jadwal Acara</p>
+            @foreach($events as $event)
+            <div class="text-center mb-10 p-6 border" style="border-color:rgba(201,168,76,0.2)" data-aos="fade-up">
+                <p class="fc text-2xl mb-2" style="color:#E8E0CC">{{ $event->name }}</p>
+                <p class="text-sm text-gray-500">{{ \Carbon\Carbon::parse($event->date)->translatedFormat('l, d F Y') }}</p>
+                <p class="text-sm text-gray-500">{{ $event->time_start }}{{ $event->time_end ? ' — '.$event->time_end : '' }}</p>
+                <p class="text-sm text-gray-500 mt-1">{{ $event->venue }}</p>
+
+                @php $tDate = \Carbon\Carbon::parse($event->date)->toIso8601String(); @endphp
+                <div x-data="countdown('{{ $tDate }}')" class="flex justify-center gap-6 mt-6">
+                    @foreach(['days'=>'Hari','hours'=>'Jam','minutes'=>'Mnt','seconds'=>'Dtk'] as $u => $l)
+                    <div class="text-center"><div class="fc text-3xl gold" x-text="{{ $u }}"></div><div class="text-xs text-gray-600">{{ $l }}</div></div>
+                    @endforeach
+                </div>
+
+                @if($event->venue_maps_url)
+                <a href="{{ $event->venue_maps_url }}" target="_blank" class="inline-block mt-4 text-xs tracking-widest border px-4 py-2 transition-all hover:opacity-60" style="border-color:var(--gold);color:var(--gold)">Google Maps</a>
+                @endif
+            </div>
+            @endforeach
+        </div>
+    </section>
+    @endif
+
+    {{-- GALLERY --}}
+    @if($galleries->isNotEmpty())
+    <section id="nav-gallery" class="py-16" style="background:#1A1A1A">
+        <div class="max-w-sm mx-auto px-4">
+            <p class="text-xs tracking-[0.4em] uppercase text-center mb-8" style="color:var(--gold)" data-aos="fade-up">Galeri</p>
+        </div>
+        @include('partials.gallery-collage', [
+            'galleries'   => $galleries,
+            'gcCellClass' => '',
+            'gcGap'       => 3,
+        ])
+    </section>
+    @endif
+
+    {{-- RSVP --}}
+    @if($invitation->is_open)
+    <section class="py-20 px-6" style="background:#0F0F0F;--rsvp-accent:#C9A84C;--rsvp-accent-bg:rgba(201,168,76,0.12);--rsvp-gradient:linear-gradient(135deg,#C9A84C,#8B6914);--rsvp-label:rgba(201,168,76,0.85);--rsvp-border:rgba(201,168,76,0.3);--rsvp-input-bg:rgba(255,255,255,0.06);--rsvp-locked-bg:rgba(201,168,76,0.08);--rsvp-text:#E8E0CC;--rsvp-placeholder:rgba(232,224,204,0.35)">
+        <div class="max-w-sm mx-auto">
+            <div class="line-gold mb-8"></div>
+            <p class="text-xs tracking-[0.4em] uppercase text-center mb-8" style="color:var(--gold)" data-aos="fade-up">Konfirmasi Kehadiran</p>
+            <livewire:invitation.rsvp-form :invitation="$invitation" :guest="$guest" />
+        </div>
+    </section>
+    @endif
+
+    {{-- WISHES --}}
+    <section class="py-20 px-6" style="background:#1A1A1A">
+        <div class="max-w-sm mx-auto">
+            <p class="text-xs tracking-[0.4em] uppercase text-center mb-8" style="color:var(--gold)">Ucapan & Doa</p>
+            <livewire:invitation.guest-wishes :invitation="$invitation" />
+        </div>
+    </section>
+
+    {{-- GIFTS --}}
+    @if($gifts->isNotEmpty())
+    <section class="py-20 px-6" style="background:#0F0F0F">
+        <div class="max-w-sm mx-auto">
+            <p class="text-xs tracking-[0.4em] uppercase text-center mb-8" style="color:var(--gold)">Hadiah</p>
+            @foreach($gifts as $gift)
+            <div class="p-5 border mb-4" style="border-color:rgba(201,168,76,0.2)" data-aos="fade-up">
+                <p class="fc text-lg mb-1" style="color:#E8E0CC">{{ $gift->label ?: $gift->bank_name }}</p>
+                @if($gift->account_number)<p class="text-sm font-mono gold">{{ $gift->account_number }}</p><p class="text-xs text-gray-500">{{ $gift->account_name }}</p>@endif
+                @if($gift->qris_image)<img src="{{ Storage::url($gift->qris_image) }}" class="max-w-[180px] mt-3 mx-auto">@endif
+            </div>
+            @endforeach
+        </div>
+    </section>
+    @endif
+
+    <footer class="py-12 text-center" style="background:#0F0F0F;border-top:1px solid rgba(201,168,76,0.15)">
+        <p class="fc text-3xl gold">{{ $invitation->getCoupleName() }}</p>
+        @if($show_watermark)<a href="{{ config('app.url') }}" class="block mt-4 text-xs text-gray-700 hover:text-gray-500">Invora.id</a>@endif
+    </footer>
+    @include('partials.invitation-navbar', ['navStyle' => 'dark'])
+</div>
+
+@if($invitation->music_url)
+<div x-show="opened" class="fixed bottom-20 right-4 z-[80]">
+    <button @click="$store.invitation.toggleMusic()" class="w-12 h-12 rounded-full flex items-center justify-center shadow-xl" style="background:var(--gold)">
+        <svg x-show="!$store.invitation.musicPlaying" class="w-5 h-5 text-black" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217z" clip-rule="evenodd"/></svg>
+        <svg x-show="$store.invitation.musicPlaying" class="w-5 h-5 text-black" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+    </button>
+</div>
+@endif
+
+@include('partials.cinematic-opening')
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<script>
+    AOS.init({ duration: 900, once: true });
+
+    // ── Gold Sparkle Particles (cover + global) ──────────────────
+    (function () {
+        var starSvg = '<svg viewBox="0 0 12 12" style="width:100%;height:100%">'
+                    + '<path d="M6 0 L6.7 5.3 L12 6 L6.7 6.7 L6 12 L5.3 6.7 L0 6 L5.3 5.3 Z" fill="#C9A84C"/>'
+                    + '</svg>';
+        var dotSvg  = '<svg viewBox="0 0 8 8" style="width:100%;height:100%">'
+                    + '<circle cx="4" cy="4" r="3" fill="#C9A84C" opacity=".75"/>'
+                    + '</svg>';
+
+        function spawnParticles(canvasId, N) {
+            var c = document.getElementById(canvasId);
+            if (!c) return;
+            for (var i = 0; i < N; i++) {
+                var isStar = Math.random() > 0.42;
+                var size   = isStar ? (4 + Math.random() * 10) : (3 + Math.random() * 6);
+                var dur    = 9 + Math.random() * 13;
+                /* Negative delay scatters particles across the whole animation cycle →
+                   at any moment particles are spread from bottom to top of viewport */
+                var del    = -(Math.random() * dur);
+                var left   = Math.random() * 100;
+                /* start position: lower 40% of screen so travel covers full viewport */
+                var topPct = 68 + Math.random() * 38;
+                var drift  = (Math.random() - 0.5) * 80;
+                var spin   = 60 + Math.random() * 300;
+                /* per-particle peak opacity so some are more prominent */
+                var po     = 0.45 + Math.random() * 0.55;
+                var el     = document.createElement('div');
+                el.className = 'de-particle';
+                el.innerHTML = isStar ? starSvg : dotSvg;
+                el.style.cssText =
+                    'width:'   + size   + 'px;'
+                  + 'height:'  + size   + 'px;'
+                  + 'left:'    + left   + '%;'
+                  + 'top:'     + topPct + '%;'
+                  + '--drift:' + drift  + 'px;'
+                  + '--spin:'  + spin   + 'deg;'
+                  + '--po:'    + po     + ';'
+                  + 'animation:deParticleFloat ' + dur + 's linear ' + del + 's infinite;';
+                c.appendChild(el);
+            }
+        }
+
+        spawnParticles('de-cover-particles', 38);  // cover screen
+        spawnParticles('de-global-particles', 28); // main content overlay
+    })();
+
+    /* ── Canvas Bokeh — gold glowing orbs drift upward ── */
+    (function () {
+        var canvas = document.getElementById('de-bokeh');
+        if (!canvas) return;
+        var ctx = canvas.getContext('2d');
+        var W, H;
+
+        function resize() {
+            /* Always use window dimensions — parent may be display:none briefly at init */
+            W = canvas.width  = window.innerWidth;
+            H = canvas.height = window.innerHeight;
+        }
+
+        function Bokeh(fresh) {
+            this.reset = function (fresh) {
+                this.x    = Math.random() * W;
+                /* On fresh spawn come from bottom; on init scatter across full height */
+                this.y    = fresh ? H + Math.random() * 60 : Math.random() * H;
+                this.r    = 6 + Math.random() * 28;
+                this.vy   = -(0.18 + Math.random() * 0.5);
+                this.vx   = (Math.random() - 0.5) * 0.28;
+                /* Increased opacity so orbs are clearly visible on dark bg */
+                this.aMax = 0.10 + Math.random() * 0.22;
+                this.life = fresh ? 0 : Math.floor(Math.random() * 220);
+                this.twinkle = Math.random() > 0.48;
+                this.ts   = 0.016 + Math.random() * 0.040;
+                this.tp   = Math.random() * Math.PI * 2;
+            };
+            this.reset(fresh);
+        }
+
+        Bokeh.prototype.update = function () {
+            this.x += this.vx + Math.sin(this.life * 0.017) * 0.36;
+            this.y += this.vy;
+            this.life++;
+            if (this.y < -this.r * 2) this.reset(true);
+        };
+
+        Bokeh.prototype.draw = function () {
+            var a = this.twinkle
+                ? this.aMax * (0.42 + 0.58 * Math.sin(this.life * this.ts + this.tp))
+                : this.aMax;
+            /* inner bright core + outer soft halo */
+            var grd = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.r);
+            grd.addColorStop(0,    'rgba(220,185,90,' + a + ')');
+            grd.addColorStop(0.28, 'rgba(201,168,76,' + (a * 0.7) + ')');
+            grd.addColorStop(0.6,  'rgba(201,168,76,' + (a * 0.28) + ')');
+            grd.addColorStop(1,    'rgba(201,168,76,0)');
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+            ctx.fillStyle = grd;
+            ctx.fill();
+        };
+
+        resize();
+        window.addEventListener('resize', resize);
+
+        var bokehs = [];
+        for (var i = 0; i < 32; i++) { bokehs.push(new Bokeh(false)); }
+
+        var raf;
+        function tick() {
+            ctx.clearRect(0, 0, W, H);
+            bokehs.forEach(function (b) { b.update(); b.draw(); });
+            raf = requestAnimationFrame(tick);
+        }
+        tick();
+    })();
+</script>
+</body>
+</html>
