@@ -94,17 +94,21 @@
     document.getElementById('pay-button').addEventListener('click', function() {
         snap.pay('{{ $snapToken }}', {
             onSuccess: function(result) {
-                // Snap bilang sukses → verifikasi ke server lalu redirect
+                // Snap bilang sukses → verifikasi ke server, polling sampai benar-benar paid
                 showStatus('✅ Pembayaran berhasil! Mengaktifkan undangan...', 'bg-green-50 text-green-700 border border-green-200');
-                checkPaymentStatus().then(() => {
-                    setTimeout(() => window.location.href = FINISH_URL, 1500);
-                });
+                startPolling(); // polling proper, redirect hanya kalau is_paid = true
             },
             onPending: function(result) {
-                // Bayar via transfer/QRIS → mulai polling
-                showStatus('⏳ Menunggu konfirmasi pembayaran...', 'bg-yellow-50 text-yellow-700 border border-yellow-200');
+                // Bank transfer / VA / QRIS — polling sampai settlement, jangan redirect dulu
+                showStatus('⏳ Menunggu konfirmasi pembayaran... Jangan tutup halaman ini.', 'bg-yellow-50 text-yellow-700 border border-yellow-200');
                 startPolling();
-                setTimeout(() => window.location.href = PENDING_URL, 2000);
+                // Kalau 5 menit belum paid juga, baru redirect ke pending page
+                setTimeout(function(){
+                    if (pollInterval) {
+                        stopPolling();
+                        window.location.href = PENDING_URL;
+                    }
+                }, 5 * 60 * 1000);
             },
             onError: function(result) {
                 showStatus('❌ Pembayaran gagal. Silakan coba lagi.', 'bg-red-50 text-red-700 border border-red-200');
