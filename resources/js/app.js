@@ -381,12 +381,15 @@ Alpine.data('photoUpload', (propName, saveFn) => ({
         const file = event.target.files[0];
         if (!file) return;
         event.target.value = '';
+
+        // Langsung tampilkan preview dari file asli — tidak perlu tunggu kompresi
+        this.previewUrl = URL.createObjectURL(file);
+
         this.loading = true; this.progress = 0; this.statusMsg = 'Mengompresi...';
         try {
-            const compressed   = await window.compressToWebP(file);
-            this.previewUrl    = URL.createObjectURL(compressed);
-            this.progress      = 5;
-            this.statusMsg     = 'Mengupload...';
+            const compressed = await window.compressToWebP(file);
+            this.progress    = 5;
+            this.statusMsg   = 'Mengupload...';
 
             this.$wire.upload(
                 propName,
@@ -429,10 +432,13 @@ Alpine.data('photoUploadOnly', (propName) => ({
         const file = event.target.files[0];
         if (!file) return;
         event.target.value = '';
+
+        // Langsung tampilkan preview dari file asli
+        this.previewUrl = URL.createObjectURL(file);
+
         this.loading = true; this.progress = 0; this.statusMsg = 'Mengompresi...';
         try {
             const compressed = await window.compressToWebP(file);
-            this.previewUrl  = URL.createObjectURL(compressed);
             this.progress    = 5;
             this.statusMsg   = 'Mengupload...';
 

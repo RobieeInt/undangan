@@ -91,15 +91,11 @@
                 <label class="label-luxury">Foto Cover</label>
                 <div x-data="photoUpload('cover_photo', 'uploadCoverPhoto')"
                      class="border-2 border-dashed border-cream-dark/60 rounded-xl p-4 text-center bg-cream/30 hover:border-forest/40 transition-colors">
-                    {{-- Preview: gambar baru atau existing --}}
-                    <template x-if="previewUrl">
-                        <img :src="previewUrl" class="w-full h-28 object-cover rounded-lg mb-2" :class="{'opacity-50':loading}">
-                    </template>
-                    <template x-if="!previewUrl">
-                        @if($invitation->cover_photo)
-                        <img src="{{ $invitation->cover_photo_url }}" class="w-full h-28 object-cover rounded-lg mb-2" alt="Cover">
-                        @endif
-                    </template>
+                    {{-- Preview: swap langsung saat file dipilih --}}
+                    <img :src="previewUrl || '{{ $invitation->cover_photo_url }}'"
+                         x-show="previewUrl{{ $invitation->cover_photo ? ' || true' : '' }}"
+                         class="w-full h-28 object-cover rounded-lg mb-2"
+                         :class="{'opacity-50': loading}">
 
                     <input type="file" accept="image/*" x-ref="inp" @change="pick($event)" class="hidden">
 
@@ -124,14 +120,10 @@
                     <label class="label-luxury">Foto Pengantin Pria</label>
                     <div x-data="photoUpload('groom_photo', 'uploadGroomPhoto')"
                          class="border-2 border-dashed border-cream-dark/60 rounded-xl p-3 text-center bg-cream/30">
-                        <template x-if="previewUrl">
-                            <img :src="previewUrl" class="w-16 h-16 object-cover rounded-full mx-auto mb-2" :class="{'opacity-40':loading}">
-                        </template>
-                        <template x-if="!previewUrl">
-                            @if($invitation->groom_photo)
-                            <img src="{{ $invitation->groom_photo_url }}" class="w-16 h-16 object-cover rounded-full mx-auto mb-2">
-                            @endif
-                        </template>
+                        <img :src="previewUrl || '{{ $invitation->groom_photo_url }}'"
+                             x-show="previewUrl{{ $invitation->groom_photo ? ' || true' : '' }}"
+                             class="w-16 h-16 object-cover rounded-full mx-auto mb-2"
+                             :class="{'opacity-40': loading}">
                         <input type="file" accept="image/*" x-ref="inp" @change="pick($event)" class="hidden">
                         <button type="button" @click="$refs.inp.click()" :disabled="loading"
                                 class="text-xs text-forest cursor-pointer disabled:opacity-40">
@@ -149,14 +141,10 @@
                     <label class="label-luxury">Foto Pengantin Wanita</label>
                     <div x-data="photoUpload('bride_photo', 'uploadBridePhoto')"
                          class="border-2 border-dashed border-cream-dark/60 rounded-xl p-3 text-center bg-cream/30">
-                        <template x-if="previewUrl">
-                            <img :src="previewUrl" class="w-16 h-16 object-cover rounded-full mx-auto mb-2" :class="{'opacity-40':loading}">
-                        </template>
-                        <template x-if="!previewUrl">
-                            @if($invitation->bride_photo)
-                            <img src="{{ $invitation->bride_photo_url }}" class="w-16 h-16 object-cover rounded-full mx-auto mb-2">
-                            @endif
-                        </template>
+                        <img :src="previewUrl || '{{ $invitation->bride_photo_url }}'"
+                             x-show="previewUrl{{ $invitation->bride_photo ? ' || true' : '' }}"
+                             class="w-16 h-16 object-cover rounded-full mx-auto mb-2"
+                             :class="{'opacity-40': loading}">
                         <input type="file" accept="image/*" x-ref="inp" @change="pick($event)" class="hidden">
                         <button type="button" @click="$refs.inp.click()" :disabled="loading"
                                 class="text-xs text-forest cursor-pointer disabled:opacity-40">
@@ -614,14 +602,10 @@
                 @else
                 <div x-data="photoUploadOnly('qrisImage')"
                      class="border-2 border-dashed border-cream-dark/60 rounded-xl p-4 text-center">
-                    <template x-if="previewUrl">
-                        <img :src="previewUrl" class="h-32 mx-auto mb-2 rounded-lg" :class="{'opacity-50':loading}">
-                    </template>
-                    <template x-if="!previewUrl">
-                        @if($qrisImage)
-                        <img src="{{ $qrisImage->temporaryUrl() }}" class="h-32 mx-auto mb-2 rounded-lg">
-                        @endif
-                    </template>
+                    <img :src="previewUrl{{ $qrisImage ? " || '".e($qrisImage->temporaryUrl())."'" : '' }}"
+                         x-show="previewUrl{{ $qrisImage ? ' || true' : '' }}"
+                         class="h-32 mx-auto mb-2 rounded-lg"
+                         :class="{'opacity-50': loading}">
                     <input type="file" accept="image/*" x-ref="inp" @change="pick($event)" class="hidden">
                     <button type="button" @click="$refs.inp.click()" :disabled="loading"
                             class="text-xs text-forest cursor-pointer disabled:opacity-40">

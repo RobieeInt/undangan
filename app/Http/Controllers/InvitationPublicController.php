@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\InvitationGallery;
 use App\Services\InvitationResolverService;
 use Illuminate\Http\Request;
 
@@ -27,8 +28,7 @@ class InvitationPublicController extends Controller
             ->orderBy('sort_order')
             ->get();
 
-        $galleries = \Illuminate\Support\Facades\DB::table('invitation_galleries')
-            ->where('invitation_id', $invitation->id)
+        $galleries = InvitationGallery::where('invitation_id', $invitation->id)
             ->orderBy('sort_order')
             ->get();
 
@@ -72,8 +72,7 @@ class InvitationPublicController extends Controller
             ->where('invitation_id', $invitation->id)
             ->orderBy('sort_order')->get();
 
-        $galleries = \Illuminate\Support\Facades\DB::table('invitation_galleries')
-            ->where('invitation_id', $invitation->id)
+        $galleries = InvitationGallery::where('invitation_id', $invitation->id)
             ->orderBy('sort_order')->get();
 
         $gifts = \Illuminate\Support\Facades\DB::table('invitation_gifts')

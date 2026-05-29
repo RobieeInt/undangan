@@ -1,6 +1,6 @@
 {
   "node_modules/jsqr/dist/jsQR.js": {
-    "file": "assets/jsQR-CE_h3DEz.js",
+    "file": "assets/jsQR-Cz0LIIRG.js",
     "name": "jsQR",
     "src": "node_modules/jsqr/dist/jsQR.js",
     "isDynamicEntry": true,
@@ -18,7 +18,7 @@
     "isEntry": true
   },
   "resources/js/app.js": {
-    "file": "assets/app-8r3mkACE.js",
+    "file": "assets/app-xnWoKHqN.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
