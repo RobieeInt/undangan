@@ -330,8 +330,8 @@
                 ['Tanpa watermark',                                                      !$pkg->has_watermark],
                 ['QR Check-in tamu',                                                     $pkg->has_qr_checkin],
                 ['Analytics & statistik',                                                $pkg->has_analytics],
-                ['Export data RSVP',                                                     $pkg->has_analytics],
-                ['Custom domain',                                                        $pkg->slug === 'exclusive'],
+                ['Export data RSVP',                                                     $pkg->has_rsvp_export],
+                ['Custom domain',                                                        $pkg->has_custom_domain],
                 ['Priority support',                                                     $pkg->slug === 'exclusive'],
             ];
 
@@ -381,20 +381,15 @@
             <div class="px-5 py-4">
                 <ul class="space-y-2.5 mb-5">
                     @foreach($allFeatures as [$label, $has])
-                    <li class="flex items-center gap-2.5 text-[13px]"
-                        style="color:{{ $has ? '#374151' : '#d1d5db' }}">
-                        @if($has)
+                    @if($has)
+                    <li class="flex items-center gap-2.5 text-[13px]" style="color:#374151">
                         <span class="flex-shrink-0 w-4 h-4 rounded-full flex items-center justify-center"
                               style="background:rgba(48,109,41,.12)">
                             <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#306D29" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>
                         </span>
-                        @else
-                        <span class="flex-shrink-0 w-4 h-4 flex items-center justify-center">
-                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" stroke-width="2.5" stroke-linecap="round"><path d="M6 18L18 6M6 6l12 12"/></svg>
-                        </span>
-                        @endif
                         <span>{{ $label }}</span>
                     </li>
+                    @endif
                     @endforeach
                 </ul>
 
