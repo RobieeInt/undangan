@@ -125,7 +125,9 @@
       "Bash(php -l /Users/bella/yujang/project/undangan/app/Http/Controllers/Admin/TransactionController.php)",
       "Bash(kill 24113)",
       "Bash(xargs ls -1)",
-      "Bash(php -l /Users/bella/yujang/project/undangan/app/Policies/InvitationPolicy.php)"
+      "Bash(php -l /Users/bella/yujang/project/undangan/app/Policies/InvitationPolicy.php)",
+      "Bash(php -l /Users/bella/yujang/project/undangan/app/Notifications/ResetPasswordNotification.php)",
+      "Bash(php -l /Users/bella/yujang/project/undangan/app/Models/User.php)"
     ]
   }
 }

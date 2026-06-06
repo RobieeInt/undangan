@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Notifications\ResetPasswordNotification;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -32,6 +33,12 @@ class User extends Authenticatable implements MustVerifyEmail
     // ─── Helpers ─────────────────────────────────────────────────────────────
     public function isAdmin(): bool   { return $this->role === 'admin'; }
     public function isActive(): bool  { return $this->status === 'active'; }
+
+    // ─── Notifications ───────────────────────────────────────────────────────
+    public function sendPasswordResetNotification($token): void
+    {
+        $this->notify(new ResetPasswordNotification($token));
+    }
 
     // ─── Relations ───────────────────────────────────────────────────────────
     public function invitations()     { return $this->hasMany(Invitation::class); }
