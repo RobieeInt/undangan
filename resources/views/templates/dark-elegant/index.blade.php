@@ -288,7 +288,7 @@
             <div class="p-5 border mb-4" style="border-color:rgba(201,168,76,0.2)" data-aos="fade-up">
                 <p class="fc text-lg mb-1" style="color:#E8E0CC">{{ $gift->label ?: $gift->bank_name }}</p>
                 @if($gift->account_number)<p class="text-sm font-mono gold">{{ $gift->account_number }}</p><p class="text-xs text-gray-500">{{ $gift->account_name }}</p>@endif
-                @if($gift->qris_image)<img src="{{ $gift->qris_image_url }}" class="max-w-[180px] mt-3 mx-auto">@endif
+                @if($gift->qris_image)<img src="{{ Storage::url($gift->qris_image) }}" class="max-w-[180px] mt-3 mx-auto">@endif
             </div>
             @endforeach
         </div>

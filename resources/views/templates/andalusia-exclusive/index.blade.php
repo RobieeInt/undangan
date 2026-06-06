@@ -1354,7 +1354,7 @@
                         </p>
                         @endif
                         <div style="margin:0 auto;max-width:200px">
-                            <img src="{{ $gift->qris_image_url }}"
+                            <img src="{{ Storage::url($gift->qris_image) }}"
                                  alt="QR Code QRIS"
                                  style="width:100%;display:block;border:1px solid rgba(212,175,55,0.2);border-radius:2px">
                         </div>

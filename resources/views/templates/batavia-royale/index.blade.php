@@ -636,10 +636,10 @@ body{
                             onmouseout="this.style.background='rgba(212,175,55,.09)'">Salin</button>
                 </div>
                 @endif
-                @if($gift->type === 'qris' && $gift->qris_image_url)
+                @if($gift->type === 'qris' && $gift->qris_image)
                 <div class="br-card" style="padding:1.1rem 1.4rem;text-align:center">
                     <p style="font-family:'Cinzel',serif;font-size:.72rem;color:var(--gold);letter-spacing:.12em;margin-bottom:.9rem">{{ $gift->label ?? 'QRIS' }}</p>
-                    <img src="{{ $gift->qris_image_url }}" alt="QRIS" style="max-width:170px;margin:0 auto;display:block;border:1px solid rgba(212,175,55,.18);border-radius:4px;padding:8px;background:white">
+                    <img src="{{ Storage::url($gift->qris_image) }}" alt="QRIS" style="max-width:170px;margin:0 auto;display:block;border:1px solid rgba(212,175,55,.18);border-radius:4px;padding:8px;background:white">
                 </div>
                 @endif
                 @endforeach

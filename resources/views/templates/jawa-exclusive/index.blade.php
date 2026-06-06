@@ -859,10 +859,10 @@ body{
                             onmouseout="this.style.background='rgba(212,175,55,.08)'">Salin</button>
                 </div>
                 @endif
-                @if($gift->type === 'qris' && $gift->qris_image_url)
+                @if($gift->type === 'qris' && $gift->qris_image)
                 <div class="je-card" style="padding:1rem 1.3rem;text-align:center">
                     <p style="font-family:'Cormorant Garamond',serif;font-size:.75rem;color:var(--brown);letter-spacing:.1em;text-transform:uppercase;font-weight:600;margin-bottom:.85rem">{{ $gift->label ?? 'QRIS' }}</p>
-                    <img src="{{ $gift->qris_image_url }}" alt="QRIS" style="max-width:160px;margin:0 auto;display:block;border:1px solid rgba(212,175,55,.18);border-radius:4px;padding:8px;background:white">
+                    <img src="{{ Storage::url($gift->qris_image) }}" alt="QRIS" style="max-width:160px;margin:0 auto;display:block;border:1px solid rgba(212,175,55,.18);border-radius:4px;padding:8px;background:white">
                 </div>
                 @endif
                 @endforeach

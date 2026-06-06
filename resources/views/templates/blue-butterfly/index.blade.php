@@ -602,7 +602,7 @@
                             </button>
                             @endif
                             @if($gift->qris_image)
-                            <img src="{{ $gift->qris_image_url }}" alt="QRIS" class="mt-3 max-w-[200px] rounded-xl shadow-sm border border-blue-100">
+                            <img src="{{ Storage::url($gift->qris_image) }}" alt="QRIS" class="mt-3 max-w-[200px] rounded-xl shadow-sm border border-blue-100">
                             @endif
                         </div>
                     </div>
