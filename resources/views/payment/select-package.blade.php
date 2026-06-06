@@ -57,21 +57,31 @@
     </p>
 
     {{-- Grid paket --}}
-    <div class="grid grid-cols-1 md:grid-cols-{{ $packages->count() == 1 ? '1' : ($packages->count() == 2 ? '2' : '3') }} gap-6 max-w-4xl mx-auto">
+    {{-- Desktop: centered grid | Mobile: horizontal scroll snap --}}
+    <div class="max-w-4xl mx-auto">
+        <div class="overflow-x-auto -mx-4 md:mx-0 md:overflow-visible">
+            <div class="flex gap-4 px-4 pb-4 snap-x snap-mandatory
+                        md:grid md:px-0 md:pb-0
+                        md:grid-cols-{{ $packages->count() == 1 ? '1' : ($packages->count() == 2 ? '2' : '3') }}">
         @foreach($packages as $pkg)
-        <div class="card-luxury p-6 relative flex flex-col {{ $pkg->slug === 'premium' ? 'ring-2 ring-forest' : '' }}"
+        <div class="card-luxury relative flex flex-col snap-center shrink-0 w-[78vw] sm:w-[55vw] md:w-auto overflow-hidden
+                    {{ $pkg->slug === 'premium' ? 'ring-2 ring-forest' : '' }}"
              data-aos="fade-up" data-aos-delay="{{ $loop->index * 100 }}">
 
+            {{-- Badge strip di dalam card (bukan absolute di luar) --}}
             @if($pkg->slug === 'premium')
-            <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-forest text-cream text-xs font-semibold px-4 py-1.5 rounded-full whitespace-nowrap">
-                Paling Populer
+            <div class="bg-gradient-forest text-cream text-xs font-semibold px-4 py-2 text-center tracking-wide">
+                ⭐ Paling Populer
             </div>
             @elseif($pkg->slug === 'exclusive')
-            <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-amber-500 to-yellow-400 text-white text-xs font-semibold px-4 py-1.5 rounded-full whitespace-nowrap">
-                Terlengkap
+            <div class="bg-gradient-to-r from-amber-500 to-yellow-400 text-white text-xs font-semibold px-4 py-2 text-center tracking-wide">
+                👑 Terlengkap
             </div>
+            @else
+            <div class="py-2"></div>
             @endif
 
+            <div class="p-6 flex flex-col flex-1">
             <div class="text-center mb-6">
                 <h3 class="font-serif text-2xl text-gray-800">{{ $pkg->name }}</h3>
                 <p class="text-3xl font-bold text-forest mt-2">{{ $pkg->formatted_price }}</p>
@@ -97,9 +107,12 @@
                     Pilih Paket {{ $pkg->name }}
                 </button>
             </form>
+            </div>{{-- /p-6 --}}
         </div>
         @endforeach
-    </div>
+            </div>{{-- /flex grid --}}
+        </div>{{-- /overflow-x-auto --}}
+    </div>{{-- /max-w-4xl --}}
 
     {{-- Back to dashboard --}}
     <div class="text-center mt-8">
