@@ -24,6 +24,10 @@ class Invitation extends Model
     protected function casts(): array
     {
         return [
+            'user_id'        => 'integer',
+            'template_id'    => 'integer',
+            'package_id'     => 'integer',
+            'transaction_id' => 'integer',
             'is_published'   => 'boolean',
             'is_active'      => 'boolean',
             'is_open'        => 'boolean',

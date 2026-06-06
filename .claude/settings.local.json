@@ -123,7 +123,9 @@
       "Bash(zip -r public_build.zip public/build/)",
       "Bash(php -l /Users/bella/yujang/project/undangan/app/Http/Controllers/Admin/PackageController.php)",
       "Bash(php -l /Users/bella/yujang/project/undangan/app/Http/Controllers/Admin/TransactionController.php)",
-      "Bash(kill 24113)"
+      "Bash(kill 24113)",
+      "Bash(xargs ls -1)",
+      "Bash(php -l /Users/bella/yujang/project/undangan/app/Policies/InvitationPolicy.php)"
     ]
   }
 }
