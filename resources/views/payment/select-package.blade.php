@@ -60,9 +60,8 @@
     {{-- Desktop: centered grid | Mobile: horizontal scroll snap --}}
     <div class="max-w-4xl mx-auto">
         <div class="overflow-x-auto -mx-4 md:mx-0 md:overflow-visible">
-            <div class="flex gap-4 px-4 pb-4 snap-x snap-mandatory
-                        md:grid md:px-0 md:pb-0
-                        md:grid-cols-{{ $packages->count() == 1 ? '1' : ($packages->count() == 2 ? '2' : '3') }}">
+            @php $colClass = $packages->count() == 2 ? 'md:grid-cols-2' : 'md:grid-cols-3'; @endphp
+            <div class="flex gap-4 px-4 pb-4 snap-x snap-mandatory md:grid md:px-0 md:pb-0 {{ $colClass }}">
         @foreach($packages as $pkg)
         <div class="card-luxury relative flex flex-col snap-center shrink-0 w-[78vw] sm:w-[55vw] md:w-auto overflow-hidden
                     {{ $pkg->slug === 'premium' ? 'ring-2 ring-forest' : '' }}"
