@@ -421,6 +421,7 @@ body{
     font-family:'Cormorant Garamond',serif;
 }
 </style>
+    @include('templates._font-override', ['invitation' => $invitation])
 </head>
 
 <body x-init="$store.invitation.initMusic('{{ $invitation->music_url }}',{{ $invitation->music_autoplay ? 'true' : 'false' }})">
@@ -833,12 +834,13 @@ body{
     @endif
 
     {{-- ── HADIAH ───────────────────────────────────────── --}}
-    @if($gifts->isNotEmpty())
+    @if($gifts->isNotEmpty() || $invitation->gift_address)
     <section class="je-kw-light" style="padding:72px 24px">
         <div class="je-reveal" style="max-width:860px;margin:0 auto">
             <p class="je-title">Hadiah Pernikahan</p>
             <div class="je-divider"><svg width="12" height="12" viewBox="0 0 16 16"><path d="M8 1L9.5 6H15L10.5 9L12 14L8 11L4 14L5.5 9L1 6H6.5Z" fill="#D4AF37" opacity=".55"/></svg></div>
             <div style="display:flex;flex-direction:column;gap:.9rem;margin-top:1.25rem;max-width:500px;margin-left:auto;margin-right:auto">
+                                @include('templates._physical-gift', ['invitation' => $invitation])
                 @foreach($gifts as $gift)
                 @if($gift->type === 'bank')
                 <div class="je-card" style="padding:1rem 1.3rem;display:flex;align-items:center;gap:.9rem">

@@ -43,6 +43,10 @@ class RsvpForm extends Component
     #[Rule('nullable|string|max:500')]
     public string $message = '';
 
+    #[Rule('nullable|string|max:200')]
+    public string $gift_name = '';
+    public bool $wantSendGift = false;
+
     public function mount(Invitation $invitation, ?InvitationGuest $guest = null)
     {
         $this->invitation = $invitation;
@@ -138,6 +142,7 @@ class RsvpForm extends Component
             'attendance'    => $this->attendance,
             'guest_count'   => $this->guest_count,
             'message'       => $this->message ?: null,
+            'gift_name'     => ($this->wantSendGift && $this->gift_name) ? trim($this->gift_name) : null,
             'ip_address'    => request()->ip(),
             'user_agent'    => substr(request()->userAgent() ?? '', 0, 500),
             'created_at'    => now(),

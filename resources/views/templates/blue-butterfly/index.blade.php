@@ -164,6 +164,7 @@
             z-index: 40; white-space: nowrap;
         }
     </style>
+    @include('templates._font-override', ['invitation' => $invitation])
 </head>
 <body x-data="{ opened: false }" @keydown.window.escape="opened = false"
       x-init="$store.invitation.initMusic('{{ $invitation->music_url }}', {{ $invitation->music_autoplay ? 'true' : 'false' }})">
@@ -557,16 +558,18 @@
         <div class="max-w-lg mx-auto px-6">
             <p class="font-cormo text-blue-400/70 text-xs tracking-[0.35em] uppercase text-center mb-8" data-aos="fade-up">Galeri</p>
         </div>
+        
         @include('partials.gallery-collage', [
-            'galleries'   => $galleries,
-            'gcCellClass' => 'rounded-2xl border-2 border-blue-100',
-            'gcGap'       => 6,
+            'galleries'     => $galleries,
+            'gcOrientation' => $invitation->theme['gallery_orientation'] ?? 'auto',
+            'gcCellClass'   => 'rounded-2xl border-2 border-blue-100',
+            'gcGap'         => 6,
         ])
     </section>
     @endif
 
     {{-- ── GIFT ──────────────────────────────── --}}
-    @if($gifts->isNotEmpty())
+    @if($gifts->isNotEmpty() || $invitation->gift_address)
     <section class="py-16 px-6 bg-bb-light">
         <div class="max-w-lg mx-auto">
             <div class="bb-divider mb-8">
@@ -579,6 +582,7 @@
             <p class="text-center text-xs text-blue-400/60 mb-8" data-aos="fade-up">Doa restu Anda adalah hadiah terbaik. Namun jika ingin berbagi kebaikan:</p>
 
             <div class="space-y-4">
+                                @include('templates._physical-gift', ['invitation' => $invitation])
                 @foreach($gifts as $gift)
                 <div class="gift-card p-5" data-aos="fade-up">
                     <div class="flex items-start gap-4">

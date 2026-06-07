@@ -15,6 +15,7 @@ class Invitation extends Model
         'groom_father', 'groom_mother', 'bride_father', 'bride_mother',
         'groom_photo', 'bride_photo', 'cover_photo',
         'opening_quote', 'opening_quote_source', 'story',
+        'gift_address',
         'music_url', 'music_name', 'music_autoplay',
         'is_published', 'is_active', 'is_open',
         'activated_at', 'expires_at', 'rsvp_deadline',

@@ -328,7 +328,7 @@
     }
     @keyframes alNameShimmer {
         0%, 100% { text-shadow: 0 0 0 transparent; }
-        50%       { text-shadow: 0 2px 40px rgba(212,175,55,0.18), 0 0 80px rgba(13,83,14,0.08); }
+        50%       { text-shadow: 0 2px 40px rgba(175,147,52,0.25), 0 0 80px rgba(175,147,52,0.10); }
     }
 
     /* ─── Bismillah / Quote ──────────────────────────────────── */
@@ -622,6 +622,7 @@
             inset 0 1px 0 rgba(212,175,55,0.12) !important;
     }
     </style>
+    @include('templates._font-override', ['invitation' => $invitation])
 </head>
 
 {{-- ═══════════════════════════════════════════════════════════
@@ -847,7 +848,7 @@
 
         {{-- Couple names --}}
         <h1 class="ff-garamond al-fade-up al-delay-2"
-            style="font-size:clamp(2.2rem,10vw,3.8rem);font-weight:300;line-height:1.1;color:#FBF5DD;margin-bottom:0.4rem;letter-spacing:0.01em">
+            style="font-size:clamp(2.2rem,10vw,3.8rem);font-weight:300;line-height:1.1;color:#AF9334;margin-bottom:0.4rem;letter-spacing:0.01em">
             {{ $invitation->groom_name }}
         </h1>
         <div class="al-fade-up al-delay-2" style="display:flex;align-items:center;gap:1rem;margin-bottom:0.4rem;justify-content:center">
@@ -856,7 +857,7 @@
             <div style="flex:1;max-width:80px;height:1px;background:linear-gradient(to left,transparent,rgba(212,175,55,0.5))"></div>
         </div>
         <h1 class="ff-garamond al-fade-up al-delay-3"
-            style="font-size:clamp(2.2rem,10vw,3.8rem);font-weight:300;line-height:1.1;color:#FBF5DD;letter-spacing:0.01em;margin-bottom:1.8rem">
+            style="font-size:clamp(2.2rem,10vw,3.8rem);font-weight:300;line-height:1.1;color:#AF9334;letter-spacing:0.01em;margin-bottom:1.8rem">
             {{ $invitation->bride_name }}
         </h1>
 
@@ -952,7 +953,7 @@
 
             {{-- Groom name --}}
             <h2 class="ff-garamond al-name-shimmer"
-                style="font-size:clamp(3rem,12vw,5.5rem);font-weight:300;line-height:1;color:var(--al-emerald);letter-spacing:0.01em"
+                style="font-size:clamp(3rem,12vw,5.5rem);font-weight:300;line-height:1;color:#AF9334;letter-spacing:0.01em"
                 data-aos="fade-up" data-aos-delay="80">
                 {{ $invitation->groom_full_name ?: $invitation->groom_name }}
             </h2>
@@ -972,7 +973,7 @@
 
             {{-- Bride name --}}
             <h2 class="ff-garamond al-name-shimmer"
-                style="font-size:clamp(3rem,12vw,5.5rem);font-weight:300;line-height:1;color:var(--al-emerald);letter-spacing:0.01em;animation-delay:3.5s"
+                style="font-size:clamp(3rem,12vw,5.5rem);font-weight:300;line-height:1;color:#AF9334;letter-spacing:0.01em;animation-delay:3.5s"
                 data-aos="fade-up" data-aos-delay="160">
                 {{ $invitation->bride_full_name ?: $invitation->bride_name }}
             </h2>
@@ -1060,7 +1061,7 @@
 
             <div style="text-align:center;margin-bottom:3rem" data-aos="fade-up">
                 <span class="al-label">Mempelai</span>
-                <h3 class="ff-garamond" style="font-size:clamp(1.8rem,6vw,2.8rem);font-weight:300;color:var(--al-emerald)">
+                <h3 class="ff-garamond" style="font-size:clamp(1.8rem,6vw,2.8rem);font-weight:300;color:#AF9334">
                     Kedua Mempelai
                 </h3>
                 <div style="margin-top:1rem;display:flex;align-items:center;gap:1rem;justify-content:center">
@@ -1089,16 +1090,18 @@
                         </div>
                     </div>
 
-                    <h4 class="ff-garamond" style="font-size:clamp(1.6rem,5vw,2.2rem);font-weight:400;color:var(--al-emerald);line-height:1.2;margin-bottom:0.3rem">
+                    <h4 class="ff-garamond" style="font-size:clamp(1.6rem,5vw,2.2rem);font-weight:400;color:#AF9334;line-height:1.2;margin-bottom:0.3rem">
                         {{ $invitation->groom_full_name ?: $invitation->groom_name }}
                     </h4>
                     <p class="ff-cinzel" style="font-size:0.55rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--al-gold2);margin-bottom:0.5rem">
                         Putra
                     </p>
-                    @if($invitation->groom_father)
+                    @if($invitation->groom_father || $invitation->groom_mother)
                     <p class="ff-poppins" style="font-size:0.8rem;color:var(--al-text-mid);line-height:1.6">
-                        Bapak &amp; Ibu<br>
-                        <strong style="font-weight:500">{{ $invitation->groom_father }}</strong>
+                        Putra dari Bapak &amp; Ibu<br>
+                        @if($invitation->groom_father)<strong style="font-weight:500">{{ $invitation->groom_father }}</strong>@endif
+                        @if($invitation->groom_father && $invitation->groom_mother)<br>@endif
+                        @if($invitation->groom_mother)<strong style="font-weight:500">{{ $invitation->groom_mother }}</strong>@endif
                     </p>
                     @endif
                 </div>
@@ -1133,22 +1136,38 @@
                         </div>
                     </div>
 
-                    <h4 class="ff-garamond" style="font-size:clamp(1.6rem,5vw,2.2rem);font-weight:400;color:var(--al-emerald);line-height:1.2;margin-bottom:0.3rem">
+                    <h4 class="ff-garamond" style="font-size:clamp(1.6rem,5vw,2.2rem);font-weight:400;color:#AF9334;line-height:1.2;margin-bottom:0.3rem">
                         {{ $invitation->bride_full_name ?: $invitation->bride_name }}
                     </h4>
                     <p class="ff-cinzel" style="font-size:0.55rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--al-gold2);margin-bottom:0.5rem">
                         Putri
                     </p>
-                    @if($invitation->bride_father)
+                    @if($invitation->bride_father || $invitation->bride_mother)
                     <p class="ff-poppins" style="font-size:0.8rem;color:var(--al-text-mid);line-height:1.6">
-                        Bapak &amp; Ibu<br>
-                        <strong style="font-weight:500">{{ $invitation->bride_father }}</strong>
+                        Putri dari Bapak &amp; Ibu<br>
+                        @if($invitation->bride_father)<strong style="font-weight:500">{{ $invitation->bride_father }}</strong>@endif
+                        @if($invitation->bride_father && $invitation->bride_mother)<br>@endif
+                        @if($invitation->bride_mother)<strong style="font-weight:500">{{ $invitation->bride_mother }}</strong>@endif
                     </p>
                     @endif
                 </div>
             </div>
         </div>
     </section>
+
+    {{-- ── §3b LOVE STORY ─────────────────────────────────── --}}
+    @if($invitation->story)
+    <section class="al-section-sm" style="background:var(--al-ivory-light)">
+        <div class="al-container" style="max-width:520px;text-align:center">
+            <div data-aos="fade-up">
+                <span class="al-label al-label-dark">Cerita Kami</span>
+            </div>
+            <p class="ff-garamond" style="margin-top:1.5rem;font-size:1.05rem;line-height:1.9;color:var(--al-text-mid);font-style:italic" data-aos="fade-up" data-aos-delay="100">
+                {{ $invitation->story }}
+            </p>
+        </div>
+    </section>
+    @endif
 
     {{-- ── §4 WEDDING EVENTS ────────────────────────────────── --}}
     <section id="nav-events" class="al-section">
@@ -1275,7 +1294,7 @@
 
             <div style="text-align:center;margin-bottom:2.5rem" data-aos="fade-up">
                 <span class="al-label">Galeri</span>
-                <h3 class="ff-garamond" style="font-size:clamp(1.8rem,6vw,2.8rem);font-weight:300;color:var(--al-emerald)">
+                <h3 class="ff-garamond" style="font-size:clamp(1.8rem,6vw,2.8rem);font-weight:300;color:#AF9334">
                     Momen Bersama
                 </h3>
                 <div style="margin-top:1rem;display:flex;align-items:center;gap:1rem;justify-content:center">
@@ -1324,13 +1343,13 @@
     </section>
 
     {{-- ── §7 DIGITAL GIFT ─────────────────────────────────── --}}
-    @if($gifts->isNotEmpty())
+    @if($gifts->isNotEmpty() || $invitation->gift_address)
     <section id="nav-gift" class="al-section">
         <div class="al-container">
 
             <div style="text-align:center;margin-bottom:2.5rem" data-aos="fade-up">
                 <span class="al-label">Hadiah</span>
-                <h3 class="ff-garamond" style="font-size:clamp(1.8rem,6vw,2.8rem);font-weight:300;color:var(--al-emerald)">
+                <h3 class="ff-garamond" style="font-size:clamp(1.8rem,6vw,2.8rem);font-weight:300;color:#AF9334">
                     Amplop Digital
                 </h3>
                 <div style="margin-top:1rem;display:flex;align-items:center;gap:1rem;justify-content:center">
@@ -1341,6 +1360,7 @@
             </div>
 
             <div style="display:flex;flex-direction:column;gap:1rem">
+                                @include('templates._physical-gift', ['invitation' => $invitation])
                 @foreach($gifts as $gift)
                 <div class="al-gift-card" data-aos="fade-up" data-aos-delay="{{ $loop->index * 100 }}">
                     @if(($gift->type ?? 'bank') === 'qris' && $gift->qris_image)
@@ -1349,7 +1369,7 @@
                             QRIS
                         </p>
                         @if($gift->account_name)
-                        <p class="ff-garamond" style="font-size:1.15rem;color:var(--al-emerald);margin-bottom:0.75rem">
+                        <p class="ff-garamond" style="font-size:1.15rem;color:#AF9334;margin-bottom:0.75rem">
                             {{ $gift->account_name }}
                         </p>
                         @endif
@@ -1366,7 +1386,7 @@
                         <p class="ff-cinzel" style="font-size:0.55rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--al-gold2);margin-bottom:0.5rem">
                             {{ $gift->bank_name ?? 'Transfer' }}
                         </p>
-                        <p class="ff-garamond" style="font-size:1.3rem;color:var(--al-emerald);margin-bottom:0.2rem">
+                        <p class="ff-garamond" style="font-size:1.3rem;color:#AF9334;margin-bottom:0.2rem">
                             {{ $gift->account_name }}
                         </p>
                         <div x-data style="display:flex;align-items:center;justify-content:center;gap:0.75rem;margin-top:0.5rem">
@@ -1392,7 +1412,7 @@
 
             <div style="text-align:center;margin-bottom:2.5rem" data-aos="fade-up">
                 <span class="al-label">Ucapan &amp; Doa</span>
-                <h3 class="ff-garamond" style="font-size:clamp(1.8rem,6vw,2.8rem);font-weight:300;color:var(--al-emerald)">
+                <h3 class="ff-garamond" style="font-size:clamp(1.8rem,6vw,2.8rem);font-weight:300;color:#AF9334">
                     Pesan Untuk Kami
                 </h3>
                 <div style="margin-top:1rem;display:flex;align-items:center;gap:1rem;justify-content:center">

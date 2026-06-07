@@ -143,6 +143,7 @@
         /* Override input text colour for dark bg */
         .rsvp-section .rsvp-input { color: var(--jw-cream) !important; }
     </style>
+    @include('templates._font-override', ['invitation' => $invitation])
 </head>
 <body x-data="{ opened: false }" @keydown.window.escape="opened = false"
       x-init="$store.invitation.initMusic('{{ $invitation->music_url }}', {{ $invitation->music_autoplay ? 'true' : 'false' }})">
@@ -501,16 +502,18 @@
                 <span class="font-cinzel-reg text-xs tracking-widest uppercase" style="color:var(--jw-gold)">✦ Galeri ✦</span>
             </div>
         </div>
+        
         @include('partials.gallery-collage', [
-            'galleries'   => $galleries,
-            'gcCellClass' => 'rounded-xl',
-            'gcGap'       => 4,
+            'galleries'     => $galleries,
+            'gcOrientation' => $invitation->theme['gallery_orientation'] ?? 'auto',
+            'gcCellClass'   => 'rounded-xl',
+            'gcGap'         => 4,
         ])
     </section>
     @endif
 
     {{-- ═══ GIFT / REKENING ═══ --}}
-    @if($gifts->isNotEmpty())
+    @if($gifts->isNotEmpty() || $invitation->gift_address)
     <section class="py-20 px-6 relative" style="background:linear-gradient(160deg,var(--jw-dark),var(--jw-maroon) 100%)">
         <div class="absolute inset-0 batik-bg opacity-20 pointer-events-none"></div>
         <div class="max-w-lg mx-auto relative z-10">
@@ -522,6 +525,7 @@
             </p>
 
             <div class="space-y-4">
+                                @include('templates._physical-gift', ['invitation' => $invitation])
                 @foreach($gifts as $gift)
                 <div class="jw-card p-5" data-aos="fade-up">
                     <div class="flex items-start gap-4">

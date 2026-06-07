@@ -226,6 +226,34 @@
                   class="rsvp-input" style="resize:none"></textarea>
     </div>
 
+    {{-- Hadiah Fisik (opsional, tampilkan hanya jika alamat diisi) --}}
+    @if($invitation->gift_address)
+    <div class="rounded-xl border-2 p-3 space-y-3"
+         style="border-color:rgba(245,158,11,0.3);background:rgba(245,158,11,0.04)">
+        <label class="flex items-center gap-3 cursor-pointer">
+            <input type="checkbox" wire:model.live="wantSendGift"
+                   class="w-4 h-4 rounded"
+                   style="accent-color:var(--rsvp-accent,#306D29)">
+            <span class="text-sm font-medium text-gray-700">Saya ingin mengirim hadiah fisik 🎁</span>
+        </label>
+
+        @if($wantSendGift)
+        <div wire:key="gift-form">
+            <label class="rsvp-label">Nama / Deskripsi Hadiah</label>
+            <input type="text" wire:model="gift_name"
+                   placeholder="Contoh: Set peralatan dapur, Bingkisan uang, dll."
+                   class="rsvp-input">
+            @error('gift_name')<p class="text-xs text-red-500 mt-1">{{ $message }}</p>@enderror
+
+            <div class="mt-3 rounded-xl p-3" style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2)">
+                <p class="text-xs font-semibold text-amber-700 mb-1">📦 Alamat Pengiriman</p>
+                <p class="text-xs text-gray-600 leading-relaxed">{{ $invitation->gift_address }}</p>
+            </div>
+        </div>
+        @endif
+    </div>
+    @endif
+
     <button type="submit" wire:loading.attr="disabled"
             class="w-full py-3 rounded-xl text-white text-sm font-medium tracking-wide transition-all hover:opacity-90 active:scale-[0.99] disabled:opacity-60"
             style="background: var(--rsvp-gradient, linear-gradient(135deg,#306D29,#0D530E))">

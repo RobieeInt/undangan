@@ -54,6 +54,7 @@
         .mm-d5   { animation-delay: 1.2s; }
         .mm-d6   { animation-delay: 1.45s; }
     </style>
+    @include('templates._font-override', ['invitation' => $invitation])
 </head>
 <body x-data="{ opened: false }"
       x-init="$store.invitation.initMusic('{{ $invitation->music_url }}', {{ $invitation->music_autoplay ? 'true' : 'false' }})">
@@ -127,7 +128,8 @@
         @endif
         <div class="relative z-10 text-center px-6">
             @if($invitation->opening_quote)
-            <p class="text-xs text-gray-400 italic mb-6 max-w-xs mx-auto" data-aos="fade-down">"{{ $invitation->opening_quote }}"</p>
+            <p class="text-xs text-gray-400 italic mb-1 max-w-xs mx-auto" data-aos="fade-down">"{{ $invitation->opening_quote }}"</p>
+            @if($invitation->opening_quote_source)<p class="text-xs text-gray-400 mb-6" data-aos="fade-down">— {{ $invitation->opening_quote_source }}</p>@endif
             @endif
             <p class="text-xs tracking-[0.5em] text-gray-500 uppercase mb-6" data-aos="fade-up">The Wedding of</p>
             <h1 class="fp text-7xl text-gray-900 leading-none mb-2" data-aos="fade-up" data-aos-delay="100">{{ $invitation->groom_name }}</h1>
@@ -237,21 +239,24 @@
     <section id="nav-gallery" class="py-20 px-6 bg-white">
         <div class="max-w-sm mx-auto">
             <p class="text-xs tracking-[0.4em] uppercase text-gray-400 text-center mb-8" data-aos="fade-up">Galeri</p>
+            
             @include('partials.gallery-collage', [
-                'galleries'   => $galleries,
-                'gcCellClass' => '',
-                'gcGap'       => 4,
+                'galleries'     => $galleries,
+                'gcOrientation' => $invitation->theme['gallery_orientation'] ?? 'auto',
+                'gcCellClass'   => '',
+                'gcGap'         => 4,
             ])
         </div>
     </section>
     @endif
 
     {{-- ── GIFT ─────────────────────────────────── --}}
-    @if($gifts->isNotEmpty())
+    @if($gifts->isNotEmpty() || $invitation->gift_address)
     <section class="py-16 px-6 bg-gray-50">
         <div class="max-w-sm mx-auto">
             <p class="text-xs tracking-[0.4em] uppercase text-gray-400 text-center mb-6" data-aos="fade-up">Hadiah</p>
             <div class="space-y-4">
+                                @include('templates._physical-gift', ['invitation' => $invitation])
                 @foreach($gifts as $gift)
                 <div class="bg-white border border-gray-100 rounded-xl p-4 shadow-sm" data-aos="fade-up">
                     <div class="flex items-start gap-3">

@@ -62,6 +62,7 @@
         .fl-d4   { animation-delay:1.1s; }
         .fl-d5   { animation-delay:1.4s; }
     </style>
+    @include('templates._font-override', ['invitation' => $invitation])
 </head>
 <body x-data="{ opened: false }" @keydown.window.escape="opened = false"
       x-init="$store.invitation.initMusic('{{ $invitation->music_url }}', {{ $invitation->music_autoplay ? 'true' : 'false' }})">
@@ -350,16 +351,18 @@
         <div class="max-w-lg mx-auto px-6">
             <p class="font-cormorant text-forest/60 text-sm tracking-[0.3em] uppercase text-center mb-8" data-aos="fade-up">Galeri</p>
         </div>
+        
         @include('partials.gallery-collage', [
-            'galleries'   => $galleries,
-            'gcCellClass' => 'rounded-xl shadow-md',
-            'gcGap'       => 6,
+            'galleries'     => $galleries,
+            'gcOrientation' => $invitation->theme['gallery_orientation'] ?? 'auto',
+            'gcCellClass'   => 'rounded-xl shadow-md',
+            'gcGap'         => 6,
         ])
     </section>
     @endif
 
     {{-- GIFT / REKENING --}}
-    @if($gifts->isNotEmpty())
+    @if($gifts->isNotEmpty() || $invitation->gift_address)
     <section class="py-16 px-6 bg-cream">
         <div class="max-w-lg mx-auto">
             <div class="section-divider mb-8"><span class="ornament">✦</span></div>
@@ -367,6 +370,7 @@
             <p class="text-center text-xs text-gray-500 mb-8" data-aos="fade-up">Doa restu Anda adalah hadiah terbaik. Namun jika ingin berbagi kebaikan:</p>
 
             <div class="space-y-4">
+                                @include('templates._physical-gift', ['invitation' => $invitation])
                 @foreach($gifts as $gift)
                 <div class="card-luxury p-5" data-aos="fade-up">
                     <div class="flex items-start gap-4">

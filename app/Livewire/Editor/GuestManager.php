@@ -253,19 +253,10 @@ class GuestManager extends Component
        WhatsApp helper
     ───────────────────────────────────────────── */
 
-    public function whatsappUrl(string $phone, string $guestName, string $guestSlug): string
+    private function buildInvitationMessage(string $guestName, string $guestSlug): string
     {
-        // Normalisasi nomor → format internasional 62xxx
-        $phone = preg_replace('/\D/', '', $phone);
-        if (str_starts_with($phone, '0')) {
-            $phone = '62' . substr($phone, 1);
-        } elseif (! str_starts_with($phone, '62')) {
-            $phone = '62' . $phone;
-        }
-
         $personalUrl = url('/' . $this->invitation->slug . '?tamu=' . $guestSlug);
 
-        // Ambil event pertama kalau ada
         $event = DB::table('invitation_events')
             ->where('invitation_id', $this->invitation->id)
             ->orderBy('sort_order')
@@ -273,12 +264,8 @@ class GuestManager extends Component
 
         $eventLine = '';
         if ($event) {
-            $tgl = $event->date
-                ? \Carbon\Carbon::parse($event->date)->translatedFormat('d F Y')
-                : '';
-            $jam = $event->time_start
-                ? \Carbon\Carbon::parse($event->time_start)->format('H:i')
-                : '';
+            $tgl   = $event->date      ? \Carbon\Carbon::parse($event->date)->translatedFormat('d F Y') : '';
+            $jam   = $event->time_start ? \Carbon\Carbon::parse($event->time_start)->format('H:i') : '';
             $venue = $event->venue ?? '';
             $eventLine = "\n📅 " . trim("{$event->name} · {$tgl}" . ($jam ? ", {$jam} WIB" : ''));
             if ($venue) $eventLine .= "\n📍 {$venue}";
@@ -287,17 +274,44 @@ class GuestManager extends Component
         $groom = $this->invitation->groom_name;
         $bride = $this->invitation->bride_name;
 
-        $msg = "Halo, {$guestName} 👋\n\n"
+        return "Halo, {$guestName} 👋\n\n"
             . "Kami mengundang Bapak/Ibu/Saudara/i *{$guestName}* untuk hadir di momen istimewa kami:\n\n"
             . "💍 *{$groom} & {$bride}*"
             . $eventLine . "\n\n"
             . "Konfirmasi kehadiran & lihat detail undangan melalui link pribadi Anda:\n"
             . $personalUrl . "\n\n"
             . "Kehadiran Anda adalah kebahagiaan kami 🙏\n\n"
-            . "_Hormat kami,_\n"
-            . "_Keluarga {$groom} & {$bride}_";
+            . "Hormat kami,\n"
+            . "Keluarga {$groom} & {$bride}";
+    }
+
+    public function whatsappUrl(string $phone, string $guestName, string $guestSlug): string
+    {
+        $phone = preg_replace('/\D/', '', $phone);
+        if (str_starts_with($phone, '0')) {
+            $phone = '62' . substr($phone, 1);
+        } elseif (! str_starts_with($phone, '62')) {
+            $phone = '62' . $phone;
+        }
+
+        $msg = $this->buildInvitationMessage($guestName, $guestSlug);
 
         return 'https://wa.me/' . $phone . '?text=' . rawurlencode($msg);
+    }
+
+    public function copyMessage(int $guestId): void
+    {
+        $guest = DB::table('invitation_guests')
+            ->where('id', $guestId)
+            ->where('invitation_id', $this->invitation->id)
+            ->first();
+
+        if (!$guest) return;
+
+        $msg = $this->buildInvitationMessage($guest->name, $guest->slug);
+
+        $this->js('navigator.clipboard.writeText(' . json_encode($msg) . ')');
+        $this->dispatch('toast', '✓ Pesan untuk ' . $guest->name . ' disalin!', 'success');
     }
 
     public function exportCsv()

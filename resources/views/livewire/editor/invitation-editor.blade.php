@@ -418,6 +418,39 @@
                 <span class="text-xs text-gray-400">{{ count($galleries) }}/{{ $this->packageLimits['max_gallery'] }}</span>
             </div>
 
+            {{-- Orientasi Foto --}}
+            <div class="card-luxury p-3 space-y-2">
+                <label class="label-luxury flex items-center gap-1.5 mb-0">
+                    <svg class="w-3.5 h-3.5 text-forest/60" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/></svg>
+                    Tampilan Foto Galeri
+                </label>
+                <div class="grid grid-cols-4 gap-1.5">
+                    @foreach(['auto'=>'Otomatis','portrait'=>'Potrait','landscape'=>'Landscape','square'=>'Kotak'] as $val => $label)
+                    <button type="button"
+                            wire:click="$set('gallery_orientation', '{{ $val }}')"
+                            class="flex flex-col items-center gap-1 p-2 rounded-lg border text-center transition-all
+                                   {{ $gallery_orientation === $val
+                                       ? 'bg-forest text-cream border-forest shadow-sm'
+                                       : 'bg-white text-gray-500 border-cream-dark/50 hover:border-forest/40' }}">
+                        {{-- Mini icon per orientation --}}
+                        @if($val === 'auto')
+                        <svg class="w-5 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
+                        @elseif($val === 'portrait')
+                        <div class="w-3.5 h-5 rounded border-2 {{ $gallery_orientation === $val ? 'border-cream' : 'border-gray-400' }}"></div>
+                        @elseif($val === 'landscape')
+                        <div class="w-5 h-3.5 rounded border-2 {{ $gallery_orientation === $val ? 'border-cream' : 'border-gray-400' }}"></div>
+                        @else
+                        <div class="w-4 h-4 rounded border-2 {{ $gallery_orientation === $val ? 'border-cream' : 'border-gray-400' }}"></div>
+                        @endif
+                        <span class="text-[9px] font-medium leading-tight">{{ $label }}</span>
+                    </button>
+                    @endforeach
+                </div>
+                <button wire:click="saveGalleryOrientation" class="btn-luxury w-full text-xs py-2">
+                    Terapkan & Preview
+                </button>
+            </div>
+
             {{-- Grid --}}
             <div class="grid grid-cols-3 gap-2">
                 @foreach($galleries as $photo)
@@ -472,10 +505,174 @@
 
         {{-- ── THEME ────────────────────────────── --}}
         @elseif($activeTab === 'theme')
-        <div class="space-y-4" wire:key="tab-theme">
+        <div class="space-y-5" wire:key="tab-theme">
             <h3 class="font-serif text-base text-gray-700">Tema & Gaya</h3>
-            <p class="text-xs text-gray-500">Template aktif: <strong>{{ $invitation->template->name }}</strong></p>
-            <p class="text-xs text-amber-600 bg-amber-50 p-3 rounded-xl">Untuk mengganti template, silakan buat undangan baru.</p>
+
+            {{-- ── Template Switcher ── --}}
+            <div>
+                <label class="label-luxury flex items-center gap-1.5 mb-2">
+                    <svg class="w-3.5 h-3.5 text-forest/60" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1V5zm10 0a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zm10 0a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z"/></svg>
+                    Pilih Template
+                </label>
+
+                @php
+                $templateSwatches = [
+                    'floral-luxury'        => ['from'=>'#f9e4d4','to'=>'#d4a5a5','text'=>'#7c4a4a'],
+                    'dark-elegant'         => ['from'=>'#1a1a2e','to'=>'#16213e','text'=>'#e8c98a'],
+                    'emerald-islamic'      => ['from'=>'#d4edda','to'=>'#2d6a4f','text'=>'#1a3d2b'],
+                    'minimalist-modern'    => ['from'=>'#f9fafb','to'=>'#e5e7eb','text'=>'#111827'],
+                    'blue-butterfly'       => ['from'=>'#dbeafe','to'=>'#1e3a5f','text'=>'#1e3a5f'],
+                    'jawa-klasik'          => ['from'=>'#f5e6c8','to'=>'#8b6914','text'=>'#4a3728'],
+                    'jawa-exclusive'       => ['from'=>'#e8f0e0','to'=>'#2d4a22','text'=>'#1a2d12'],
+                    'andalusia-exclusive'  => ['from'=>'#e8dcc8','to'=>'#1a2744','text'=>'#1a2744'],
+                    'batavia-royale'       => ['from'=>'#1a1a1a','to'=>'#0a0a0a','text'=>'#d4af37'],
+                ];
+                $hasAllTemplates = $this->packageLimits['has_all_templates'];
+                @endphp
+
+                <div class="grid grid-cols-2 gap-2">
+                    @foreach($this->availableTemplates as $tpl)
+                    @php
+                        $sw        = $templateSwatches[$tpl->slug] ?? ['from'=>'#e5e7eb','to'=>'#9ca3af','text'=>'#374151'];
+                        $isActive  = $invitation->template_id === $tpl->id;
+                        $isLocked  = $tpl->is_premium && !$hasAllTemplates;
+                    @endphp
+                    <button type="button"
+                            wire:click="switchTemplate({{ $tpl->id }})"
+                            @if($isLocked) disabled @endif
+                            class="relative rounded-xl overflow-hidden border-2 transition-all group text-left
+                                   {{ $isActive
+                                       ? 'border-forest shadow-md shadow-forest/20'
+                                       : 'border-cream-dark/40 hover:border-forest/50' }}
+                                   {{ $isLocked ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer' }}">
+
+                        {{-- Color swatch --}}
+                        <div class="h-14 w-full" style="background:linear-gradient(135deg,{{ $sw['from'] }},{{ $sw['to'] }})"></div>
+
+                        {{-- Name bar --}}
+                        <div class="px-2 py-1.5 bg-white flex items-center justify-between gap-1">
+                            <span class="text-xs font-medium text-gray-700 leading-tight truncate">{{ $tpl->name }}</span>
+                            @if($isActive)
+                            <span class="flex-shrink-0 text-[9px] font-bold bg-forest text-cream px-1.5 py-0.5 rounded-full">Aktif</span>
+                            @elseif($isLocked)
+                            <svg class="flex-shrink-0 w-3 h-3 text-amber-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/></svg>
+                            @endif
+                        </div>
+
+                        {{-- Premium badge --}}
+                        @if($tpl->is_premium)
+                        <div class="absolute top-1.5 left-1.5">
+                            <span class="text-[8px] font-bold px-1 py-0.5 rounded bg-amber-400/90 text-amber-900">PRO</span>
+                        </div>
+                        @endif
+                    </button>
+                    @endforeach
+                </div>
+
+                @if(!$hasAllTemplates)
+                <p class="text-xs text-amber-600 bg-amber-50 p-2.5 rounded-xl mt-2">
+                    Template PRO tersedia di paket Premium & Exclusive.
+                </p>
+                @endif
+            </div>
+
+            <div class="border-t border-cream-dark/30 pt-4">
+
+            @php
+            $bodyFonts = [
+                ''            => '— Default template —',
+                'Montserrat'  => 'Montserrat',
+                'Poppins'     => 'Poppins',
+                'Nunito'      => 'Nunito',
+                'Raleway'     => 'Raleway',
+                'Lato'        => 'Lato',
+            ];
+            $headingFonts = [
+                ''                   => '— Default template —',
+                'Playfair Display'   => 'Playfair Display',
+                'Cormorant Garamond' => 'Cormorant Garamond',
+                'Cinzel'             => 'Cinzel',
+                'DM Serif Display'   => 'DM Serif Display',
+                'Lora'               => 'Lora',
+                'Libre Baskerville'  => 'Libre Baskerville',
+                'Great Vibes'        => 'Great Vibes',
+                'Pinyon Script'      => 'Pinyon Script',
+            ];
+            $fontScales = [
+                '0.85' => 'Sangat Kecil (85%)',
+                '0.9'  => 'Kecil (90%)',
+                '1.0'  => 'Normal (100%)',
+                '1.1'  => 'Besar (110%)',
+                '1.2'  => 'Sangat Besar (120%)',
+            ];
+            @endphp
+
+            {{-- Font Teks (body) --}}
+            <div>
+                <label class="label-luxury flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-forest/60" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"/></svg>
+                    Font Teks
+                </label>
+                <select wire:model="font_body" class="input-luxury text-sm">
+                    @foreach($bodyFonts as $val => $label)
+                    <option value="{{ $val }}" @selected($font_body === $val)>{{ $label }}</option>
+                    @endforeach
+                </select>
+                @if($font_body)
+                <p class="text-xs text-gray-400 mt-1" style="font-family:'{{ $font_body }}',sans-serif">
+                    Preview: Aa Bb Cc — 0123456789
+                </p>
+                @endif
+            </div>
+
+            {{-- Font Judul/Aksen (heading) --}}
+            <div>
+                <label class="label-luxury flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-forest/60" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/></svg>
+                    Font Judul & Aksen
+                </label>
+                <select wire:model="font_heading" class="input-luxury text-sm">
+                    @foreach($headingFonts as $val => $label)
+                    <option value="{{ $val }}" @selected($font_heading === $val)>{{ $label }}</option>
+                    @endforeach
+                </select>
+                @if($font_heading)
+                <p class="text-xs text-gray-500 mt-1" style="font-family:'{{ $font_heading }}',serif">
+                    Preview: The Wedding Of
+                </p>
+                @endif
+            </div>
+
+            {{-- Ukuran Font --}}
+            <div>
+                <label class="label-luxury flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-forest/60" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                    Ukuran Font
+                </label>
+                <div class="grid grid-cols-5 gap-1 mt-1">
+                    @foreach($fontScales as $val => $label)
+                    <button type="button"
+                            wire:click="$set('font_scale', '{{ $val }}')"
+                            class="py-2 rounded-lg border text-center transition-all text-xs font-medium
+                                   {{ $font_scale === $val
+                                      ? 'bg-forest text-cream border-forest shadow-sm'
+                                      : 'bg-white text-gray-500 border-cream-dark/50 hover:border-forest/40 hover:text-forest' }}">
+                        {{ str_replace('%)', '%', explode(' (', $label)[0] ?? $val) }}
+                    </button>
+                    @endforeach
+                </div>
+                <p class="text-xs text-gray-400 mt-1.5">
+                    @foreach($fontScales as $val => $label)
+                    @if($font_scale === $val){{ $label }}@endif
+                    @endforeach
+                </p>
+            </div>
+
+            <button wire:click="saveTheme" class="btn-luxury w-full text-sm">
+                Simpan Font & Preview
+            </button>
+
+            </div>{{-- end border-t font section --}}
         </div>
 
         {{-- ── MUSIC ────────────────────────────── --}}
@@ -566,7 +763,28 @@
         {{-- ── GIFT ─────────────────────────────── --}}
         @elseif($activeTab === 'gift')
         <div class="space-y-4" wire:key="tab-gift">
-            <h3 class="font-serif text-base text-gray-700">Hadiah Digital</h3>
+            <h3 class="font-serif text-base text-gray-700">Hadiah</h3>
+
+            {{-- Hadiah Fisik / Alamat Pengiriman --}}
+            <div class="card-luxury p-4 space-y-3 border-l-4 border-amber-400">
+                <div class="flex items-center gap-2">
+                    <svg class="w-4 h-4 text-amber-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                    <p class="text-sm font-semibold text-gray-700">Hadiah Fisik</p>
+                </div>
+                <p class="text-xs text-gray-500 leading-relaxed">Tamu yang ingin memberi hadiah fisik akan melihat alamat ini di undangan. Kosongkan jika tidak ingin menerima hadiah fisik.</p>
+                <div>
+                    <label class="label-luxury">Alamat Pengiriman / Rumah</label>
+                    <textarea wire:model="gift_address" rows="3"
+                              class="input-luxury resize-none text-sm"
+                              placeholder="Contoh: Jl. Melati No. 12, RT 03/RW 05, Kelurahan Sukamaju, Kec. Ciputat, Tangerang Selatan 15411"></textarea>
+                </div>
+                <button wire:click="saveGiftAddress" class="btn-luxury w-full text-xs py-2.5">
+                    Simpan Alamat
+                </button>
+            </div>
+
+            <div class="border-t border-cream-dark/30 pt-2">
+            <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Hadiah Digital (Transfer / QRIS)</h4>
 
             @foreach($gifts as $gift)
             <div class="card-luxury p-4">
@@ -619,6 +837,7 @@
                 @endif
                 <button wire:click="addGift" class="btn-luxury w-full text-xs py-2.5">+ Tambah</button>
             </div>
+            </div>{{-- end hadiah digital section --}}
         </div>
 
         {{-- ── RSVP ─────────────────────────────── --}}
@@ -671,7 +890,7 @@
         <div class="text-center mb-4 text-sm text-gray-400 font-medium tracking-wider uppercase text-xs">
             Live Preview
         </div>
-        <div class="phone-frame">
+        <div class="phone-frame" wire:ignore>
             <div class="phone-screen overflow-y-auto">
                 <iframe
                     src="{{ route('invitation.preview', $invitation->id) }}"
@@ -737,18 +956,31 @@
 
 @push('scripts')
 <script>
-    // Reload preview iframe after Livewire saves
-    document.addEventListener('livewire:dispatched', (e) => {
-        if (['saved', 'published'].includes(e.detail.name)) {
-            const frame = document.getElementById('preview-frame');
-            if (frame) frame.contentWindow.location.reload();
-        }
-        // Toast for Livewire events
-        if (e.detail.name === 'toast') {
-            window.dispatchEvent(new CustomEvent('show-toast', {
-                detail: { msg: e.detail.params[0], type: e.detail.params[1] ?? 'success' }
-            }));
-        }
+    function reloadPreview() {
+        const frame = document.getElementById('preview-frame');
+        if (frame) frame.contentWindow.location.reload();
+    }
+
+    window.addEventListener('reload-preview', reloadPreview);
+
+    function showToast(msg, type = 'success') {
+        const el = document.querySelector('.fixed.top-4.right-4');
+        const data = el?._x_dataStack?.[0];
+        if (data?.add) data.add(msg, type);
+    }
+
+    // Livewire 3 dispatches events by name directly on window
+    window.addEventListener('toast', (e) => {
+        const [msg, type = 'success'] = Array.isArray(e.detail) ? e.detail : [e.detail, 'success'];
+        showToast(msg, type);
+    });
+
+    // Keep reload-preview and fallback livewire:dispatched for safety
+    window.addEventListener('reload-preview', reloadPreview);
+
+    ['saved', 'published'].forEach(ev => {
+        window.addEventListener(ev, reloadPreview);
+        document.addEventListener(ev, reloadPreview);
     });
 </script>
 @endpush

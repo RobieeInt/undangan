@@ -2,18 +2,21 @@
     Reusable Gallery Collage
     ─────────────────────────────────────────────────────────────────
     Variables (passed via @include):
-      $galleries    – Collection of GalleryPhoto models (->image, ->caption)
-      $gcCellClass  – Extra CSS class(es) for each cell  (optional, e.g. 'rounded-2xl')
-      $gcCapClass   – CSS class(es) for caption text     (optional, e.g. 'text-forest/60')
-      $gcGap        – Gap between cells in px            (optional, default 4)
+      $galleries      – Collection of GalleryPhoto models (->image, ->caption)
+      $gcCellClass    – Extra CSS class(es) for each cell  (optional, e.g. 'rounded-2xl')
+      $gcCapClass     – CSS class(es) for caption text     (optional, e.g. 'text-forest/60')
+      $gcGap          – Gap between cells in px            (optional, default 4)
+      $gcOrientation  – 'auto'|'portrait'|'landscape'|'square' (optional, default 'auto')
 --}}
 
 @php
-$gcCount   = $galleries->count();
-$gcItems   = $galleries->values();
-$gcPat     = $gcCount === 0 ? 'empty'
-           : ($gcCount >= 10 ? 'stream' : (string)$gcCount);
-$gcGapPx   = $gcGap ?? 4;
+$gcCount       = $galleries->count();
+$gcItems       = $galleries->values();
+$gcPat         = $gcCount === 0 ? 'empty'
+               : ($gcCount >= 10 ? 'stream' : (string)$gcCount);
+$gcGapPx       = $gcGap ?? 4;
+$gcOrient      = $gcOrientation ?? 'auto';
+$gcOrientClass = $gcOrient !== 'auto' ? ' gc-orient-'.$gcOrient : '';
 
 // Parallax speed per slot — subtle variation for depth (0 = no parallax, 1 = full)
 $gcSpeeds  = [0.55, 0.40, 0.65, 0.45, 0.58, 0.38, 0.62, 0.42, 0.50, 0.48, 0.60, 0.35];
@@ -131,6 +134,15 @@ $gcSpeeds  = [0.55, 0.40, 0.65, 0.45, 0.58, 0.38, 0.62, 0.42, 0.50, 0.48, 0.60, 
 }
 .gc-nstream .gc-cell:nth-child(3n+1) { grid-column: span 2; }
 
+/* ── Orientation overrides ────────────────────────── */
+.gc-orient-portrait  { grid-auto-rows: auto !important; grid-template-rows: unset !important; }
+.gc-orient-landscape { grid-auto-rows: auto !important; grid-template-rows: unset !important; }
+.gc-orient-square    { grid-auto-rows: auto !important; grid-template-rows: unset !important; }
+
+.gc-orient-portrait  .gc-cell { aspect-ratio: 2/3 !important; }
+.gc-orient-landscape .gc-cell { aspect-ratio: 16/9 !important; }
+.gc-orient-square    .gc-cell { aspect-ratio: 1/1 !important; }
+
 /* ── Lightbox overlay ─────────────────────────────── */
 #gc-lightbox {
     display: none;
@@ -177,7 +189,7 @@ $gcSpeeds  = [0.55, 0.40, 0.65, 0.45, 0.58, 0.38, 0.62, 0.42, 0.50, 0.48, 0.60, 
 
 {{-- ── Collage grid HTML ──────────────────────────── --}}
 @if($gcCount > 0)
-<div class="gc-grid gc-n{{ $gcPat }}" style="gap:{{ $gcGapPx }}px" id="gc-collage">
+<div class="gc-grid gc-n{{ $gcPat }}{{ $gcOrientClass }}" style="gap:{{ $gcGapPx }}px" id="gc-collage">
     @foreach($gcItems as $gi => $gphoto)
     @php $gcSpeed = $gcSpeeds[$gi % count($gcSpeeds)]; @endphp
     <div class="gc-cell {{ $gcCellClass ?? '' }}"

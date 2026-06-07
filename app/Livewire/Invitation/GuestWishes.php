@@ -26,14 +26,16 @@ class GuestWishes extends Component
     {
         $query = DB::table('invitation_rsvps')
             ->where('invitation_id', $this->invitation->id)
-            ->whereNotNull('message')
-            ->where('message', '!=', '');
+            ->where(function ($q) {
+                $q->whereNotNull('message')->where('message', '!=', '')
+                  ->orWhereNotNull('gift_name');
+            });
 
         $this->total = $query->count();
 
         $results = $query->orderByDesc('created_at')
             ->limit($this->page * $this->perPage)
-            ->get(['name', 'attendance', 'message', 'created_at']);
+            ->get(['name', 'attendance', 'message', 'gift_name', 'created_at']);
 
         $this->wishes  = $results->toArray();
         $this->hasMore = $this->total > count($this->wishes);

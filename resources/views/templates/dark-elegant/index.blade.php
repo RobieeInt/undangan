@@ -101,6 +101,7 @@
         .de-in-4 { animation-delay: 1.3s; }
         .de-in-5 { animation-delay: 1.6s; }
     </style>
+    @include('templates._font-override', ['invitation' => $invitation])
 </head>
 <body x-data="{ opened: false }" x-init="$store.invitation.initMusic('{{ $invitation->music_url }}', {{ $invitation->music_autoplay ? 'true' : 'false' }})">
 
@@ -183,7 +184,8 @@
         @endif
         <div class="relative z-10 text-center px-6">
             @if($invitation->opening_quote)
-            <p class="fc text-sm italic text-gray-500 mb-8 max-w-xs mx-auto" data-aos="fade-down">"{{ $invitation->opening_quote }}"</p>
+            <p class="fc text-sm italic text-gray-500 mb-2 max-w-xs mx-auto" data-aos="fade-down">"{{ $invitation->opening_quote }}"</p>
+            @if($invitation->opening_quote_source)<p class="text-xs text-center mb-8" style="color:var(--gold);opacity:0.7">— {{ $invitation->opening_quote_source }}</p>@endif
             @endif
             <p class="text-xs tracking-[0.5em] uppercase mb-6" style="color:var(--gold)" data-aos="fade-up">The Wedding of</p>
             <h1 class="fc text-7xl mb-2" style="color:#E8E0CC" data-aos="fade-up" data-aos-delay="100">{{ $invitation->groom_name }}</h1>
@@ -206,12 +208,14 @@
                     <p class="fc text-2xl" style="color:#E8E0CC">{{ $invitation->groom_name }}</p>
                     @if($invitation->groom_full_name)<p class="text-xs text-gray-600 mt-1">{{ $invitation->groom_full_name }}</p>@endif
                     @if($invitation->groom_father)<p class="text-xs text-gray-600 mt-2">Putra: {{ $invitation->groom_father }}</p>@endif
+                    @if($invitation->groom_mother)<p class="text-xs text-gray-600 mt-0.5">&amp; {{ $invitation->groom_mother }}</p>@endif
                 </div>
                 <div data-aos="fade-left">
                     @if($invitation->bride_photo)<img src="{{ $invitation->bride_photo_url }}" class="w-28 h-28 rounded-full object-cover mx-auto mb-4" alt="">@endif
                     <p class="fc text-2xl" style="color:#E8E0CC">{{ $invitation->bride_name }}</p>
                     @if($invitation->bride_full_name)<p class="text-xs text-gray-600 mt-1">{{ $invitation->bride_full_name }}</p>@endif
                     @if($invitation->bride_father)<p class="text-xs text-gray-600 mt-2">Putri: {{ $invitation->bride_father }}</p>@endif
+                    @if($invitation->bride_mother)<p class="text-xs text-gray-600 mt-0.5">&amp; {{ $invitation->bride_mother }}</p>@endif
                 </div>
             </div>
             <div class="line-gold mt-12"></div>
@@ -246,16 +250,28 @@
     </section>
     @endif
 
+    {{-- STORY --}}
+    @if($invitation->story)
+    <section class="py-16 px-6" style="background:#0F0F0F">
+        <div class="max-w-sm mx-auto text-center">
+            <p class="text-xs tracking-[0.4em] uppercase mb-8" style="color:var(--gold)" data-aos="fade-up">Cerita Kami</p>
+            <p class="fc text-base italic leading-relaxed text-gray-400" data-aos="fade-up" data-aos-delay="100">{{ $invitation->story }}</p>
+        </div>
+    </section>
+    @endif
+
     {{-- GALLERY --}}
     @if($galleries->isNotEmpty())
     <section id="nav-gallery" class="py-16" style="background:#1A1A1A">
         <div class="max-w-sm mx-auto px-4">
             <p class="text-xs tracking-[0.4em] uppercase text-center mb-8" style="color:var(--gold)" data-aos="fade-up">Galeri</p>
         </div>
+        
         @include('partials.gallery-collage', [
-            'galleries'   => $galleries,
-            'gcCellClass' => '',
-            'gcGap'       => 3,
+            'galleries'     => $galleries,
+            'gcOrientation' => $invitation->theme['gallery_orientation'] ?? 'auto',
+            'gcCellClass'   => '',
+            'gcGap'         => 3,
         ])
     </section>
     @endif
@@ -280,11 +296,12 @@
     </section>
 
     {{-- GIFTS --}}
-    @if($gifts->isNotEmpty())
+    @if($gifts->isNotEmpty() || $invitation->gift_address)
     <section class="py-20 px-6" style="background:#0F0F0F">
         <div class="max-w-sm mx-auto">
             <p class="text-xs tracking-[0.4em] uppercase text-center mb-8" style="color:var(--gold)">Hadiah</p>
-            @foreach($gifts as $gift)
+                            @include('templates._physical-gift', ['invitation' => $invitation])
+                @foreach($gifts as $gift)
             <div class="p-5 border mb-4" style="border-color:rgba(201,168,76,0.2)" data-aos="fade-up">
                 <p class="fc text-lg mb-1" style="color:#E8E0CC">{{ $gift->label ?: $gift->bank_name }}</p>
                 @if($gift->account_number)<p class="text-sm font-mono gold">{{ $gift->account_number }}</p><p class="text-xs text-gray-500">{{ $gift->account_name }}</p>@endif

@@ -54,6 +54,10 @@ class InvitationEditor extends Component
     // ── Theme Tab ────────────────────────────────────────────────────────────
     public string $selectedTemplate = '';
     public array $themeOverrides = [];
+    public string $font_body = '';
+    public string $font_heading = '';
+    public string $font_scale = '1.0';
+    public string $gallery_orientation = 'auto';
 
     // ── Music Tab ────────────────────────────────────────────────────────────
     public string $music_url = '';
@@ -62,6 +66,7 @@ class InvitationEditor extends Component
     public string $youtubeEmbedStatus = ''; // '', 'ok', 'blocked', 'error'
 
     // ── Gift Tab ─────────────────────────────────────────────────────────────
+    public string $gift_address = '';
     public array $gifts = [];
     public array $newGift = [
         'type' => 'bank', 'bank_name' => '', 'account_number' => '',
@@ -102,6 +107,7 @@ class InvitationEditor extends Component
         $this->opening_quote       = $inv->opening_quote ?? '';
         $this->opening_quote_source= $inv->opening_quote_source ?? '';
         $this->story               = $inv->story ?? '';
+        $this->gift_address        = $inv->gift_address ?? '';
         $this->music_url           = $inv->music_url ?? '';
         $this->music_name          = $inv->music_name ?? '';
         $this->music_autoplay      = (bool) $inv->music_autoplay;
@@ -109,6 +115,10 @@ class InvitationEditor extends Component
         $this->is_open             = (bool) $inv->is_open;
         $this->selectedTemplate    = $inv->template->slug ?? '';
         $this->themeOverrides      = $inv->theme ?? [];
+        $this->font_body            = $this->themeOverrides['font_body']          ?? '';
+        $this->font_heading         = $this->themeOverrides['font_heading']       ?? '';
+        $this->font_scale           = (string) ($this->themeOverrides['font_scale'] ?? '1.0');
+        $this->gallery_orientation  = $this->themeOverrides['gallery_orientation'] ?? 'auto';
 
         $this->loadEvents();
         $this->loadGalleries();
@@ -178,8 +188,8 @@ class InvitationEditor extends Component
 
         if (!$silent) {
             $this->autoSaveStatus = 'Tersimpan';
-            $this->dispatch('saved');
             $this->dispatch('toast', '✓ Informasi berhasil disimpan', 'success');
+            $this->js("window.dispatchEvent(new Event('reload-preview'))");
         }
     }
 
@@ -191,9 +201,9 @@ class InvitationEditor extends Component
             'music_autoplay' => $this->music_autoplay,
         ]);
         $this->autoSaveStatus     = 'Tersimpan';
-        $this->youtubeEmbedStatus = 'checking'; // triggers client-side YT.Player test
-        $this->dispatch('saved');
+        $this->youtubeEmbedStatus = 'checking';
         $this->dispatch('toast', '✓ Musik disimpan — sedang memverifikasi...', 'success');
+        $this->js("window.dispatchEvent(new Event('reload-preview'))");
     }
 
     public function updatedMusicUrl(): void
@@ -351,6 +361,14 @@ class InvitationEditor extends Component
     }
 
     // ── Gift CRUD ─────────────────────────────────────────────────────────────
+    public function saveGiftAddress(): void
+    {
+        $this->validate(['gift_address' => 'nullable|string|max:500']);
+        $this->invitation->update(['gift_address' => $this->gift_address ?: null]);
+        $this->dispatch('toast', '✓ Alamat hadiah disimpan', 'success');
+        $this->js("window.dispatchEvent(new Event('reload-preview'))");
+    }
+
     public function addGift(): void
     {
         $this->validate([
@@ -407,6 +425,28 @@ class InvitationEditor extends Component
         $this->loadGifts();
     }
 
+    // ── Theme ────────────────────────────────────────────────────────────────
+    public function saveTheme(): void
+    {
+        $this->validate([
+            'font_body'    => 'nullable|string|max:100',
+            'font_heading' => 'nullable|string|max:100',
+            'font_scale'   => 'required|in:0.85,0.9,1.0,1.1,1.2',
+        ]);
+
+        $theme = $this->themeOverrides;
+        $theme['font_body']    = $this->font_body    ?: null;
+        $theme['font_heading'] = $this->font_heading ?: null;
+        $theme['font_scale']   = (float) $this->font_scale;
+
+        $this->invitation->update(['theme' => $theme]);
+        $this->themeOverrides = $theme;
+
+        $this->autoSaveStatus = 'Tersimpan';
+        $this->dispatch('toast', '✓ Pengaturan font disimpan', 'success');
+        $this->js("window.dispatchEvent(new Event('reload-preview'))");
+    }
+
     // ── Publish ──────────────────────────────────────────────────────────────
     public function publish(): void
     {
@@ -432,6 +472,46 @@ class InvitationEditor extends Component
         return $this->invitation->is_active && $this->invitation->package_id;
     }
 
+    public function saveGalleryOrientation(): void
+    {
+        $this->validate(['gallery_orientation' => 'required|in:auto,portrait,landscape,square']);
+
+        $theme = $this->themeOverrides;
+        $theme['gallery_orientation'] = $this->gallery_orientation;
+
+        $this->invitation->update(['theme' => $theme]);
+        $this->themeOverrides = $theme;
+
+        $this->dispatch('toast', '✓ Orientasi galeri disimpan', 'success');
+        $this->js("window.dispatchEvent(new Event('reload-preview'))");
+    }
+
+    // ── Template Switch ──────────────────────────────────────────────────────
+    public function switchTemplate(int $templateId): void
+    {
+        $template = \App\Models\Template::find($templateId);
+        if (!$template || !$template->is_active) return;
+
+        // Lock premium templates for Basic package
+        if ($template->is_premium && !($this->invitation->package?->has_all_templates)) {
+            $this->dispatch('toast', '⚠️ Template ini khusus paket Premium/Exclusive', 'warning');
+            return;
+        }
+
+        $this->invitation->update(['template_id' => $templateId]);
+        $this->invitation->refresh();
+        $this->selectedTemplate = $template->slug;
+
+        $this->dispatch('toast', "✓ Template diganti ke {$template->name}", 'success');
+        $this->js("window.dispatchEvent(new Event('reload-preview'))");
+    }
+
+    #[Computed]
+    public function availableTemplates(): \Illuminate\Support\Collection
+    {
+        return \App\Models\Template::where('is_active', true)->orderBy('id')->get();
+    }
+
     #[Computed]
     public function packageLimits(): array
     {
@@ -443,6 +523,7 @@ class InvitationEditor extends Component
             'has_qr_checkin'    => $package?->has_qr_checkin ?? false,
             'has_rsvp_export'   => $package?->has_rsvp_export ?? false,
             'has_watermark'     => $package?->has_watermark ?? true,
+            'has_all_templates' => $package?->has_all_templates ?? false,
         ];
     }
 

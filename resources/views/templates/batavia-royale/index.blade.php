@@ -268,6 +268,7 @@ body{
     color:rgba(212,175,55,.22);font-family:'Cinzel',serif;
 }
 </style>
+    @include('templates._font-override', ['invitation' => $invitation])
 </head>
 
 <body x-init="$store.invitation.initMusic('{{ $invitation->music_url }}',{{ $invitation->music_autoplay ? 'true' : 'false' }})">
@@ -610,12 +611,13 @@ body{
     @endif
 
     {{-- ── HADIAH ────────────────────────────────────────────────────── --}}
-    @if($gifts->isNotEmpty())
+    @if($gifts->isNotEmpty() || $invitation->gift_address)
     <section class="br-section" style="padding-top:60px">
         <div class="br-reveal">
             <p class="br-title">Hadiah Pernikahan</p>
             <div class="br-divider"><svg width="14" height="14" viewBox="0 0 16 16" fill="#D4AF37" opacity=".6"><path d="M8 1L9.5 6H15L10.5 9L12 14L8 11L4 14L5.5 9L1 6H6.5Z"/></svg></div>
             <div style="display:flex;flex-direction:column;gap:1rem;margin-top:1.25rem">
+                                @include('templates._physical-gift', ['invitation' => $invitation])
                 @foreach($gifts as $gift)
                 @if($gift->type === 'bank')
                 <div class="br-card" style="padding:1.1rem 1.4rem;display:flex;align-items:center;gap:1rem">
